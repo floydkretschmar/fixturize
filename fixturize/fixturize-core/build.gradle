@@ -1,0 +1,33 @@
+plugins {
+    id "java"
+    id "io.freefair.lombok" version "8.6"
+}
+
+group = "de.floydkretschmar.fixturize"
+version = "0.1"
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    junitVersion = "5.10.0"
+    autoServiceVersion = "1.1.1"
+    assertJVersion = "3.25.1"
+    guavaVersion = "33.2.1-jre"
+    mockitoVersion = "5.12.0"
+}
+
+dependencies {
+    implementation "com.google.auto.service:auto-service:$autoServiceVersion"
+    implementation "com.google.guava:guava:$guavaVersion"
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core:$assertJVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+}
+
+test {
+    useJUnitPlatform()
+}
