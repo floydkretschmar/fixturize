@@ -28,17 +28,20 @@ public class FixtureCreator<T> {
     }
 
     public String createFixtureForClass(Class<T> targetClass) {
+        final String packageName = targetClass.getPackageName();
+
         final String fixtureClassTemplate = """
-                public class %sFixture {
+                %spublic class %sFixture {
                 %s
                 
                 %s
                 }
                 """;
 
+        final String packageString = packageName.isEmpty() ? "" : "package %s;\n\n".formatted(packageName);
         final String constantsString = String.join("\n", this.constantsGenerationStrategy.generateConstants(targetClass));
         final String creationMethodsString = this.creationMethodStrategies.stream().flatMap(stategy -> stategy.generateCreationMethods(targetClass).stream()).collect(Collectors.joining("\n\n"));
 
-        return String.format(fixtureClassTemplate, targetClass.getSimpleName(), constantsString, creationMethodsString);
+        return String.format(fixtureClassTemplate, packageString, targetClass.getSimpleName(), constantsString, creationMethodsString);
     }
 }

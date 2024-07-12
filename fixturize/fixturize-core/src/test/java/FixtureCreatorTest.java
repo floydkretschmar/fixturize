@@ -14,6 +14,8 @@ class FixtureCreatorTest {
 
         var result = fixtureCreator.createFixtureForClass(TestObject.class);
         assertThat(result).isEqualTo("""
+               package mocks;
+               
                public class TestObjectFixture {
                \tpublic static boolean BOOLEAN_FIELD = false;
                \tpublic static int INT_FIELD = 0;
