@@ -1,6 +1,5 @@
 package stategies.constants;
 
-import domain.FixtureConstant;
 import mocks.TestObject;
 import mocks.TestObjectWithUnknownObject;
 import org.junit.jupiter.api.Test;

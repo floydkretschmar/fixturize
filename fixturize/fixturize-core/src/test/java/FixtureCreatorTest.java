@@ -1,4 +1,3 @@
-import mocks.BuilderTestObject;
 import mocks.TestObject;
 import org.junit.jupiter.api.Test;
 import stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
@@ -11,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FixtureCreatorTest {
     @Test
     void createFixtureForClass_whenCalledForFixtureWithFixtureConstructor_shouldReturnFixtureClassAsString() {
-        final FixtureCreator fixtureCreator = new FixtureCreator(Map.of(), List.of(), new CamelCaseToScreamingSnakeCaseNamingStrategy());
+        final FixtureCreator<TestObject> fixtureCreator = new FixtureCreator<>(Map.of(), List.of(), new CamelCaseToScreamingSnakeCaseNamingStrategy());
 
         var result = fixtureCreator.createFixtureForClass(TestObject.class);
         assertThat(result).isEqualTo("""

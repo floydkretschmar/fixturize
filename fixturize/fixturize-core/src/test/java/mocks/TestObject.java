@@ -1,9 +1,11 @@
 package mocks;
 
 import annotations.FixtureConstructor;
+import lombok.Getter;
 
 import java.util.UUID;
 
+@Getter
 public class TestObject {
     private final String stringField;
     private final int intField;
@@ -16,21 +18,5 @@ public class TestObject {
         this.intField = intField;
         this.booleanField = booleanField;
         this.uuidField = uuidField;
-    }
-
-    public String getStringField() {
-        return stringField;
-    }
-
-    public int getIntField() {
-        return intField;
-    }
-
-    public boolean isBooleanField() {
-        return booleanField;
-    }
-
-    public UUID getUuidField() {
-        return uuidField;
     }
 }

@@ -17,9 +17,7 @@ import java.util.Set;
 public class FixtureProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        annotations.forEach(annnotation -> {
-            roundEnv.getElementsAnnotatedWith(annnotation).forEach(this::processAnnotatedElement);
-        });
+        annotations.forEach(annnotation -> roundEnv.getElementsAnnotatedWith(annnotation).forEach(this::processAnnotatedElement));
 
         return true;
     }

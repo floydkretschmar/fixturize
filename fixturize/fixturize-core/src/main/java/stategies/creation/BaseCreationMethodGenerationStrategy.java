@@ -5,7 +5,6 @@ import stategies.constants.ConstantsNamingStrategy;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public abstract class BaseCreationMethodGenerationStrategy implements CreationMethodGenerationStrategy {
     protected final ConstantsNamingStrategy constantsNamingStrategy;
@@ -24,11 +23,9 @@ public abstract class BaseCreationMethodGenerationStrategy implements CreationMe
 
     private static Collection<String> getCreationMethodStrings(List<FixtureCreationMethod> creationMethods) {
         return creationMethods.stream()
-                .map(creationMethod -> {
-                    return """
-                        \tpublic %s %s() {
-                        \t\treturn %s;
-                        \t}""".formatted(creationMethod.getReturnType(), creationMethod.getMethodName(), creationMethod.getCreationCallString());
-                }).toList();
+                .map(creationMethod -> """
+                    \tpublic %s %s() {
+                    \t\treturn %s;
+                    \t}""".formatted(creationMethod.getReturnType(), creationMethod.getMethodName(), creationMethod.getCreationCallString())).toList();
     }
 }

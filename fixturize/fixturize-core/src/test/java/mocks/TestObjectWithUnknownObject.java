@@ -1,6 +1,5 @@
 package mocks;
 
-import annotations.FixtureConstructor;
 import lombok.Value;
 
 import java.util.UUID;
