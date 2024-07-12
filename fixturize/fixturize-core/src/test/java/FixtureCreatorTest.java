@@ -14,17 +14,21 @@ class FixtureCreatorTest {
 
         var result = fixtureCreator.createFixtureForClass(TestObject.class);
         assertThat(result).isEqualTo("""
-                public class TestObjectFixture {
-                \tpublic static boolean BOOLEAN_FIELD = false;
-                \tpublic static int INT_FIELD = 0;
-                \tpublic static String STRING_FIELD = "STRING_FIELD_VALUE";
-                \tpublic static UUID UUID_FIELD = UUID.randomUUID();
-                
-                \tpublic TestObject createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
-                \t\treturn new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
-                \t}
-                }
-                """);
+               public class TestObjectFixture {
+               \tpublic static boolean BOOLEAN_FIELD = false;
+               \tpublic static int INT_FIELD = 0;
+               \tpublic static String STRING_FIELD = "STRING_FIELD_VALUE";
+               \tpublic static UUID UUID_FIELD = UUID.randomUUID();
+               
+               \tpublic TestObject createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
+               \t\treturn new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
+               \t}
+               
+               \tpublic TestObject createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField() {
+               \t\treturn new TestObject(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD);
+               \t}
+               }
+               """);
 
     }
 }

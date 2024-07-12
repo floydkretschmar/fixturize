@@ -15,10 +15,14 @@ class FixtureConstructorCreationMethodGenerationStrategyTest {
 
         final Collection<String> result = strategy.generateCreationMethods(TestObject.class);
 
-        assertThat(result).hasSize(1);
+        assertThat(result).hasSize(2);
         assertThat(result).contains("""
                 \tpublic TestObject createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
                 \t\treturn new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
+                \t}""",
+                """
+                \tpublic TestObject createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField() {
+                \t\treturn new TestObject(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD);
                 \t}""");
     }
 }

@@ -1,6 +1,7 @@
 package stategies.creation;
 
 import annotations.FixtureConstructor;
+import annotations.FixtureConstructors;
 import com.google.common.base.CaseFormat;
 import domain.FixtureCreationMethod;
 import stategies.constants.ConstantsNamingStrategy;
@@ -17,10 +18,8 @@ public class FixtureConstructorCreationMethodGenerationStrategy extends BaseCrea
 
     @Override
     protected  <T> List<FixtureCreationMethod> createCreationMethods(Class<T> targetClass) {
-        final var constructors = Arrays.stream(targetClass.getDeclaredConstructors())
-                .filter(constructor -> Modifier.isPublic(constructor.getModifiers()) && constructor.isAnnotationPresent(FixtureConstructor.class));
-        return constructors
-                .map(constructor -> Arrays.asList(constructor.getAnnotation(FixtureConstructor.class).parameterNames()))
+        return Arrays.stream(targetClass.getAnnotation(FixtureConstructors.class).value())
+                .map(constructorAnnotation -> Arrays.asList(constructorAnnotation.parameterNames()))
                 .map(paramterNames -> {
                     final String functionName = paramterNames.stream().map(name -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, name)).collect(Collectors.joining("And"));
                     final String parameterString = paramterNames.stream().map(constantsNamingStrategy::rename).collect(Collectors.joining(","));
