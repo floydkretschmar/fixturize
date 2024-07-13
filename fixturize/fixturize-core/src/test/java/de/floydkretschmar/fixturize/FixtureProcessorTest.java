@@ -31,16 +31,16 @@ class FixtureProcessorTest {
                             
                             public class TestObjectFixture {
                             	public static boolean BOOLEAN_FIELD = false;
+                            	public static java.lang.String CUSTOM_STRING_FIELD_NAME = "STRING_FIELD_VALUE";
                             	public static int INT_FIELD = 0;
-                            	public static java.lang.String STRING_FIELD = "STRING_FIELD_VALUE";
                             	public static java.util.UUID UUID_FIELD = java.util.UUID.fromString("%s");
                             
                             	public TestObject createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
-                            		return new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
+                            		return new TestObject(CUSTOM_STRING_FIELD_NAME,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
                             	}
                             
                             	public TestObject createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField() {
-                            		return new TestObject(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD);
+                            		return new TestObject(CUSTOM_STRING_FIELD_NAME,BOOLEAN_FIELD,UUID_FIELD);
                             	}
                             }
                             """.formatted(RANDOM_UUID));

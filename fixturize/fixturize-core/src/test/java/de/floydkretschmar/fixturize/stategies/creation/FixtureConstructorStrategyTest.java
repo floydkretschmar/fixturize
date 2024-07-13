@@ -1,8 +1,8 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.FixtureConstant;
-import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
+import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
+import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -29,22 +29,22 @@ class FixtureConstructorStrategyTest {
         var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement();
 
-        final Map<String, FixtureConstant> fixtureConstantMap = Map.of(
-                "stringField", FixtureConstant.builder().name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
-                "intField", FixtureConstant.builder().name("INT_FIELD").type("int").value("0").build(),
-                "booleanField", FixtureConstant.builder().name("BOOLEAN_FIELD").type("boolean").value("false").build(),
-                "uuidField", FixtureConstant.builder().name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
+        final Map<String, FixtureConstantDefinition> fixtureConstantMap = Map.of(
+                "stringField", FixtureConstantDefinition.builder().name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
+                "intField", FixtureConstantDefinition.builder().name("INT_FIELD").type("int").value("0").build(),
+                "booleanField", FixtureConstantDefinition.builder().name("BOOLEAN_FIELD").type("boolean").value("false").build(),
+                "uuidField", FixtureConstantDefinition.builder().name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
         );
-        final Collection<FixtureCreationMethod> result = strategy.generateCreationMethods(element, fixtureConstantMap);
+        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, fixtureConstantMap);
 
         assertThat(result).hasSize(2);
         assertThat(result.stream()).contains(
-                FixtureCreationMethod.builder()
+                FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject")
                         .returnValue("new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD)")
                         .name("createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField")
                         .build(),
-                FixtureCreationMethod.builder()
+                FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject")
                         .returnValue("new TestObject(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD)")
                         .name("createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField")
@@ -56,7 +56,7 @@ class FixtureConstructorStrategyTest {
         var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement();
 
-        final Map<String, FixtureConstant> fixtureConstantMap = Map.of();
+        final Map<String, FixtureConstantDefinition> fixtureConstantMap = Map.of();
 
         assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, fixtureConstantMap));
     }

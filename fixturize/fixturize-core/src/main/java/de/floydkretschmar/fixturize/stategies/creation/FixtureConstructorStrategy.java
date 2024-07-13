@@ -2,8 +2,8 @@ package de.floydkretschmar.fixturize.stategies.creation;
 
 import com.google.common.base.CaseFormat;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.FixtureConstant;
-import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
+import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
+import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 
 import javax.lang.model.element.TypeElement;
@@ -19,7 +19,7 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
     }
 
     @Override
-    public Collection<FixtureCreationMethod> generateCreationMethods(TypeElement element, Map<String, FixtureConstant> constantMap) {
+    public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, Map<String, FixtureConstantDefinition> constantMap) {
         return ElementFilter.constructorsIn(element.getEnclosedElements()).stream()
                 .map(constructor -> constructor.getAnnotation(FixtureConstructor.class))
                 .filter(Objects::nonNull)
@@ -34,7 +34,7 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
                                 .formatted(parameterName, element.getSimpleName().toString()));
                     }).collect(Collectors.joining(","));
                     final String className = element.getSimpleName().toString();
-                    return FixtureCreationMethod.builder()
+                    return FixtureCreationMethodDefinition.builder()
                             .returnType(className)
                             .returnValue("new %s(%s)".formatted(className, parameterString))
                             .name("create%sFixtureWith%s".formatted(className, functionName))

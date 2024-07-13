@@ -5,8 +5,8 @@ import lombok.Value;
 
 @Value
 @Builder
-public class FixtureCreationMethod {
-    String returnType;
+public class FixtureConstantDefinition {
+    String type;
     String name;
-    String returnValue;
+    String value;
 }

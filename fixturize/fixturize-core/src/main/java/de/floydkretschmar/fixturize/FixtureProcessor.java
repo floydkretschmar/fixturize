@@ -1,11 +1,11 @@
 package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
-import de.floydkretschmar.fixturize.domain.FixtureConstant;
+import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureNames;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.DefaultConstantGenerationStrategy;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorStrategy;
 
@@ -38,8 +38,7 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private void processAnnotatedElement(TypeElement element) {
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
-        final var constantsGenerationStrategy = new DefaultConstantGenerationStrategy(constantsNamingStrategy, Map.of());
-
+        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, Map.of());
 
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
         creationMethodStrategies.add(new FixtureConstructorStrategy());
@@ -76,7 +75,7 @@ public class FixtureProcessor extends AbstractProcessor {
                 .qualifiedFixtureClassName(qualifiedFixtureClassName).build();
     }
 
-    private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies, Map<String, FixtureConstant> constantMap) {
+    private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies, Map<String, FixtureConstantDefinition> constantMap) {
         return creationMethodStrategies.stream()
                 .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap).stream())
                 .map(method -> """
@@ -86,14 +85,14 @@ public class FixtureProcessor extends AbstractProcessor {
                 .collect(Collectors.joining("\n\n"));
     }
 
-    private static String getConstantsString(Stream<FixtureConstant> constants) {
+    private static String getConstantsString(Stream<FixtureConstantDefinition> constants) {
         return constants
-                .sorted(Comparator.comparing(FixtureConstant::getName))
+                .sorted(Comparator.comparing(FixtureConstantDefinition::getName))
                 .map(constant -> "\tpublic static %s %s = %s;".formatted(constant.getType(), constant.getName(), constant.getValue()))
                 .collect(Collectors.joining("\n"));
     }
 
-    private static String getFixtureClassAsString(TypeElement element, FixtureNames names, DefaultConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
+    private static String getFixtureClassAsString(TypeElement element, FixtureNames names, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
         final String fixtureClassTemplate = """
         %spublic class %sFixture {
         %s
@@ -104,7 +103,7 @@ public class FixtureProcessor extends AbstractProcessor {
 
         final String packageString = names.hasPackageName() ? "package %s;\n\n".formatted(names.getPackageName()) : "";
 
-        final Map<String, FixtureConstant> constantMap = constantsGenerationStrategy.generateConstants(element);
+        final Map<String, FixtureConstantDefinition> constantMap = constantsGenerationStrategy.generateConstants(element);
         final String constantsString = getConstantsString(constantMap.values().stream());
         final String creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap);
 

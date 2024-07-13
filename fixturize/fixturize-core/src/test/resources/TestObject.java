@@ -1,12 +1,14 @@
 package de.floydkretschmar.fixturize.mocks;
 
 import de.floydkretschmar.fixturize.annotations.Fixture;
+import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 
 import java.util.UUID;
 
 @Fixture
 public class TestObject {
+    @FixtureConstant(name = "CUSTOM_STRING_FIELD_NAME")
     private final String stringField;
     private final int intField;
     private final boolean booleanField;
