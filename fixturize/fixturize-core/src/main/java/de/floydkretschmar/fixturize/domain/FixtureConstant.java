@@ -6,12 +6,12 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FixtureConstant {
-    private String fieldType;
+    private String type;
     private String name;
     private Object value;
 
     @Override
     public String toString() {
-        return "\tpublic static %s %s = %s;".formatted(fieldType, name, value);
+        return "\tpublic static %s %s = %s;".formatted(type, name, value);
     }
 }

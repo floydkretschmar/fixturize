@@ -1,6 +1,5 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
-import com.google.common.base.Function;
 import de.floydkretschmar.fixturize.domain.FixtureConstant;
 import de.floydkretschmar.fixturize.stategies.constants.value.DefaultValueProviders;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
@@ -35,7 +34,7 @@ public class DefaultConstantGenerationStrategy implements ConstantsGenerationStr
             final String fieldType = field.asType().toString();
             final var constantValue = this.valueProviders.containsKey(fieldType) ?
                     this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
-            return FixtureConstant.builder().fieldType(fieldType).value(constantValue).name(constantName).build();
+            return FixtureConstant.builder().type(fieldType).value(constantValue).name(constantName).build();
         });
     }
 

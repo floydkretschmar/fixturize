@@ -24,9 +24,7 @@ public abstract class BaseCreationMethodGenerationStrategy implements CreationMe
 
     private static Collection<String> getCreationMethodStrings(List<FixtureCreationMethod> creationMethods) {
         return creationMethods.stream()
-                .map(creationMethod -> """
-                    \tpublic %s %s() {
-                    \t\treturn %s;
-                    \t}""".formatted(creationMethod.getReturnType(), creationMethod.getMethodName(), creationMethod.getCreationCallString())).toList();
+                .map(FixtureCreationMethod::toString)
+                .toList();
     }
 }
