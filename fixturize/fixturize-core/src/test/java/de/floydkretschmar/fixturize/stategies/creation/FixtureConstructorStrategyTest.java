@@ -1,15 +1,21 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import de.floydkretschmar.fixturize.domain.FixtureConstant;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -17,10 +23,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class FixtureConstructorCreationMethodGenerationStrategyTest {
+class FixtureConstructorStrategyTest {
     @Test
     void createCreationMethods_whenCalled_shouldCreateCreationMethodsForDefinedConstructors() {
-        var strategy = new FixtureConstructorCreationMethodGenerationStrategy();
+        var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement();
 
         final Map<String, FixtureConstant> fixtureConstantMap = Map.of(
@@ -47,7 +53,7 @@ class FixtureConstructorCreationMethodGenerationStrategyTest {
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        var strategy = new FixtureConstructorCreationMethodGenerationStrategy();
+        var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement();
 
         final Map<String, FixtureConstant> fixtureConstantMap = Map.of();
@@ -57,16 +63,26 @@ class FixtureConstructorCreationMethodGenerationStrategyTest {
 
     private static TypeElement mockTypeElement() {
         final var element = mock(TypeElement.class);
-        final var fixtureConstructors = mock(FixtureConstructors.class);
-        final var fixtureConstructor = mock(FixtureConstructor.class);
-        final var fixtureConstructor2 = mock(FixtureConstructor.class);
-        when(element.getAnnotation(any())).thenReturn(fixtureConstructors);
-        when(fixtureConstructors.value()).thenReturn(new FixtureConstructor[]{fixtureConstructor, fixtureConstructor2});
-        when(fixtureConstructor.parameterNames()).thenReturn(new String[]{"stringField", "intField", "booleanField", "uuidField"});
-        when(fixtureConstructor2.parameterNames()).thenReturn(new String[]{"stringField", "booleanField", "uuidField"});
+
+        final var constructors = new ArrayList<>(Stream.of(new String[]{"stringField", "intField", "booleanField", "uuidField"}, new String[]{"stringField", "booleanField", "uuidField"})
+                .map(parameterNames -> {
+                    final var fixtureConstructor = mock(FixtureConstructor.class);
+                    when(fixtureConstructor.correspondingFieldNames()).thenReturn(parameterNames);
+                    return createMockConstructor(fixtureConstructor);
+                }).toList());
+        constructors.add(createMockConstructor(null));
+        when(element.getEnclosedElements()).thenReturn((List)constructors);
+
         final var name = mock(Name.class);
         when(name.toString()).thenReturn("TestObject");
         when(element.getSimpleName()).thenReturn(name);
         return element;
+    }
+
+    private static @NotNull ExecutableElement createMockConstructor(FixtureConstructor fixtureConstructor) {
+        final var constructor = mock(ExecutableElement.class);
+        when(constructor.getKind()).thenReturn(ElementKind.CONSTRUCTOR);
+        when(constructor.getAnnotation(any())).thenReturn(fixtureConstructor);
+        return constructor;
     }
 }

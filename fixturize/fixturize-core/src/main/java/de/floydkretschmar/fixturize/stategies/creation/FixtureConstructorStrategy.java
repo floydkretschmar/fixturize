@@ -1,25 +1,29 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import com.google.common.base.CaseFormat;
-import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
+import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.FixtureConstant;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class FixtureConstructorCreationMethodGenerationStrategy implements CreationMethodGenerationStrategy {
-    public FixtureConstructorCreationMethodGenerationStrategy() {
+public class FixtureConstructorStrategy implements CreationMethodGenerationStrategy {
+    public FixtureConstructorStrategy() {
     }
 
     @Override
     public Collection<FixtureCreationMethod> generateCreationMethods(TypeElement element, Map<String, FixtureConstant> constantMap) {
-        return Arrays.stream(element.getAnnotation(FixtureConstructors.class).value())
-                .map(constructorAnnotation -> Arrays.asList(constructorAnnotation.parameterNames()))
+        return ElementFilter.constructorsIn(element.getEnclosedElements()).stream()
+                .map(constructor -> constructor.getAnnotation(FixtureConstructor.class))
+                .filter(Objects::nonNull)
+                .map(constructorAnnotation -> Arrays.asList(constructorAnnotation.correspondingFieldNames()))
                 .map(paramterNames -> {
                     final String functionName = paramterNames.stream().map(name -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, name)).collect(Collectors.joining("And"));
                     final String parameterString = paramterNames.stream().map(parameterName -> {

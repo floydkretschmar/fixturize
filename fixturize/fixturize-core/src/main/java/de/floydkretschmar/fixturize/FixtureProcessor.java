@@ -7,7 +7,7 @@ import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.DefaultConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
-import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorCreationMethodGenerationStrategy;
+import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorStrategy;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -42,7 +42,7 @@ public class FixtureProcessor extends AbstractProcessor {
 
 
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
-        creationMethodStrategies.add(new FixtureConstructorCreationMethodGenerationStrategy());
+        creationMethodStrategies.add(new FixtureConstructorStrategy());
 
         final var names = getNames(element);
 
