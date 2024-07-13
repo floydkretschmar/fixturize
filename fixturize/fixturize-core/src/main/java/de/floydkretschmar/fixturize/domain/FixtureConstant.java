@@ -3,8 +3,6 @@ package de.floydkretschmar.fixturize.domain;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.lang.reflect.Field;
-
 @Getter
 @Builder
 public class FixtureConstant {

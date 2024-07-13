@@ -39,7 +39,7 @@ class DefaultConstantGenerationStrategyTest {
                 "\tpublic static boolean BOOLEAN_FIELD = false;",
                 "\tpublic static int INT_FIELD = 0;",
                 "\tpublic static java.lang.String STRING_FIELD = \"STRING_FIELD_VALUE\";",
-                "\tpublic static java.util.UUID UUID_FIELD = UUID.randomUUID();"));
+                "\tpublic static java.util.UUID UUID_FIELD = java.util.UUID.randomUUID();"));
     }
 
     @Test
@@ -85,7 +85,7 @@ class DefaultConstantGenerationStrategyTest {
                 "\tpublic static int INT_FIELD = 0;",
                 "\tpublic static java.lang.String STRING_FIELD = \"STRING_FIELD_VALUE\";",
                 "\tpublic static java.util.Date UNKNOWN_OBJECT = null;",
-                "\tpublic static java.util.UUID UUID_FIELD = UUID.randomUUID();"));
+                "\tpublic static java.util.UUID UUID_FIELD = java.util.UUID.randomUUID();"));
     }
 
     private static @NotNull List<VariableElement> mockVariableElements(List<Map.Entry<String, Class<?>>> fields) {

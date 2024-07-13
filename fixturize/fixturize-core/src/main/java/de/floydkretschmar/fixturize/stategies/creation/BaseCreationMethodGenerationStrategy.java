@@ -15,12 +15,12 @@ public abstract class BaseCreationMethodGenerationStrategy implements CreationMe
     }
 
     @Override
-    public <T> Collection<String> generateCreationMethods(Element element) {
+    public Collection<String> generateCreationMethods(Element element) {
         List<FixtureCreationMethod> creationMethods = createCreationMethods(element);
         return getCreationMethodStrings(creationMethods);
     }
 
-    protected abstract  <T> List<FixtureCreationMethod> createCreationMethods(Element element);
+    protected abstract List<FixtureCreationMethod> createCreationMethods(Element element);
 
     private static Collection<String> getCreationMethodStrings(List<FixtureCreationMethod> creationMethods) {
         return creationMethods.stream()

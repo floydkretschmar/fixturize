@@ -1,19 +1,14 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
-import com.google.common.base.CaseFormat;
-import com.google.common.base.Defaults;
 import com.google.common.base.Function;
 import de.floydkretschmar.fixturize.domain.FixtureConstant;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class DefaultConstantGenerationStrategy implements ConstantsGenerationStrategy {
@@ -26,7 +21,7 @@ public class DefaultConstantGenerationStrategy implements ConstantsGenerationStr
     }
 
     @Override
-    public <T> Collection<String> generateConstants(Element element) {
+    public Collection<String> generateConstants(Element element) {
         final var fields = ElementFilter.fieldsIn(element.getEnclosedElements());
         final Stream<FixtureConstant> constants = createFixtureConstants(fields.stream());
         return getConstantsStrings(constants);

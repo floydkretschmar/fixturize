@@ -1,11 +1,8 @@
 package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
-import com.google.common.base.Function;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantsGenerationStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantsNamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.DefaultConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorCreationMethodGenerationStrategy;
@@ -16,16 +13,11 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
