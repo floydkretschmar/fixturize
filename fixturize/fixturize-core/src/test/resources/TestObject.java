@@ -8,9 +8,10 @@ import java.util.UUID;
 
 @Fixture
 public class TestObject {
-    @FixtureConstant(name = "CUSTOM_STRING_FIELD_NAME")
+    @FixtureConstant(name = "CUSTOM_STRING_FIELD_NAME", value = "\"CUSTOM_CONSTANT_VALUE\"")
     private final String stringField;
     private final int intField;
+    @FixtureConstant(name = "CUSTOM_BOOLEAN_FIELD_NAME")
     private final boolean booleanField;
     private final UUID uuidField;
 

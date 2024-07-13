@@ -30,17 +30,17 @@ class FixtureProcessorTest {
                             package de.floydkretschmar.fixturize.mocks;
                             
                             public class TestObjectFixture {
-                            	public static boolean BOOLEAN_FIELD = false;
-                            	public static java.lang.String CUSTOM_STRING_FIELD_NAME = "STRING_FIELD_VALUE";
+                            	public static boolean CUSTOM_BOOLEAN_FIELD_NAME = false;
+                            	public static java.lang.String CUSTOM_STRING_FIELD_NAME = "CUSTOM_CONSTANT_VALUE";
                             	public static int INT_FIELD = 0;
                             	public static java.util.UUID UUID_FIELD = java.util.UUID.fromString("%s");
                             
                             	public TestObject createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
-                            		return new TestObject(CUSTOM_STRING_FIELD_NAME,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
+                            		return new TestObject(CUSTOM_STRING_FIELD_NAME,INT_FIELD,CUSTOM_BOOLEAN_FIELD_NAME,UUID_FIELD);
                             	}
                             
                             	public TestObject createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField() {
-                            		return new TestObject(CUSTOM_STRING_FIELD_NAME,BOOLEAN_FIELD,UUID_FIELD);
+                            		return new TestObject(CUSTOM_STRING_FIELD_NAME,CUSTOM_BOOLEAN_FIELD_NAME,UUID_FIELD);
                             	}
                             }
                             """.formatted(RANDOM_UUID));

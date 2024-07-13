@@ -30,13 +30,28 @@ public class ConstantGenerationStrategy {
 
     private Stream<Map.Entry<String, FixtureConstantDefinition>> createFixtureConstants(Stream<VariableElement> fields) {
         return fields.map(field -> {
+            final String fieldType = field.asType().toString();
             final FixtureConstant constantAnnotation = field.getAnnotation(FixtureConstant.class);
 
-            final String constantName = Objects.nonNull(constantAnnotation) ? constantAnnotation.name() : constantsNamingStrategy.rename(field.getSimpleName().toString());
-            final String fieldType = field.asType().toString();
-            final var constantValue = this.valueProviders.containsKey(fieldType) ?
-                    this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
-            return Map.entry(field.getSimpleName().toString(), FixtureConstantDefinition.builder().type(fieldType).value(constantValue).name(constantName).build());
+            final var constantDefinitionBuilder = FixtureConstantDefinition.builder().type(fieldType);
+            if (Objects.nonNull(constantAnnotation)) {
+                constantDefinitionBuilder.name(constantAnnotation.name());
+            }
+            else {
+                final String constantName = constantsNamingStrategy.rename(field.getSimpleName().toString());
+                constantDefinitionBuilder.name(constantName);
+            }
+
+            if (Objects.nonNull(constantAnnotation) && !constantAnnotation.value().isEmpty()) {
+                constantDefinitionBuilder.value(constantAnnotation.value());
+            }
+            else {
+                final var constantValue = this.valueProviders.containsKey(fieldType) ?
+                        this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
+                constantDefinitionBuilder.value(constantValue);
+            }
+
+            return Map.entry(field.getSimpleName().toString(), constantDefinitionBuilder.build());
         });
     }
 }

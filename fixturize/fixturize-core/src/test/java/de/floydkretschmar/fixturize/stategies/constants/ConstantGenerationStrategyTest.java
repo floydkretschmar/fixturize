@@ -17,8 +17,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,12 +31,12 @@ class ConstantGenerationStrategyTest {
     void generateConstants_whenCalledWithValidClass_shouldGeneratedConstants() {
         final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
 
-        final List<? extends Element> fields = Stream.of(
-                Map.entry("booleanField", boolean.class),
-                Map.entry("intField", int.class),
-                Map.entry("stringField", String.class),
-                Map.entry("uuidField", UUID.class)
-        ).map(field -> createVariableElemementMock(field.getKey(), field.getValue(), null)).collect(Collectors.toList());
+        final List<? extends Element> fields = List.of(
+                createVariableElemementMock("booleanField", boolean.class, null),
+                createVariableElemementMock("intField", int.class, null),
+                createVariableElemementMock("stringField", String.class, null),
+                createVariableElemementMock("uuidField", UUID.class, null)
+        );
 
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
@@ -61,12 +59,12 @@ class ConstantGenerationStrategyTest {
         var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(),
                 Map.of(UUID.class.getName(), field -> "EXTERNAL_VALUE"));
 
-        final List<? extends Element> fields = Stream.of(
-                Map.entry("booleanField", boolean.class),
-                Map.entry("intField", int.class),
-                Map.entry("stringField", String.class),
-                Map.entry("uuidField", UUID.class)
-        ).map(field -> createVariableElemementMock(field.getKey(), field.getValue(), null)).collect(Collectors.toList());
+        final List<? extends Element> fields = List.of(
+                createVariableElemementMock("booleanField", boolean.class, null),
+                createVariableElemementMock("intField", int.class, null),
+                createVariableElemementMock("stringField", String.class, null),
+                createVariableElemementMock("uuidField", UUID.class, null)
+        );
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
 
@@ -83,12 +81,12 @@ class ConstantGenerationStrategyTest {
     void generateConstants_whenCalledWithAttributeWithUnknownValue_shouldSetValueToNull() {
         var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
 
-        final List<? extends Element> fields = Stream.of(
-                Map.entry("booleanField", boolean.class),
-                Map.entry("intField", int.class),
-                Map.entry("stringField", String.class),
-                Map.entry("unknownObject", Date.class)
-        ).map(field -> createVariableElemementMock(field.getKey(), field.getValue(), null)).collect(Collectors.toList());
+        final List<? extends Element> fields = List.of(
+                createVariableElemementMock("booleanField", boolean.class, null),
+                createVariableElemementMock("intField", int.class, null),
+                createVariableElemementMock("stringField", String.class, null),
+                createVariableElemementMock("unknownObject", Date.class, null)
+        );
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
         final Map<String, FixtureConstantDefinition> result = stategy.generateConstants(element);
@@ -106,17 +104,24 @@ class ConstantGenerationStrategyTest {
 
         final FixtureConstant annotation = mock(FixtureConstant.class);
         when(annotation.name()).thenReturn("CUSTOM_NAME");
+        when(annotation.value()).thenReturn("true");
+        final FixtureConstant annotation2 = mock(FixtureConstant.class);
+        when(annotation2.name()).thenReturn("CUSTOM_NAME_2");
+        when(annotation2.value()).thenReturn("");
 
-        final List<? extends Element> fields = Stream.of(
-            Map.entry("booleanField", boolean.class)
-        ).map(field -> createVariableElemementMock(field.getKey(), field.getValue(), annotation)).collect(Collectors.toList());
+        final List<? extends Element> fields = List.of(
+            createVariableElemementMock("booleanField", boolean.class, annotation),
+            createVariableElemementMock("booleanField2", boolean.class, annotation2)
+        );
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
 
         final Map<String, FixtureConstantDefinition> result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", FixtureConstantDefinition.builder().value("false").type("boolean").name("CUSTOM_NAME").build()));
+                "booleanField", FixtureConstantDefinition.builder().value("true").type("boolean").name("CUSTOM_NAME").build(),
+                "booleanField2", FixtureConstantDefinition.builder().value("false").type("boolean").name("CUSTOM_NAME_2").build()
+        ));
     }
 
     private static @NotNull VariableElement createVariableElemementMock(String name, Class<?> targetClass, FixtureConstant annotation) {
