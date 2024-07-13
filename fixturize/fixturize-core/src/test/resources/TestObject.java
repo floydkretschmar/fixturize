@@ -7,6 +7,8 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import java.util.UUID;
 
 @Fixture
+@FixtureConstructor(correspondingFieldNames = {"stringField", "intField", "booleanField", "uuidField"})
+@FixtureConstructor(correspondingFieldNames = {"stringField", "booleanField", "uuidField"})
 public class TestObject {
     @FixtureConstant(name = "CUSTOM_STRING_FIELD_NAME", value = "\"CUSTOM_CONSTANT_VALUE\"")
     private final String stringField;
@@ -19,7 +21,6 @@ public class TestObject {
         this("", 0, false, null);
     }
 
-    @FixtureConstructor(correspondingFieldNames = {"stringField", "intField", "booleanField", "uuidField"})
     public TestObject(String stringField, int intField, boolean booleanField, UUID uuidField) {
         this.stringField = stringField;
         this.intField = intField;
@@ -27,12 +28,7 @@ public class TestObject {
         this.uuidField = uuidField;
     }
 
-    @FixtureConstructor(correspondingFieldNames = {"stringField", "booleanField", "uuidField"})
     public TestObject(String stringField, boolean booleanField, UUID uuidField) {
         this(stringField, 0, booleanField, uuidField);
-    }
-
-    public TestObject(String stringField, UUID uuidField) {
-        this(stringField, 0, true, uuidField);
     }
 }

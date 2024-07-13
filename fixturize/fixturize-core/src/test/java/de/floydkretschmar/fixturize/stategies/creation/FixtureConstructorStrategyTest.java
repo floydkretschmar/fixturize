@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
+import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
@@ -64,25 +65,20 @@ class FixtureConstructorStrategyTest {
     private static TypeElement mockTypeElement() {
         final var element = mock(TypeElement.class);
 
-        final var constructors = new ArrayList<>(Stream.of(new String[]{"stringField", "intField", "booleanField", "uuidField"}, new String[]{"stringField", "booleanField", "uuidField"})
+        final var constructors = Stream.of(new String[]{"stringField", "intField", "booleanField", "uuidField"}, new String[]{"stringField", "booleanField", "uuidField"})
                 .map(parameterNames -> {
                     final var fixtureConstructor = mock(FixtureConstructor.class);
                     when(fixtureConstructor.correspondingFieldNames()).thenReturn(parameterNames);
-                    return createMockConstructor(fixtureConstructor);
-                }).toList());
-        constructors.add(createMockConstructor(null));
-        when(element.getEnclosedElements()).thenReturn((List)constructors);
+                    return fixtureConstructor;
+                }).toArray(FixtureConstructor[]::new);
+
+        final var fixtureConstructors = mock(FixtureConstructors.class);
+        when(fixtureConstructors.value()).thenReturn(constructors);
+        when(element.getAnnotation(any())).thenReturn(fixtureConstructors);
 
         final var name = mock(Name.class);
         when(name.toString()).thenReturn("TestObject");
         when(element.getSimpleName()).thenReturn(name);
         return element;
-    }
-
-    private static @NotNull ExecutableElement createMockConstructor(FixtureConstructor fixtureConstructor) {
-        final var constructor = mock(ExecutableElement.class);
-        when(constructor.getKind()).thenReturn(ElementKind.CONSTRUCTOR);
-        when(constructor.getAnnotation(any())).thenReturn(fixtureConstructor);
-        return constructor;
     }
 }
