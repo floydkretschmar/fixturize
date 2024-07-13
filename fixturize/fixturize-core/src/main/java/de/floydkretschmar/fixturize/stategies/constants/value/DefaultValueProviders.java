@@ -1,18 +1,13 @@
-package de.floydkretschmar.fixturize.stategies.constants;
+package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.base.Function;
-
-import javax.lang.model.element.VariableElement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class DefaultValueProviders extends HashMap<String, Function<VariableElement, String>> {
-    public DefaultValueProviders(Map<? extends String, ? extends Function<VariableElement, String>> m) {
-        super(m);
-        this.putIfAbsent(String.class.getName(), field -> "\"%s_VALUE\"".formatted(CaseFormat.LOWER_CAMEL.to(
-                CaseFormat.UPPER_UNDERSCORE, field.getSimpleName().toString())));
+public class DefaultValueProviders extends HashMap<String, ValueProvider> {
+    public DefaultValueProviders(Map<? extends String, ? extends ValueProvider> map) {
+        super(map);
         this.putIfAbsent(boolean.class.getName(), field -> "false");
         this.putIfAbsent(char.class.getName(), field -> "'\u0000'");
         this.putIfAbsent(byte.class.getName(), field -> "0");
@@ -21,7 +16,7 @@ public class DefaultValueProviders extends HashMap<String, Function<VariableElem
         this.putIfAbsent(long.class.getName(), field -> "0L");
         this.putIfAbsent(float.class.getName(), field -> "0.0F");
         this.putIfAbsent(double.class.getName(), field -> "0.0");
-
-        this.putIfAbsent(UUID.class.getName(), field -> "java.util.UUID.randomUUID()");
+        this.putIfAbsent(String.class.getName(), new StringValueProvider());
+        this.putIfAbsent(UUID.class.getName(), new UUIDValueProvider());
     }
 }

@@ -2,6 +2,8 @@ package de.floydkretschmar.fixturize.stategies.constants;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -21,6 +23,8 @@ import static org.mockito.Mockito.when;
 
 class DefaultConstantGenerationStrategyTest {
 
+    private static final String RANDOM_UUID = "6b21f215-bf9e-445a-9dd2-5808a3a98d52";
+
     @Test
     void generateConstants_whenCalledWithValidClass_shouldGeneratedConstants() {
         final var stategy = new DefaultConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
@@ -33,13 +37,17 @@ class DefaultConstantGenerationStrategyTest {
         ));
         final var element = mock(Element.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
-        final Collection<String> result = stategy.generateConstants(element);
+        final var uuid = UUID.fromString(RANDOM_UUID);
+        try (MockedStatic<UUID> uuidStatic = Mockito.mockStatic(UUID.class)) {
+            uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
+            final Collection<String> result = stategy.generateConstants(element);
 
-        assertThat(result).containsAll(List.of(
-                "\tpublic static boolean BOOLEAN_FIELD = false;",
-                "\tpublic static int INT_FIELD = 0;",
-                "\tpublic static java.lang.String STRING_FIELD = \"STRING_FIELD_VALUE\";",
-                "\tpublic static java.util.UUID UUID_FIELD = java.util.UUID.randomUUID();"));
+            assertThat(result).containsAll(List.of(
+                    "\tpublic static boolean BOOLEAN_FIELD = false;",
+                    "\tpublic static int INT_FIELD = 0;",
+                    "\tpublic static java.lang.String STRING_FIELD = \"STRING_FIELD_VALUE\";",
+                    "\tpublic static java.util.UUID UUID_FIELD = java.util.UUID.fromString(\"%s\");".formatted(RANDOM_UUID)));
+        }
     }
 
     @Test
@@ -78,14 +86,18 @@ class DefaultConstantGenerationStrategyTest {
         ));
         final var element = mock(Element.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
-        final Collection<String> result = stategy.generateConstants(element);
+        final var uuid = UUID.fromString(RANDOM_UUID);
+        try (MockedStatic<UUID> uuidStatic = Mockito.mockStatic(UUID.class)) {
+            uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
+            final Collection<String> result = stategy.generateConstants(element);
 
-        assertThat(result).containsAll(List.of(
-                "\tpublic static boolean BOOLEAN_FIELD = false;",
-                "\tpublic static int INT_FIELD = 0;",
-                "\tpublic static java.lang.String STRING_FIELD = \"STRING_FIELD_VALUE\";",
-                "\tpublic static java.util.Date UNKNOWN_OBJECT = null;",
-                "\tpublic static java.util.UUID UUID_FIELD = java.util.UUID.randomUUID();"));
+            assertThat(result).containsAll(List.of(
+                    "\tpublic static boolean BOOLEAN_FIELD = false;",
+                    "\tpublic static int INT_FIELD = 0;",
+                    "\tpublic static java.lang.String STRING_FIELD = \"STRING_FIELD_VALUE\";",
+                    "\tpublic static java.util.Date UNKNOWN_OBJECT = null;",
+                    "\tpublic static java.util.UUID UUID_FIELD = java.util.UUID.fromString(\"%s\");".formatted(RANDOM_UUID)));
+        }
     }
 
     private static @NotNull List<VariableElement> mockVariableElements(List<Map.Entry<String, Class<?>>> fields) {

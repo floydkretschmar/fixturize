@@ -2,6 +2,8 @@ package de.floydkretschmar.fixturize.stategies.constants;
 
 import com.google.common.base.Function;
 import de.floydkretschmar.fixturize.domain.FixtureConstant;
+import de.floydkretschmar.fixturize.stategies.constants.value.DefaultValueProviders;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
@@ -15,7 +17,7 @@ public class DefaultConstantGenerationStrategy implements ConstantsGenerationStr
     private final ConstantsNamingStrategy constantsNamingStrategy;
     private final DefaultValueProviders valueProviders;
 
-    public DefaultConstantGenerationStrategy(ConstantsNamingStrategy constantsNamingStrategy, Map<String, Function<VariableElement, String>> customValueProviders) {
+    public DefaultConstantGenerationStrategy(ConstantsNamingStrategy constantsNamingStrategy, Map<String, ValueProvider> customValueProviders) {
         this.constantsNamingStrategy = constantsNamingStrategy;
         this.valueProviders = new DefaultValueProviders(customValueProviders);
     }
@@ -32,7 +34,7 @@ public class DefaultConstantGenerationStrategy implements ConstantsGenerationStr
             final String constantName = constantsNamingStrategy.rename(field.getSimpleName().toString());
             final String fieldType = field.asType().toString();
             final var constantValue = this.valueProviders.containsKey(fieldType) ?
-                    this.valueProviders.get(fieldType).apply(field) : "null";
+                    this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
             return FixtureConstant.builder().fieldType(fieldType).value(constantValue).name(constantName).build();
         });
     }
