@@ -9,9 +9,9 @@ import org.mockito.Mockito;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -36,18 +36,18 @@ class DefaultConstantGenerationStrategyTest {
                 Map.entry("stringField", String.class),
                 Map.entry("uuidField", UUID.class)
         ));
-        final var element = mock(Element.class);
+        final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
         final var uuid = UUID.fromString(RANDOM_UUID);
         try (MockedStatic<UUID> uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            final Collection<FixtureConstant> result = stategy.generateConstants(element);
+            final Map<String, FixtureConstant> result = stategy.generateConstants(element);
 
-            assertThat(result).containsAll(List.of(
-                    FixtureConstant.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                    FixtureConstant.builder().value("0").type("int").name("INT_FIELD").build(),
-                    FixtureConstant.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
-                    FixtureConstant.builder().value("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID)).type("java.util.UUID").name("UUID_FIELD").build()));
+            assertThat(result).containsAllEntriesOf(Map.of(
+                    "booleanField", FixtureConstant.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                    "intField", FixtureConstant.builder().value("0").type("int").name("INT_FIELD").build(),
+                    "stringField", FixtureConstant.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
+                    "uuidField", FixtureConstant.builder().value("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID)).type("java.util.UUID").name("UUID_FIELD").build()));
         }
     }
 
@@ -62,16 +62,16 @@ class DefaultConstantGenerationStrategyTest {
                 Map.entry("stringField", String.class),
                 Map.entry("uuidField", UUID.class)
         ));
-        final var element = mock(Element.class);
+        final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
 
-        final Collection<FixtureConstant> result = stategy.generateConstants(element);
+        final Map<String, FixtureConstant> result = stategy.generateConstants(element);
 
-        assertThat(result).containsAll(List.of(
-                FixtureConstant.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                FixtureConstant.builder().value("0").type("int").name("INT_FIELD").build(),
-                FixtureConstant.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
-                FixtureConstant.builder().value("EXTERNAL_VALUE").type("java.util.UUID").name("UUID_FIELD").build()));
+        assertThat(result).containsAllEntriesOf(Map.of(
+                "booleanField", FixtureConstant.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                "intField", FixtureConstant.builder().value("0").type("int").name("INT_FIELD").build(),
+                "stringField", FixtureConstant.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
+                "uuidField", FixtureConstant.builder().value("EXTERNAL_VALUE").type("java.util.UUID").name("UUID_FIELD").build()));
     }
 
     @Test
@@ -86,19 +86,19 @@ class DefaultConstantGenerationStrategyTest {
                 Map.entry("uuidField", UUID.class),
                 Map.entry("unknownObject", Date.class)
         ));
-        final var element = mock(Element.class);
+        final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
         final var uuid = UUID.fromString(RANDOM_UUID);
         try (MockedStatic<UUID> uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            final Collection<FixtureConstant> result = stategy.generateConstants(element);
+            final Map<String, FixtureConstant> result = stategy.generateConstants(element);
 
-            assertThat(result).containsAll(List.of(
-                    FixtureConstant.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                    FixtureConstant.builder().value("0").type("int").name("INT_FIELD").build(),
-                    FixtureConstant.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
-                    FixtureConstant.builder().value("null").type("java.util.Date").name("UNKNOWN_OBJECT").build(),
-                    FixtureConstant.builder().value("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID)).type("java.util.UUID").name("UUID_FIELD").build()));
+            assertThat(result).containsAllEntriesOf(Map.of(
+                    "booleanField", FixtureConstant.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                    "intField", FixtureConstant.builder().value("0").type("int").name("INT_FIELD").build(),
+                    "stringField", FixtureConstant.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
+                    "unknownObject", FixtureConstant.builder().value("null").type("java.util.Date").name("UNKNOWN_OBJECT").build(),
+                    "uuidField", FixtureConstant.builder().value("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID)).type("java.util.UUID").name("UUID_FIELD").build()));
         }
     }
 

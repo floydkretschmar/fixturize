@@ -8,5 +8,5 @@ import lombok.Value;
 public class FixtureConstant {
     String type;
     String name;
-    Object value;
+    String value;
 }

@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
@@ -37,9 +38,11 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private void processAnnotatedElement(TypeElement element) {
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
-        final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
-        creationMethodStrategies.add(new FixtureConstructorCreationMethodGenerationStrategy(constantsNamingStrategy));
         final var constantsGenerationStrategy = new DefaultConstantGenerationStrategy(constantsNamingStrategy, Map.of());
+
+
+        final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
+        creationMethodStrategies.add(new FixtureConstructorCreationMethodGenerationStrategy());
 
         final var names = getNames(element);
 
@@ -73,9 +76,9 @@ public class FixtureProcessor extends AbstractProcessor {
                 .qualifiedFixtureClassName(qualifiedFixtureClassName).build();
     }
 
-    private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
+    private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies, Map<String, FixtureConstant> constantMap) {
         return creationMethodStrategies.stream()
-                .flatMap(stategy -> stategy.generateCreationMethods(element).stream())
+                .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap).stream())
                 .map(method -> """
                     \tpublic %s %s() {
                     \t\treturn %s;
@@ -83,9 +86,8 @@ public class FixtureProcessor extends AbstractProcessor {
                 .collect(Collectors.joining("\n\n"));
     }
 
-    private static String getConstantsString(TypeElement element, DefaultConstantGenerationStrategy constantsGenerationStrategy) {
-        return constantsGenerationStrategy.generateConstants(element)
-                .stream()
+    private static String getConstantsString(Stream<FixtureConstant> constants) {
+        return constants
                 .sorted(Comparator.comparing(FixtureConstant::getName))
                 .map(constant -> "\tpublic static %s %s = %s;".formatted(constant.getType(), constant.getName(), constant.getValue()))
                 .collect(Collectors.joining("\n"));
@@ -101,8 +103,10 @@ public class FixtureProcessor extends AbstractProcessor {
         """;
 
         final String packageString = names.hasPackageName() ? "package %s;\n\n".formatted(names.getPackageName()) : "";
-        final String constantsString = getConstantsString(element, constantsGenerationStrategy);
-        final String creationMethodsString = getCreationMethodsString(element, creationMethodStrategies);
+
+        final Map<String, FixtureConstant> constantMap = constantsGenerationStrategy.generateConstants(element);
+        final String constantsString = getConstantsString(constantMap.values().stream());
+        final String creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap);
 
         return String.format(fixtureClassTemplate, packageString, names.getSimpleClassName(), constantsString, creationMethodsString);
     }
