@@ -25,7 +25,7 @@ public class FixtureConstructorCreationMethodGenerationStrategy extends BaseCrea
                     final String className = element.getSimpleName().toString();
                     return FixtureCreationMethod.builder()
                             .returnType(className)
-                            .creationCall("new %s(%s)".formatted(className, parameterString))
+                            .returnValue("new %s(%s)".formatted(className, parameterString))
                             .name("create%sFixtureWith%s".formatted(className, functionName))
                             .build();
                 }).toList();

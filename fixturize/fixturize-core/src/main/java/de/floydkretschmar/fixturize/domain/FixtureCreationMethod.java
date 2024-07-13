@@ -8,13 +8,13 @@ import lombok.Getter;
 public class FixtureCreationMethod {
     String returnType;
     String name;
-    String creationCall;
+    String returnValue;
 
     @Override
     public String toString() {
         return """
                     \tpublic %s %s() {
                     \t\treturn %s;
-                    \t}""".formatted(returnType, name, creationCall);
+                    \t}""".formatted(returnType, name, returnValue);
     }
 }
