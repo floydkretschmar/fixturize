@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
 import de.floydkretschmar.fixturize.domain.FixtureConstant;
-import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

@@ -1,6 +1,5 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
-import com.google.common.base.CaseFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

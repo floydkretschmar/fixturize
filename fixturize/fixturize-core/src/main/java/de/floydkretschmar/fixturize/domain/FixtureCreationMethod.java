@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.domain;
 
 import lombok.Builder;
-import lombok.Getter;
 import lombok.Value;
 
 @Value

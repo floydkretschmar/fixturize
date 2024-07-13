@@ -1,14 +1,13 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
-import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import com.google.common.base.CaseFormat;
+import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantsNamingStrategy;
 
 import javax.lang.model.element.Element;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class FixtureConstructorCreationMethodGenerationStrategy implements CreationMethodGenerationStrategy {

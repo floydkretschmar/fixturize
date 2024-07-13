@@ -2,7 +2,6 @@ package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
 import de.floydkretschmar.fixturize.domain.FixtureConstant;
-import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
 import de.floydkretschmar.fixturize.domain.FixtureNames;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
