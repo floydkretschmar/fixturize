@@ -16,6 +16,7 @@ ext {
     assertJVersion = "3.25.1"
     guavaVersion = "33.2.1-jre"
     mockitoVersion = "5.12.0"
+    compileTestingVersion = "0.21.0"
 }
 
 dependencies {
@@ -26,6 +27,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:$assertJVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+    testImplementation "com.google.testing.compile:compile-testing:$compileTestingVersion"
 }
 
 test {
