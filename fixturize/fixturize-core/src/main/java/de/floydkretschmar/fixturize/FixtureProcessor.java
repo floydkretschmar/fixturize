@@ -1,6 +1,8 @@
 package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
+import de.floydkretschmar.fixturize.domain.FixtureConstant;
+import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
 import de.floydkretschmar.fixturize.domain.FixtureNames;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
@@ -19,6 +21,7 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,11 +77,19 @@ public class FixtureProcessor extends AbstractProcessor {
     private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
         return creationMethodStrategies.stream()
                 .flatMap(stategy -> stategy.generateCreationMethods(element).stream())
+                .map(method -> """
+                    \tpublic %s %s() {
+                    \t\treturn %s;
+                    \t}""".formatted(method.getReturnType(), method.getName(), method.getReturnValue()))
                 .collect(Collectors.joining("\n\n"));
     }
 
     private static String getConstantsString(TypeElement element, DefaultConstantGenerationStrategy constantsGenerationStrategy) {
-        return String.join("\n", constantsGenerationStrategy.generateConstants(element));
+        return constantsGenerationStrategy.generateConstants(element)
+                .stream()
+                .sorted(Comparator.comparing(FixtureConstant::getName))
+                .map(constant -> "\tpublic static %s %s = %s;".formatted(constant.getType(), constant.getName(), constant.getValue()))
+                .collect(Collectors.joining("\n"));
     }
 
     private static String getFixtureClassAsString(TypeElement element, FixtureNames names, DefaultConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {

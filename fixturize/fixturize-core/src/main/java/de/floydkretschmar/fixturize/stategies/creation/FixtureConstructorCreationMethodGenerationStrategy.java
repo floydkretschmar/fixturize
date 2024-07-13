@@ -7,16 +7,19 @@ import de.floydkretschmar.fixturize.stategies.constants.ConstantsNamingStrategy;
 
 import javax.lang.model.element.Element;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FixtureConstructorCreationMethodGenerationStrategy extends BaseCreationMethodGenerationStrategy {
+public class FixtureConstructorCreationMethodGenerationStrategy implements CreationMethodGenerationStrategy {
+    private final ConstantsNamingStrategy constantsNamingStrategy;
+
     public FixtureConstructorCreationMethodGenerationStrategy(ConstantsNamingStrategy constantsNamingStrategy) {
-        super(constantsNamingStrategy);
+        this.constantsNamingStrategy = constantsNamingStrategy;
     }
 
     @Override
-    protected List<FixtureCreationMethod> createCreationMethods(Element element) {
+    public Collection<FixtureCreationMethod> generateCreationMethods(Element element) {
         return Arrays.stream(element.getAnnotation(FixtureConstructors.class).value())
                 .map(constructorAnnotation -> Arrays.asList(constructorAnnotation.parameterNames()))
                 .map(paramterNames -> {

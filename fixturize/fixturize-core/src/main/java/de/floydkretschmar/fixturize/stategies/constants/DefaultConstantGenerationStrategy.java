@@ -22,10 +22,9 @@ public class DefaultConstantGenerationStrategy implements ConstantsGenerationStr
     }
 
     @Override
-    public Collection<String> generateConstants(Element element) {
+    public Collection<FixtureConstant> generateConstants(Element element) {
         final var fields = ElementFilter.fieldsIn(element.getEnclosedElements());
-        final Stream<FixtureConstant> constants = createFixtureConstants(fields.stream());
-        return getConstantsStrings(constants);
+        return createFixtureConstants(fields.stream()).toList();
     }
 
     private Stream<FixtureConstant> createFixtureConstants(Stream<VariableElement> fields) {
@@ -36,12 +35,5 @@ public class DefaultConstantGenerationStrategy implements ConstantsGenerationStr
                     this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
             return FixtureConstant.builder().type(fieldType).value(constantValue).name(constantName).build();
         });
-    }
-
-    private Collection<String> getConstantsStrings(Stream<FixtureConstant> constants) {
-        return constants
-                .sorted(Comparator.comparing(FixtureConstant::getName))
-                .map(FixtureConstant::toString)
-                .toList();
     }
 }

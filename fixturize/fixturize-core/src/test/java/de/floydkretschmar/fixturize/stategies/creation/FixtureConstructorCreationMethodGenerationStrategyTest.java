@@ -2,6 +2,7 @@ package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
+import de.floydkretschmar.fixturize.domain.FixtureCreationMethod;
 import org.junit.jupiter.api.Test;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
 
@@ -30,16 +31,20 @@ class FixtureConstructorCreationMethodGenerationStrategyTest {
         final var name = mock(Name.class);
         when(name.toString()).thenReturn("TestObject");
         when(element.getSimpleName()).thenReturn(name);
-        final Collection<String> result = strategy.generateCreationMethods(element);
+        final Collection<FixtureCreationMethod> result = strategy.generateCreationMethods(element);
 
         assertThat(result).hasSize(2);
-        assertThat(result).contains("""
-                \tpublic TestObject createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
-                \t\treturn new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
-                \t}""",
-                """
-                \tpublic TestObject createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField() {
-                \t\treturn new TestObject(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD);
-                \t}""");
+
+        assertThat(result.stream()).contains(
+                FixtureCreationMethod.builder()
+                        .returnType("TestObject")
+                        .returnValue("new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD)")
+                        .name("createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField")
+                        .build(),
+                FixtureCreationMethod.builder()
+                        .returnType("TestObject")
+                        .returnValue("new TestObject(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD)")
+                        .name("createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField")
+                        .build());
     }
 }
