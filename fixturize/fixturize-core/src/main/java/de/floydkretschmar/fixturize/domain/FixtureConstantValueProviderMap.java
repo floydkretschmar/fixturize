@@ -13,7 +13,7 @@ public class FixtureConstantValueProviderMap extends HashMap<String, ValueProvid
     public FixtureConstantValueProviderMap(Map<? extends String, ? extends ValueProvider> map) {
         super(map);
         this.putIfAbsent(boolean.class.getName(), field -> "false");
-        this.putIfAbsent(char.class.getName(), field -> "'\u0000'");
+        this.putIfAbsent(char.class.getName(), field -> "\u0000");
         this.putIfAbsent(byte.class.getName(), field -> "0");
         this.putIfAbsent(int.class.getName(), field -> "0");
         this.putIfAbsent(short.class.getName(), field -> "Short.valueOf((short)0)");

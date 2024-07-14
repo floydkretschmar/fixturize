@@ -14,10 +14,9 @@ import java.util.stream.Stream;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
+import static de.floydkretschmar.fixturize.TestConstants.RANDOM_UUID;
 
 class FixtureProcessorTest {
-    private static final String RANDOM_UUID = "6b21f215-bf9e-445a-9dd2-5808a3a98d52";
-
     public static Stream<Arguments> process_getParameters() {
         return Stream.of(
                 Arguments.of(
