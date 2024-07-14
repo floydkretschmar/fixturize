@@ -1,13 +1,11 @@
 package de.floydkretschmar.fixturize;
 
 import com.google.common.io.Resources;
-import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import lombok.SneakyThrows;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
