@@ -5,7 +5,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilders;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
-import de.floydkretschmar.fixturize.domain.FixtureConstantDefinitionMap;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
@@ -13,84 +13,67 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class FixtureBuilderStrategyTest {
-
-    public static final FixtureConstantDefinitionMap FIELD_MAP = new FixtureConstantDefinitionMap(Map.of(
-            "stringField", FixtureConstantDefinition.builder().originalFieldName("stringField").name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
-            "intField", FixtureConstantDefinition.builder().originalFieldName("intField").name("INT_FIELD").type("int").value("0").build(),
-            "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").name("BOOLEAN_FIELD").type("boolean").value("false").build(),
-            "CUSTOM_FIELD_NAME", FixtureConstantDefinition.builder().originalFieldName("originalFieldName").name("CUSTOM_FIELD_NAME").type("boolean").value("true").build(),
-            "uuidField", FixtureConstantDefinition.builder().originalFieldName("uuidField").name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
-    ));
 
     @Test
     void createCreationMethods_whenMultipleBuildersDefined_shouldCreateCreationMethodsForDefinedBuilders() {
         final var strategy = new FixtureBuilderStrategy();
         final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField", "booleanField", "uuidField"),
-                List.of("stringField", "booleanField", "uuidField")));
+                List.of("stringField", "intField"),
+                List.of("uuidField")));
+        final var constantMap = mockConstantMap();
 
-        final var result = strategy.generateCreationMethods(element, FIELD_MAP);
+        final var result = strategy.generateCreationMethods(element, constantMap);
 
         assertThat(result).hasSize(2);
         assertThat(result.stream()).contains(
                 FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.intField(INT_FIELD)\n%s.booleanField(BOOLEAN_FIELD)\n%s.uuidField(UUID_FIELD)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16, WHITESPACE_16, WHITESPACE_16))
-                        .name("createTestObjectFixtureBuilderWithStringFieldAndIntFieldAndBooleanFieldAndUuidField")
+                        .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
+                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .name("createTestObjectFixtureBuilderWithStringFieldAndIntField")
                         .build(),
                 FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.booleanField(BOOLEAN_FIELD)\n%s.uuidField(UUID_FIELD)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16, WHITESPACE_16))
-                        .name("createTestObjectFixtureBuilderWithStringFieldAndBooleanFieldAndUuidField")
+                        .returnValue("TestObject.builder()\n%s.uuidField(uuidFieldName)"
+                                .formatted(WHITESPACE_16))
+                        .name("createTestObjectFixtureBuilderWithUuidField")
                         .build());
+
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
+        verify(constantMap, times(1)).getMatchingConstants(List.of("uuidField"));
     }
 
     @Test
     void createCreationMethods_whenSingleBuilderDefined_shouldCreateCreationMethodForDefinedBuilder() {
         final var strategy = new FixtureBuilderStrategy();
         final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField", "booleanField", "uuidField")));
+                List.of("stringField", "intField")));
+        final var constantMap = mockConstantMap();
 
-        final var result = strategy.generateCreationMethods(element, FIELD_MAP);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.stream()).contains(
-                FixtureCreationMethodDefinition.builder()
-                        .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.intField(INT_FIELD)\n%s.booleanField(BOOLEAN_FIELD)\n%s.uuidField(UUID_FIELD)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16, WHITESPACE_16, WHITESPACE_16))
-                        .name("createTestObjectFixtureBuilderWithStringFieldAndIntFieldAndBooleanFieldAndUuidField")
-                        .build());
-    }
-
-    @Test
-    void createCreationMethods_whenOriginalFieldNameDifferentFromConstantName_shouldCreateCreationMethodForDefinedBuilder() {
-        final var strategy = new FixtureBuilderStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField", "CUSTOM_FIELD_NAME", "uuidField")));
-
-        final var result = strategy.generateCreationMethods(element, FIELD_MAP);
+        final var result = strategy.generateCreationMethods(element, constantMap);
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
                 FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.intField(INT_FIELD)\n%s.originalFieldName(CUSTOM_FIELD_NAME)\n%s.uuidField(UUID_FIELD)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16, WHITESPACE_16, WHITESPACE_16))
-                        .name("createTestObjectFixtureBuilderWithStringFieldAndIntFieldAndOriginalFieldNameAndUuidField")
+                        .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
+                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .name("createTestObjectFixtureBuilderWithStringFieldAndIntField")
                         .build());
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
     }
 
     @Test
@@ -98,9 +81,11 @@ class FixtureBuilderStrategyTest {
         final var strategy = new FixtureBuilderStrategy();
         final var element = mockTypeElement(Stream.of());
 
-        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, FIELD_MAP);
+        final var constantMap = mockConstantMap();
+        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, constantMap);
 
         assertThat(result).hasSize(0);
+        verifyNoInteractions(constantMap);
     }
 
     @Test
@@ -109,9 +94,24 @@ class FixtureBuilderStrategyTest {
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 
-        final var fixtureConstantMap = new FixtureConstantDefinitionMap(Map.of());
+        final var constantMap = mock(ConstantDefinitionMap.class);
+        when(constantMap.getMatchingConstants(anyCollection())).thenThrow(new FixtureCreationException("error"));
 
-        assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, fixtureConstantMap));
+        assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap));
+    }
+
+    private static ConstantDefinitionMap mockConstantMap() {
+        final var constantMap = mock(ConstantDefinitionMap.class);
+        when(constantMap.getMatchingConstants(anyCollection())).thenAnswer(call -> {
+            final var argument = call.<Collection<String>>getArgument(0);
+            return argument.stream().map(name -> FixtureConstantDefinition.builder()
+                    .originalFieldName(name)
+                    .name("%sName".formatted(name))
+                    .type("%sType".formatted(name))
+                    .value("%sValue".formatted(name))
+                    .build()).toList();
+        });
+        return constantMap;
     }
 
     private static TypeElement mockTypeElement(Stream<List<String>> definedFixtureBuilders) {
