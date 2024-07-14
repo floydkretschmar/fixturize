@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.stream.Stream;
