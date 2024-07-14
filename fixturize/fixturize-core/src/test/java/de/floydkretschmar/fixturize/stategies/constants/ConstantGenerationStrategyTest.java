@@ -3,7 +3,7 @@ package de.floydkretschmar.fixturize.stategies.constants;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,13 +43,13 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithAttributeWithUnknownValue_shouldSetValueToNull() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
 
         final var fields = List.of(
                 createVariableElemementMock("booleanField", boolean.class, null),
                 createVariableElemementMock("intField", int.class, null),
                 createVariableElemementMock("unknownObject", Date.class, null)
         );
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
         final var result = stategy.generateConstants(element);
@@ -110,13 +111,12 @@ class ConstantGenerationStrategyTest {
         ));
     }
 
-    private ConstantValueProviderMap mockValueMap() {
-        final var valueMap = mock(ConstantValueProviderMap.class);
-        when(valueMap.containsKey("boolean")).thenReturn(true);
-        when(valueMap.get("boolean")).thenReturn(f -> "false");
-        when(valueMap.containsKey("int")).thenReturn(true);
-        when(valueMap.get("int")).thenReturn(f -> "0");
-        return valueMap;
+    private ValueProviderService mockValueMap() {
+        final var valueService = mock(ValueProviderService.class);
+        when(valueService.getValueFor(any())).thenReturn("null");
+        when(valueService.getValueFor(ArgumentMatchers.argThat(arg -> Objects.nonNull(arg) && arg.asType().toString().equals("boolean")))).thenReturn("false");
+        when(valueService.getValueFor(ArgumentMatchers.argThat(arg -> Objects.nonNull(arg) && arg.asType().toString().equals("int")))).thenReturn("0");
+        return valueService;
     }
 
     private static VariableElement createVariableElemementMock(String name, Class<?> targetClass, FixtureConstant[] fixtureConstants) {

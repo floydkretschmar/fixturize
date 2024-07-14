@@ -3,7 +3,7 @@ package de.floydkretschmar.fixturize.stategies.constants;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -16,11 +16,11 @@ import java.util.stream.Stream;
 
 public class ConstantGenerationStrategy {
     private final ConstantsNamingStrategy constantsNamingStrategy;
-    private final ConstantValueProviderMap valueProviders;
+    private final ValueProviderService valueProviderService;
 
-    public ConstantGenerationStrategy(ConstantsNamingStrategy constantsNamingStrategy, ConstantValueProviderMap valueProviders) {
+    public ConstantGenerationStrategy(ConstantsNamingStrategy constantsNamingStrategy, ValueProviderService valueProviderService) {
         this.constantsNamingStrategy = constantsNamingStrategy;
-        this.valueProviders = valueProviders;
+        this.valueProviderService = valueProviderService;
     }
 
     public ConstantDefinitionMap generateConstants(TypeElement element) {
@@ -48,9 +48,8 @@ public class ConstantGenerationStrategy {
     }
 
     private FixtureConstantDefinition createConstantDefinition(FixtureConstant constantAnnotation, VariableElement field) {
-        final var fieldType = field.asType().toString();
         final var originalFieldName = field.getSimpleName().toString();
-        final var constantDefinitionBuilder = FixtureConstantDefinition.builder().type(fieldType);
+        final var constantDefinitionBuilder = FixtureConstantDefinition.builder().type(field.asType().toString());
         if (Objects.nonNull(constantAnnotation)) {
             constantDefinitionBuilder.name(constantAnnotation.name());
         } else {
@@ -61,8 +60,7 @@ public class ConstantGenerationStrategy {
         if (Objects.nonNull(constantAnnotation) && !constantAnnotation.value().isEmpty()) {
             constantDefinitionBuilder.value(constantAnnotation.value());
         } else {
-            final var constantValue = this.valueProviders.containsKey(fieldType) ?
-                    this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
+            final var constantValue = this.valueProviderService.getValueFor(field);
             constantDefinitionBuilder.value(constantValue);
         }
 

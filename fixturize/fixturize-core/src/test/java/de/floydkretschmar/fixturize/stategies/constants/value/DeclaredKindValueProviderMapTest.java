@@ -15,48 +15,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class FixtureConstantValueProviderMapTest {
+class DeclaredKindValueProviderMapTest {
 
     @ParameterizedTest
     @CsvSource({
-            "boolean",
-            "char",
-            "byte",
-            "int",
-            "short",
-            "long",
-            "float",
-            "double",
             "java.lang.String",
             "java.util.UUID"})
     void containsKey_whenCalledForDefaultValue_shouldReturnTrue(String targetClassName) {
-        final var map = new FixtureConstantValueProviderMap(Map.of());
+        final var map = new DeclaredKindValueProviderMap(Map.of());
 
         assertThat(map.containsKey(targetClassName)).isTrue();
     }
 
     @Test
     void containsKey_whenCalledForUnregisteredValue_shouldReturnFalse() {
-        final var map = new FixtureConstantValueProviderMap(Map.of());
+        final var map = new DeclaredKindValueProviderMap(Map.of());
 
         assertThat(map.containsKey("unregisteredType")).isFalse();
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "boolean, false",
-            "char, '\u0000'",
-            "byte, 0",
-            "int, 0",
-            "short, Short.valueOf((short)0)",
-            "long, 0L",
-            "float, 0.0F",
-            "double, 0.0" })
-    void get_whenCalledForDefaultValue_shouldReturnExpectedDefaultValue(String targetClassName, String expectedDefaultValue) {
-        final var field = mock(VariableElement.class);
-        final var map = new FixtureConstantValueProviderMap(Map.of());
-
-        assertThat(map.get(targetClassName).provideValueAsString(field)).isEqualTo(expectedDefaultValue);
     }
 
     @Test
@@ -66,7 +41,7 @@ class FixtureConstantValueProviderMapTest {
         when(name.toString()).thenReturn("stringFieldName");
         when(field.getSimpleName()).thenReturn(name);
 
-        final var map = new FixtureConstantValueProviderMap(Map.of());
+        final var map = new DeclaredKindValueProviderMap(Map.of());
 
         assertThat(map.get("java.lang.String").provideValueAsString(field)).isEqualTo("\"STRING_FIELD_NAME_VALUE\"");
     }
@@ -77,7 +52,7 @@ class FixtureConstantValueProviderMapTest {
         final var uuid = UUID.fromString(RANDOM_UUID);
         try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            final var map = new FixtureConstantValueProviderMap(Map.of());
+            final var map = new DeclaredKindValueProviderMap(Map.of());
 
             assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID));
         }
@@ -86,8 +61,8 @@ class FixtureConstantValueProviderMapTest {
     @Test
     void get_whenDefaultIsOverwritten_shouldReturnCustomValue() {
         final var field = mock(VariableElement.class);
-        final var map = new FixtureConstantValueProviderMap(Map.of("int", f -> "10"));
+        final var map = new DeclaredKindValueProviderMap(Map.of("java.util.UUID", f -> "10"));
 
-        assertThat(map.get("int").provideValueAsString(field)).isEqualTo("10");
+        assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("10");
     }
 }

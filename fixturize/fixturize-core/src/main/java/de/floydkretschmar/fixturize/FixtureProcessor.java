@@ -2,7 +2,9 @@ package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.stategies.constants.value.FixtureConstantValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.DeclaredKindValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.TypeKindValueProviderMap;
 import de.floydkretschmar.fixturize.domain.FixtureNames;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
@@ -45,7 +47,8 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private void processAnnotatedElement(TypeElement element) {
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
-        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, new FixtureConstantValueProviderMap(Map.of()));
+        final var valueProviderService = new ConstantValueProviderService(new TypeKindValueProviderMap(Map.of()), new DeclaredKindValueProviderMap(Map.of()));
+        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService);
 
         final var methodNamingStrategy = new UpperCamelCaseAndNamingStrategy();
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
