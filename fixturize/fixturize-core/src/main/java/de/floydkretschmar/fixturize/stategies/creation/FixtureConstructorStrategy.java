@@ -1,6 +1,5 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
-import com.google.common.base.CaseFormat;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
@@ -16,6 +15,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FixtureConstructorStrategy implements CreationMethodGenerationStrategy {
+    private final CreationMethodNamingStrategy namingStrategy;
+
+    public FixtureConstructorStrategy(CreationMethodNamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+    }
+
     @Override
     public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap) {
         final var fixtureConstructors = element.getAnnotation(FixtureConstructors.class);
@@ -27,15 +32,12 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
         return (Objects.nonNull(fixtureConstructors) ? Arrays.stream(fixtureConstructors.value()) : Stream.of(fixtureConstructor))
                 .map(annotation -> {
                     final var correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.correspondingFields()));
-                    final var functionName = correspondingConstants.stream()
-                            .map(constant -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, constant.getOriginalFieldName()))
-                            .collect(Collectors.joining("And"));
                     final var className = element.getSimpleName().toString();
 
                     return FixtureCreationMethodDefinition.builder()
                             .returnType(className)
                             .returnValue(createReturnValueString(className, correspondingConstants))
-                            .name("create%sFixtureWith%s".formatted(className, functionName))
+                            .name(this.namingStrategy.createMethodName(className, correspondingConstants))
                             .build();
                 }).toList();
     }

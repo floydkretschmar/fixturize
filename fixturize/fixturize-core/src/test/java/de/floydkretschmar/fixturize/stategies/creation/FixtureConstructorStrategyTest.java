@@ -28,7 +28,7 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenMultipleConstructorsDefined_shouldCreateCreationMethodsForDefinedConstructors() {
-        final var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField"),
                 List.of("uuidField")));
@@ -54,7 +54,7 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenSingleConstructorDefined_shouldCreateCreationMethodForDefinedConstructor() {
-        final var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField")));
         final var constantMap = mockConstantMap();
@@ -73,7 +73,7 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenNoConstructorDefined_shouldReturnEmptyList() {
-        final var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of());
 
         final var constantMap = mockConstantMap();
@@ -85,7 +85,7 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        final var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 

@@ -11,6 +11,7 @@ import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrate
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureBuilderStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorStrategy;
+import de.floydkretschmar.fixturize.stategies.creation.UpperCamelCaseAndNamingStrategy;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -46,9 +47,10 @@ public class FixtureProcessor extends AbstractProcessor {
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
         final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, new FixtureConstantValueProviderMap(Map.of()));
 
+        final var methodNamingStrategy = new UpperCamelCaseAndNamingStrategy();
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
-        creationMethodStrategies.add(new FixtureConstructorStrategy());
-        creationMethodStrategies.add(new FixtureBuilderStrategy());
+        creationMethodStrategies.add(new FixtureConstructorStrategy(methodNamingStrategy));
+        creationMethodStrategies.add(new FixtureBuilderStrategy(methodNamingStrategy));
 
         final var names = getNames(element);
 

@@ -1,6 +1,5 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
-import com.google.common.base.CaseFormat;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilders;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
@@ -18,6 +17,12 @@ import java.util.stream.Stream;
 import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
 
 public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy {
+    private final CreationMethodNamingStrategy namingStrategy;
+
+    public FixtureBuilderStrategy(CreationMethodNamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+    }
+
     @Override
     public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap) {
         final var builderAnnotationContainer = element.getAnnotation(FixtureBuilders.class);
@@ -29,17 +34,12 @@ public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy 
         return (Objects.nonNull(builderAnnotationContainer) ? Arrays.stream(builderAnnotationContainer.value()) : Stream.of(builderAnnotation))
                 .map(annotation -> {
                     final var correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.correspondingFields()));
-                    final var functionName = correspondingConstants.stream()
-                            .map(constant -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, constant.getOriginalFieldName()))
-                            .collect(Collectors.joining("And"));
-
                     final var className = element.getSimpleName().toString();
-                    final var builderClassName = "%s.%sBuilder".formatted(className, className);
 
                     return FixtureCreationMethodDefinition.builder()
-                            .returnType(builderClassName)
+                            .returnType("%s.%sBuilder".formatted(className, className))
                             .returnValue(createReturnValueString(className, annotation.buildMethod(), correspondingConstants))
-                            .name("create%sFixtureBuilderWith%s".formatted(className, functionName))
+                            .name(this.namingStrategy.createMethodName("%sBuilder".formatted(className), correspondingConstants))
                             .build();
                 }).toList();
     }
