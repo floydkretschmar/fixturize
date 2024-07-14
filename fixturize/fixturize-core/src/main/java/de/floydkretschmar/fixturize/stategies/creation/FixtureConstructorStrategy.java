@@ -38,7 +38,7 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
 
                         throw new FixtureCreationException("The parameter %s specified in @FixtureConstructor has no corresponding field in %s"
                                 .formatted(parameterName, element.getSimpleName().toString()));
-                    }).collect(Collectors.joining(","));
+                    }).collect(Collectors.joining(", "));
                     final String className = element.getSimpleName().toString();
                     return FixtureCreationMethodDefinition.builder()
                             .returnType(className)

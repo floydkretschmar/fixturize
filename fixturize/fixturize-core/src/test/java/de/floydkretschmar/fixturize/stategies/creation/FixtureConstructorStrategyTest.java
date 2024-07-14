@@ -43,12 +43,12 @@ class FixtureConstructorStrategyTest {
         assertThat(result.stream()).contains(
                 FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject")
-                        .returnValue("new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD)")
+                        .returnValue("new TestObject(STRING_FIELD, INT_FIELD, BOOLEAN_FIELD, UUID_FIELD)")
                         .name("createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField")
                         .build(),
                 FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject")
-                        .returnValue("new TestObject(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD)")
+                        .returnValue("new TestObject(STRING_FIELD, BOOLEAN_FIELD, UUID_FIELD)")
                         .name("createTestObjectFixtureWithStringFieldAndBooleanFieldAndUuidField")
                         .build());
     }
@@ -71,7 +71,7 @@ class FixtureConstructorStrategyTest {
         assertThat(result.stream()).contains(
                 FixtureCreationMethodDefinition.builder()
                         .returnType("TestObject")
-                        .returnValue("new TestObject(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD)")
+                        .returnValue("new TestObject(STRING_FIELD, INT_FIELD, BOOLEAN_FIELD, UUID_FIELD)")
                         .name("createTestObjectFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField")
                         .build());
     }

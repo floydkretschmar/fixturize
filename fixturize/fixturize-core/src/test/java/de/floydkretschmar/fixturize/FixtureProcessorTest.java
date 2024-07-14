@@ -1,13 +1,16 @@
 package de.floydkretschmar.fixturize;
 
+import com.google.common.io.Resources;
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
+import lombok.SneakyThrows;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -21,81 +24,37 @@ class FixtureProcessorTest {
     public static Stream<Arguments> process_getParameters() {
         return Stream.of(
                 Arguments.of(
-                        "SingleConstructorClass.java",
+                        "classes/SingleConstructorClass.java",
                         "de.floydkretschmar.fixturize.mocks.SingleConstructorClassFixture",
-                        """
-                            package de.floydkretschmar.fixturize.mocks;
-                            
-                            public class SingleConstructorClassFixture {
-                            	public static boolean BOOLEAN_FIELD = false;
-                            	public static int INT_FIELD = 0;
-                            	public static java.lang.String STRING_FIELD = "STRING_FIELD_VALUE";
-                            	public static java.util.UUID UUID_FIELD = java.util.UUID.fromString("%s");
-                            
-                            	public SingleConstructorClass createSingleConstructorClassFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
-                            		return new SingleConstructorClass(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
-                            	}
-                            }
-                            """.formatted(RANDOM_UUID)),
+                        "fixtures/SingleConstructorClassFixture.java"),
                 Arguments.of(
-                        "MultiConstructorClass.java",
+                        "classes/MultiConstructorClass.java",
                         "de.floydkretschmar.fixturize.mocks.MultiConstructorClassFixture",
-                        """
-                            package de.floydkretschmar.fixturize.mocks;
-                            
-                            public class MultiConstructorClassFixture {
-                            	public static boolean BOOLEAN_FIELD = false;
-                            	public static int INT_FIELD = 0;
-                            	public static java.lang.String STRING_FIELD = "STRING_FIELD_VALUE";
-                            	public static java.util.UUID UUID_FIELD = java.util.UUID.fromString("%s");
-                            
-                            	public MultiConstructorClass createMultiConstructorClassFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
-                            		return new MultiConstructorClass(STRING_FIELD,INT_FIELD,BOOLEAN_FIELD,UUID_FIELD);
-                            	}
-                            
-                            	public MultiConstructorClass createMultiConstructorClassFixtureWithStringFieldAndBooleanFieldAndUuidField() {
-                            		return new MultiConstructorClass(STRING_FIELD,BOOLEAN_FIELD,UUID_FIELD);
-                            	}
-                            }
-                            """.formatted(RANDOM_UUID)),
+                        "fixtures/MultiConstructorClassFixture.java"),
                 Arguments.of(
-                        "CustomConstantDefinitionsClass.java",
+                        "classes/CustomConstantDefinitionsClass.java",
                         "de.floydkretschmar.fixturize.mocks.CustomConstantDefinitionsClassFixture",
-                        """
-                            package de.floydkretschmar.fixturize.mocks;
-                            
-                            public class CustomConstantDefinitionsClassFixture {
-                            	public static boolean CUSTOM_BOOLEAN_FIELD_NAME = false;
-                            	public static java.lang.String CUSTOM_STRING_FIELD_NAME = "CUSTOM_CONSTANT_VALUE";
-                            	public static int INT_FIELD = 0;
-                            	public static java.util.UUID UUID_FIELD = java.util.UUID.fromString("%s");
-                            
-                            	public CustomConstantDefinitionsClass createCustomConstantDefinitionsClassFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
-                            		return new CustomConstantDefinitionsClass(CUSTOM_STRING_FIELD_NAME,INT_FIELD,CUSTOM_BOOLEAN_FIELD_NAME,UUID_FIELD);
-                            	}
-                            
-                            	public CustomConstantDefinitionsClass createCustomConstantDefinitionsClassFixtureWithStringFieldAndBooleanFieldAndUuidField() {
-                            		return new CustomConstantDefinitionsClass(CUSTOM_STRING_FIELD_NAME,CUSTOM_BOOLEAN_FIELD_NAME,UUID_FIELD);
-                            	}
-                            }
-                            """.formatted(RANDOM_UUID))
+                        "fixtures/CustomConstantDefinitionsClassFixture.java")
         );
     }
 
-
+    @SneakyThrows
     @ParameterizedTest(name = "{0}")
     @MethodSource("process_getParameters")
-    void process_whenCalled_generateFixtureClass(String className, String expectedFixtureClassName, String expectedFixtureClass) {
+    void process_whenCalled_generateFixtureClass(String classPath, String expectedFixtureClassName, String expectedFixtureClassPath) {
         final var uuid = UUID.fromString(RANDOM_UUID);
+        final var url = Resources.getResource(expectedFixtureClassPath);
+        final var expectedFixture = Resources.toString(url, StandardCharsets.UTF_8);
+
         try (MockedStatic<UUID> uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
             Compilation compilation = javac()
                     .withProcessors(new FixtureProcessor())
-                    .compile(JavaFileObjects.forResource(className));
+                    .compile(JavaFileObjects.forResource(classPath));
             assertThat(compilation).succeeded();
             assertThat(compilation)
                     .generatedSourceFile(expectedFixtureClassName)
-                    .contentsAsString(StandardCharsets.UTF_8).isEqualTo(expectedFixtureClass);
+                    .contentsAsString(StandardCharsets.UTF_8).isEqualTo(expectedFixture);
         }
     }
 }

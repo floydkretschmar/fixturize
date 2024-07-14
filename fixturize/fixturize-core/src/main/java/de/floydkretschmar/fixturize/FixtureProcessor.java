@@ -78,17 +78,14 @@ public class FixtureProcessor extends AbstractProcessor {
     private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies, Map<String, FixtureConstantDefinition> constantMap) {
         return creationMethodStrategies.stream()
                 .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap).stream())
-                .map(method -> """
-                    \tpublic %s %s() {
-                    \t\treturn %s;
-                    \t}""".formatted(method.getReturnType(), method.getName(), method.getReturnValue()))
+                .map(method -> "    public %s %s() {\n        return %s;\n    }".formatted(method.getReturnType(), method.getName(), method.getReturnValue()))
                 .collect(Collectors.joining("\n\n"));
     }
 
     private static String getConstantsString(Stream<FixtureConstantDefinition> constants) {
         return constants
                 .sorted(Comparator.comparing(FixtureConstantDefinition::getName))
-                .map(constant -> "\tpublic static %s %s = %s;".formatted(constant.getType(), constant.getName(), constant.getValue()))
+                .map(constant -> "    public static %s %s = %s;".formatted(constant.getType(), constant.getName(), constant.getValue()))
                 .collect(Collectors.joining("\n"));
     }
 

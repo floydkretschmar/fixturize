@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.mocks;
 
 import de.floydkretschmar.fixturize.annotations.Fixture;
-import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 
 import java.util.UUID;
