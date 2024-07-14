@@ -3,7 +3,6 @@ package de.floydkretschmar.fixturize.stategies.constants;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.domain.FixtureConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderMap;
 
 import javax.lang.model.element.TypeElement;

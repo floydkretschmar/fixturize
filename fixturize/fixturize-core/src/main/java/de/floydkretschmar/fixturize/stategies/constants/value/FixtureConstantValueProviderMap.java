@@ -1,9 +1,4 @@
-package de.floydkretschmar.fixturize.domain;
-
-import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.StringValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.UUIDValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
+package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import java.util.HashMap;
 import java.util.Map;

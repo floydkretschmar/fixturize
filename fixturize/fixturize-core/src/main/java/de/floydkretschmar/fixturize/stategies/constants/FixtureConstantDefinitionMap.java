@@ -1,7 +1,7 @@
-package de.floydkretschmar.fixturize.domain;
+package de.floydkretschmar.fixturize.stategies.constants;
 
+import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 
 import java.util.Collection;
 import java.util.HashMap;

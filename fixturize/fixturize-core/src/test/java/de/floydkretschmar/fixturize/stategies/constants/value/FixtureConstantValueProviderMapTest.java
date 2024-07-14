@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.domain;
+package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,7 +51,7 @@ class FixtureConstantValueProviderMapTest {
             "short, Short.valueOf((short)0)",
             "long, 0L",
             "float, 0.0F",
-            "double, 0.0"})
+            "double, 0.0" })
     void get_whenCalledForDefaultValue_shouldReturnExpectedDefaultValue(String targetClassName, String expectedDefaultValue) {
         final var field = mock(VariableElement.class);
         final var map = new FixtureConstantValueProviderMap(Map.of());
