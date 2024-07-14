@@ -5,7 +5,6 @@ import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 
 import javax.lang.model.element.TypeElement;
 import java.util.Collection;
-import java.util.Map;
 
 @FunctionalInterface
 public interface CreationMethodGenerationStrategy {

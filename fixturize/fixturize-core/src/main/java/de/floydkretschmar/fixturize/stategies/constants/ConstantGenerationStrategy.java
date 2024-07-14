@@ -5,8 +5,6 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderMap;
-import de.floydkretschmar.fixturize.domain.FixtureConstantValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
