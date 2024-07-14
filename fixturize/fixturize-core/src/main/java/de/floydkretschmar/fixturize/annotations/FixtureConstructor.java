@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Repeatable(FixtureConstructors.class)
 public @interface FixtureConstructor {
-    String[] correspondingFieldNames();
+    String[] correspondingFields();
 }

@@ -9,4 +9,5 @@ public class FixtureConstantDefinition {
     String type;
     String name;
     String value;
+    String originalFieldName;
 }

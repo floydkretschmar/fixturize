@@ -45,9 +45,9 @@ class FixtureProcessorTest {
         final var url = Resources.getResource(expectedFixtureClassPath);
         final var expectedFixture = Resources.toString(url, StandardCharsets.UTF_8);
 
-        try (MockedStatic<UUID> uuidStatic = Mockito.mockStatic(UUID.class)) {
+        try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            Compilation compilation = javac()
+            final var compilation = javac()
                     .withProcessors(new FixtureProcessor())
                     .compile(JavaFileObjects.forResource(classPath));
             assertThat(compilation).succeeded();

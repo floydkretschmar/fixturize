@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class CamelCaseToScreamingSnakeCaseNamingStrategyTest {
     @Test
     void rename_whenCalledWithCamelCase_shouldReturnSnakeCase() {
-        var strategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
+        final var strategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
 
-        var result = strategy.rename("camelCaseAttribute");
+        final var result = strategy.rename("camelCaseAttribute");
 
         assertEquals("CAMEL_CASE_ATTRIBUTE", result);
     }
@@ -20,7 +20,7 @@ class CamelCaseToScreamingSnakeCaseNamingStrategyTest {
     @ParameterizedTest
     @CsvSource({"snake_case_attribute", "PascalCase", "wrONgCAmelcase"})
     void rename_whenCalledWithNonCamelCaseAttribute_shouldThrowException(String invalidFieldName) {
-        var strategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
+        final var strategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
 
         assertThrows(FixtureCreationException.class, () -> strategy.rename(invalidFieldName));
     }

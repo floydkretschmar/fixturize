@@ -21,20 +21,23 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class FixtureConstructorStrategyTest {
+
+    public static final Map<String, FixtureConstantDefinition> FIELD_MAP = Map.of(
+            "stringField", FixtureConstantDefinition.builder().originalFieldName("stringField").name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
+            "intField", FixtureConstantDefinition.builder().originalFieldName("intField").name("INT_FIELD").type("int").value("0").build(),
+            "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").name("BOOLEAN_FIELD").type("boolean").value("false").build(),
+            "CUSTOM_FIELD_NAME", FixtureConstantDefinition.builder().originalFieldName("originalFieldName").name("CUSTOM_FIELD_NAME").type("boolean").value("true").build(),
+            "uuidField", FixtureConstantDefinition.builder().originalFieldName("uuidField").name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
+    );
+
     @Test
     void createCreationMethods_whenMultipleConstructorsDefined_shouldCreateCreationMethodsForDefinedConstructors() {
-        var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField"),
                 List.of("stringField", "booleanField", "uuidField")));
 
-        final Map<String, FixtureConstantDefinition> fixtureConstantMap = Map.of(
-                "stringField", FixtureConstantDefinition.builder().name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
-                "intField", FixtureConstantDefinition.builder().name("INT_FIELD").type("int").value("0").build(),
-                "booleanField", FixtureConstantDefinition.builder().name("BOOLEAN_FIELD").type("boolean").value("false").build(),
-                "uuidField", FixtureConstantDefinition.builder().name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
-        );
-        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, fixtureConstantMap);
+        final var result = strategy.generateCreationMethods(element, FIELD_MAP);
 
         assertThat(result).hasSize(2);
         assertThat(result.stream()).contains(
@@ -52,17 +55,11 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenSingleConstructorDefined_shouldCreateCreationMethodForDefinedConstructor() {
-        var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 
-        final Map<String, FixtureConstantDefinition> fixtureConstantMap = Map.of(
-                "stringField", FixtureConstantDefinition.builder().name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
-                "intField", FixtureConstantDefinition.builder().name("INT_FIELD").type("int").value("0").build(),
-                "booleanField", FixtureConstantDefinition.builder().name("BOOLEAN_FIELD").type("boolean").value("false").build(),
-                "uuidField", FixtureConstantDefinition.builder().name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
-        );
-        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, fixtureConstantMap);
+        final var result = strategy.generateCreationMethods(element, FIELD_MAP);
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
@@ -74,24 +71,35 @@ class FixtureConstructorStrategyTest {
     }
 
     @Test
+    void createCreationMethods_whenOriginalFieldNameDifferentFromConstantName_shouldCreateCreationMethodForDefinedConstructor() {
+        final var strategy = new FixtureConstructorStrategy();
+        final var element = mockTypeElement(Stream.of(
+                List.of("stringField", "intField", "CUSTOM_FIELD_NAME", "uuidField")));
+
+        final var result = strategy.generateCreationMethods(element, FIELD_MAP);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.stream()).contains(
+                FixtureCreationMethodDefinition.builder()
+                        .returnType("TestObject")
+                        .returnValue("new TestObject(STRING_FIELD, INT_FIELD, CUSTOM_FIELD_NAME, UUID_FIELD)")
+                        .name("createTestObjectFixtureWithStringFieldAndIntFieldAndOriginalFieldNameAndUuidField")
+                        .build());
+    }
+
+    @Test
     void createCreationMethods_whenNoConstructorDefined_shouldReturnEmptyList() {
-        var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement(Stream.of());
 
-        final Map<String, FixtureConstantDefinition> fixtureConstantMap = Map.of(
-                "stringField", FixtureConstantDefinition.builder().name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
-                "intField", FixtureConstantDefinition.builder().name("INT_FIELD").type("int").value("0").build(),
-                "booleanField", FixtureConstantDefinition.builder().name("BOOLEAN_FIELD").type("boolean").value("false").build(),
-                "uuidField", FixtureConstantDefinition.builder().name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
-        );
-        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, fixtureConstantMap);
+        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, FIELD_MAP);
 
         assertThat(result).hasSize(0);
     }
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        var strategy = new FixtureConstructorStrategy();
+        final var strategy = new FixtureConstructorStrategy();
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 
@@ -104,7 +112,7 @@ class FixtureConstructorStrategyTest {
         final var element = mock(TypeElement.class);
         final var constructors = definedFixtureConstructors.map(parameterNames -> {
             final var fixtureConstructor = mock(FixtureConstructor.class);
-            when(fixtureConstructor.correspondingFieldNames()).thenReturn(parameterNames.toArray(String[]::new));
+            when(fixtureConstructor.correspondingFields()).thenReturn(parameterNames.toArray(String[]::new));
             return fixtureConstructor;
         }).toArray(FixtureConstructor[]::new);
 

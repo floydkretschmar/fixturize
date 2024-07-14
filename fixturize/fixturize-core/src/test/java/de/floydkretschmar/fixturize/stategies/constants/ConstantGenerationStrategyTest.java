@@ -1,9 +1,11 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
+import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -16,10 +18,10 @@ import javax.lang.model.type.TypeMirror;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +33,7 @@ class ConstantGenerationStrategyTest {
     void generateConstants_whenCalledWithValidClass_shouldGeneratedConstants() {
         final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
 
-        final List<? extends Element> fields = List.of(
+        final var fields = List.of(
                 createVariableElemementMock("booleanField", boolean.class, null),
                 createVariableElemementMock("intField", int.class, null),
                 createVariableElemementMock("stringField", String.class, null),
@@ -42,24 +44,24 @@ class ConstantGenerationStrategyTest {
         when(element.getEnclosedElements()).thenReturn((List)fields);
         final var uuid = UUID.fromString(RANDOM_UUID);
 
-        try (MockedStatic<UUID> uuidStatic = Mockito.mockStatic(UUID.class)) {
+        try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            final Map<String, FixtureConstantDefinition> result = stategy.generateConstants(element);
+            final var result = stategy.generateConstants(element);
 
             assertThat(result).containsAllEntriesOf(Map.of(
-                    "booleanField", FixtureConstantDefinition.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                    "intField", FixtureConstantDefinition.builder().value("0").type("int").name("INT_FIELD").build(),
-                    "stringField", FixtureConstantDefinition.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
-                    "uuidField", FixtureConstantDefinition.builder().value("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID)).type("java.util.UUID").name("UUID_FIELD").build()));
+                    "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                    "intField", FixtureConstantDefinition.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build(),
+                    "stringField", FixtureConstantDefinition.builder().originalFieldName("stringField").value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
+                    "uuidField", FixtureConstantDefinition.builder().originalFieldName("uuidField").value("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID)).type("java.util.UUID").name("UUID_FIELD").build()));
         }
     }
 
     @Test
     void generateConstants_whenDefaultValueProviderGetsOverwritten_shouldGeneratedConstantsUsingExternalValueProvider() {
-        var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(),
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(),
                 Map.of(UUID.class.getName(), field -> "EXTERNAL_VALUE"));
 
-        final List<? extends Element> fields = List.of(
+        final var fields = List.of(
                 createVariableElemementMock("booleanField", boolean.class, null),
                 createVariableElemementMock("intField", int.class, null),
                 createVariableElemementMock("stringField", String.class, null),
@@ -68,20 +70,20 @@ class ConstantGenerationStrategyTest {
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
 
-        final Map<String, FixtureConstantDefinition> result = stategy.generateConstants(element);
+        final var result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", FixtureConstantDefinition.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                "intField", FixtureConstantDefinition.builder().value("0").type("int").name("INT_FIELD").build(),
-                "stringField", FixtureConstantDefinition.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
-                "uuidField", FixtureConstantDefinition.builder().value("EXTERNAL_VALUE").type("java.util.UUID").name("UUID_FIELD").build()));
+                "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                "intField", FixtureConstantDefinition.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build(),
+                "stringField", FixtureConstantDefinition.builder().originalFieldName("stringField").value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
+                "uuidField", FixtureConstantDefinition.builder().originalFieldName("uuidField").value("EXTERNAL_VALUE").type("java.util.UUID").name("UUID_FIELD").build()));
     }
 
     @Test
     void generateConstants_whenCalledWithAttributeWithUnknownValue_shouldSetValueToNull() {
-        var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
 
-        final List<? extends Element> fields = List.of(
+        final var fields = List.of(
                 createVariableElemementMock("booleanField", boolean.class, null),
                 createVariableElemementMock("intField", int.class, null),
                 createVariableElemementMock("stringField", String.class, null),
@@ -89,17 +91,43 @@ class ConstantGenerationStrategyTest {
         );
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
-        final Map<String, FixtureConstantDefinition> result = stategy.generateConstants(element);
+        final var result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", FixtureConstantDefinition.builder().value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                "intField", FixtureConstantDefinition.builder().value("0").type("int").name("INT_FIELD").build(),
-                "stringField", FixtureConstantDefinition.builder().value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
-                "unknownObject", FixtureConstantDefinition.builder().value("null").type("java.util.Date").name("UNKNOWN_OBJECT").build()));
+                "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                "intField", FixtureConstantDefinition.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build(),
+                "stringField", FixtureConstantDefinition.builder().originalFieldName("stringField").value("\"STRING_FIELD_VALUE\"").type("java.lang.String").name("STRING_FIELD").build(),
+                "unknownObject", FixtureConstantDefinition.builder().originalFieldName("unknownObject").value("null").type("java.util.Date").name("UNKNOWN_OBJECT").build()));
     }
 
     @Test
-    void generateConstants_whenCalledWithFixtureConstantAnnotation_shouldUseNameFromAnnotation() {
+    void generateConstants_whenCalledWithFixtureConstantAnnotation_shouldUseNameFromAnnotationAsKeyAndName() {
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
+
+        final var annotation = mock(FixtureConstant.class);
+        when(annotation.name()).thenReturn("CUSTOM_NAME");
+        when(annotation.value()).thenReturn("true");
+        final var annotation2 = mock(FixtureConstant.class);
+        when(annotation2.name()).thenReturn("CUSTOM_NAME_2");
+        when(annotation2.value()).thenReturn("");
+
+        final var fields = List.of(
+            createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{annotation}),
+            createVariableElemementMock("booleanField2", boolean.class, new FixtureConstant[]{annotation2})
+        );
+        final var element = mock(TypeElement.class);
+        when(element.getEnclosedElements()).thenReturn((List)fields);
+
+        final var result = stategy.generateConstants(element);
+
+        assertThat(result).containsAllEntriesOf(Map.of(
+                "CUSTOM_NAME", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
+                "CUSTOM_NAME_2", FixtureConstantDefinition.builder().originalFieldName("booleanField2").value("false").type("boolean").name("CUSTOM_NAME_2").build()
+        ));
+    }
+
+    @Test
+    void generateConstants_whenCalledWithMultipleFixtureConstantsAnnotations_shouldGenerateConstantPerAnnotation() {
         final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
 
         final FixtureConstant annotation = mock(FixtureConstant.class);
@@ -109,31 +137,39 @@ class ConstantGenerationStrategyTest {
         when(annotation2.name()).thenReturn("CUSTOM_NAME_2");
         when(annotation2.value()).thenReturn("");
 
-        final List<? extends Element> fields = List.of(
-            createVariableElemementMock("booleanField", boolean.class, annotation),
-            createVariableElemementMock("booleanField2", boolean.class, annotation2)
+        final var fields = List.of(
+            createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{annotation, annotation2})
         );
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
 
-        final Map<String, FixtureConstantDefinition> result = stategy.generateConstants(element);
+        final var result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", FixtureConstantDefinition.builder().value("true").type("boolean").name("CUSTOM_NAME").build(),
-                "booleanField2", FixtureConstantDefinition.builder().value("false").type("boolean").name("CUSTOM_NAME_2").build()
+                "CUSTOM_NAME", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
+                "CUSTOM_NAME_2", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("false").type("boolean").name("CUSTOM_NAME_2").build()
         ));
     }
 
-    private static @NotNull VariableElement createVariableElemementMock(String name, Class<?> targetClass, FixtureConstant annotation) {
-        final VariableElement fieldElement = mock(VariableElement.class);
-        final TypeMirror typeMirror = mock(TypeMirror.class);
-        final Name fieldName = mock(Name.class);
-        when(fieldElement.getAnnotation(any())).thenReturn(annotation);
+    private static VariableElement createVariableElemementMock(String name, Class<?> targetClass, FixtureConstant[] fixtureConstants) {
+        final var fieldElement = mock(VariableElement.class);
+        final var typeMirror = mock(TypeMirror.class);
+        final var fieldName = mock(Name.class);
+
         when(fieldName.toString()).thenReturn(name);
         when(fieldElement.asType()).thenReturn(typeMirror);
         when(typeMirror.toString()).thenReturn(targetClass.getName());
         when(fieldElement.getSimpleName()).thenReturn(fieldName);
         when(fieldElement.getKind()).thenReturn(ElementKind.FIELD);
+
+        if (Objects.nonNull(fixtureConstants) && fixtureConstants.length == 1)
+            when(fieldElement.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureConstant.class)))).thenReturn(fixtureConstants[0]);
+        else if (Objects.nonNull(fixtureConstants) && fixtureConstants.length > 1) {
+            final var constants = mock(FixtureConstants.class);
+            when(constants.value()).thenReturn(fixtureConstants);
+            when(fieldElement.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureConstants.class)))).thenReturn(constants);
+        }
+
         return fieldElement;
     }
 }

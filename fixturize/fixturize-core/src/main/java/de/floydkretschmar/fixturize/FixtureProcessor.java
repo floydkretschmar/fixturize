@@ -46,10 +46,10 @@ public class FixtureProcessor extends AbstractProcessor {
         final var names = getNames(element);
 
         try {
-            final JavaFileObject fixtureFile = processingEnv.getFiler()
+            final var fixtureFile = processingEnv.getFiler()
                     .createSourceFile(names.getQualifiedFixtureClassName());
 
-            try (PrintWriter out = new PrintWriter(fixtureFile.openWriter())) {
+            try (final var out = new PrintWriter(fixtureFile.openWriter())) {
                 final var fixtureClassString = getFixtureClassAsString(element, names, constantsGenerationStrategy, creationMethodStrategies);
                 out.print(fixtureClassString);
             }
@@ -60,7 +60,7 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private FixtureNames getNames(TypeElement element) {
         final var qualifiedClassName = element.getQualifiedName().toString();
-        final int lastDot = qualifiedClassName.lastIndexOf('.');
+        final var lastDot = qualifiedClassName.lastIndexOf('.');
         var packageName = "";
         if (lastDot > 0) {
             packageName = qualifiedClassName.substring(0, lastDot);

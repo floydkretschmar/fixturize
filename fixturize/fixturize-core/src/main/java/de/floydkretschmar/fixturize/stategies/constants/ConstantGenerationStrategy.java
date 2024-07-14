@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
+import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.stategies.constants.value.DefaultValueProviders;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
@@ -8,6 +9,7 @@ import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,29 +31,43 @@ public class ConstantGenerationStrategy {
     }
 
     private Stream<Map.Entry<String, FixtureConstantDefinition>> createFixtureConstants(Stream<VariableElement> fields) {
-        return fields.map(field -> {
-            final String fieldType = field.asType().toString();
-            final FixtureConstant constantAnnotation = field.getAnnotation(FixtureConstant.class);
+        return fields.flatMap(field -> {
+            final var constantsAnnotation = field.getAnnotation(FixtureConstants.class);
 
-            final var constantDefinitionBuilder = FixtureConstantDefinition.builder().type(fieldType);
-            if (Objects.nonNull(constantAnnotation)) {
-                constantDefinitionBuilder.name(constantAnnotation.name());
-            }
-            else {
-                final String constantName = constantsNamingStrategy.rename(field.getSimpleName().toString());
-                constantDefinitionBuilder.name(constantName);
+            if (Objects.isNull(constantsAnnotation)) {
+                final var constantAnnotation = field.getAnnotation(FixtureConstant.class);
+                final var constantDefinition = createConstantDefinition(constantAnnotation, field);
+                final var key = Objects.nonNull(constantAnnotation) ? constantDefinition.getName() : field.getSimpleName().toString();
+                return Stream.of(Map.entry(key, constantDefinition));
             }
 
-            if (Objects.nonNull(constantAnnotation) && !constantAnnotation.value().isEmpty()) {
-                constantDefinitionBuilder.value(constantAnnotation.value());
-            }
-            else {
-                final var constantValue = this.valueProviders.containsKey(fieldType) ?
-                        this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
-                constantDefinitionBuilder.value(constantValue);
-            }
-
-            return Map.entry(field.getSimpleName().toString(), constantDefinitionBuilder.build());
+            return Arrays.stream(constantsAnnotation.value()).map(constantAnnotation -> {
+                final var constantDefinition = createConstantDefinition(constantAnnotation, field);
+                return Map.entry(constantDefinition.getName(), constantDefinition);
+            });
         });
+    }
+
+    private FixtureConstantDefinition createConstantDefinition(FixtureConstant constantAnnotation, VariableElement field) {
+        final var fieldType = field.asType().toString();
+        final var originalFieldName = field.getSimpleName().toString();
+        final var constantDefinitionBuilder = FixtureConstantDefinition.builder().type(fieldType);
+        if (Objects.nonNull(constantAnnotation)) {
+            constantDefinitionBuilder.name(constantAnnotation.name());
+        } else {
+            final var constantName = constantsNamingStrategy.rename(originalFieldName);
+            constantDefinitionBuilder.name(constantName);
+        }
+
+        if (Objects.nonNull(constantAnnotation) && !constantAnnotation.value().isEmpty()) {
+            constantDefinitionBuilder.value(constantAnnotation.value());
+        } else {
+            final var constantValue = this.valueProviders.containsKey(fieldType) ?
+                    this.valueProviders.get(fieldType).provideValueAsString(field) : "null";
+            constantDefinitionBuilder.value(constantValue);
+        }
+
+        constantDefinitionBuilder.originalFieldName(originalFieldName);
+        return constantDefinitionBuilder.build();
     }
 }

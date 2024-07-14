@@ -29,17 +29,22 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
             return List.of();
 
         return (Objects.nonNull(fixtureConstructors) ? Arrays.stream(fixtureConstructors.value()) : Stream.of(fixtureConstructor))
-                .map(constructorAnnotation -> Arrays.asList(constructorAnnotation.correspondingFieldNames()))
+                .map(constructorAnnotation -> Arrays.asList(constructorAnnotation.correspondingFields()))
                 .map(correspondingFieldNames -> {
-                    final String functionName = correspondingFieldNames.stream().map(name -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, name)).collect(Collectors.joining("And"));
-                    final String parameterString = correspondingFieldNames.stream().map(parameterName -> {
+                    final var correspondingConstants = correspondingFieldNames.stream().map(parameterName -> {
                         if (constantMap.containsKey(parameterName))
-                            return constantMap.get(parameterName).getName();
+                            return constantMap.get(parameterName);
 
                         throw new FixtureCreationException("The parameter %s specified in @FixtureConstructor has no corresponding field in %s"
                                 .formatted(parameterName, element.getSimpleName().toString()));
-                    }).collect(Collectors.joining(", "));
-                    final String className = element.getSimpleName().toString();
+                    }).toList();
+                    final var functionName = correspondingConstants.stream()
+                            .map(constant -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, constant.getOriginalFieldName()))
+                            .collect(Collectors.joining("And"));
+                    final var parameterString = correspondingConstants.stream()
+                            .map(FixtureConstantDefinition::getName)
+                            .collect(Collectors.joining(", "));
+                    final var className = element.getSimpleName().toString();
                     return FixtureCreationMethodDefinition.builder()
                             .returnType(className)
                             .returnValue("new %s(%s)".formatted(className, parameterString))
