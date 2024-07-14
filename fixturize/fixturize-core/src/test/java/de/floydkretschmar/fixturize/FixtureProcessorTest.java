@@ -31,7 +31,11 @@ class FixtureProcessorTest {
                 Arguments.of(
                         "classes/CustomConstantDefinitionsClass.java",
                         "de.floydkretschmar.fixturize.mocks.CustomConstantDefinitionsClassFixture",
-                        "fixtures/CustomConstantDefinitionsClassFixture.java")
+                        "fixtures/CustomConstantDefinitionsClassFixture.java"),
+                Arguments.of(
+                        "classes/BuilderClass.java",
+                        "de.floydkretschmar.fixturize.mocks.BuilderClassFixture",
+                        "fixtures/BuilderClassFixture.java")
         );
     }
 

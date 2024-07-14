@@ -1,8 +1,8 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import com.google.common.base.CaseFormat;
-import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
+import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
+import de.floydkretschmar.fixturize.annotations.FixtureBuilders;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
@@ -16,16 +16,18 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FixtureConstructorStrategy implements CreationMethodGenerationStrategy {
+import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
+
+public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy {
     @Override
     public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, Map<String, FixtureConstantDefinition> constantMap) {
-        final var fixtureConstructors = element.getAnnotation(FixtureConstructors.class);
-        final var fixtureConstructor = element.getAnnotation(FixtureConstructor.class);
+        final var builderAnnotationContainer = element.getAnnotation(FixtureBuilders.class);
+        final var builderAnnotation = element.getAnnotation(FixtureBuilder.class);
 
-        if (Objects.isNull(fixtureConstructors) && Objects.isNull(fixtureConstructor))
+        if (Objects.isNull(builderAnnotationContainer) && Objects.isNull(builderAnnotation))
             return List.of();
 
-        return (Objects.nonNull(fixtureConstructors) ? Arrays.stream(fixtureConstructors.value()) : Stream.of(fixtureConstructor))
+        return (Objects.nonNull(builderAnnotationContainer) ? Arrays.stream(builderAnnotationContainer.value()) : Stream.of(builderAnnotation))
                 .map(annotation -> {
                     final var correspondingConstants = Arrays.stream(annotation.correspondingFields()).map(parameterName -> {
                         if (constantMap.containsKey(parameterName))
@@ -37,20 +39,22 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
                     final var functionName = correspondingConstants.stream()
                             .map(constant -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, constant.getOriginalFieldName()))
                             .collect(Collectors.joining("And"));
+
                     final var className = element.getSimpleName().toString();
+                    final var builderClassName = "%s.%sBuilder".formatted(className, className);
 
                     return FixtureCreationMethodDefinition.builder()
-                            .returnType(className)
-                            .returnValue(createReturnValueString(className, correspondingConstants))
-                            .name("create%sFixtureWith%s".formatted(className, functionName))
+                            .returnType(builderClassName)
+                            .returnValue(createReturnValueString(className, annotation.buildMethod(), correspondingConstants))
+                            .name("create%sFixtureBuilderWith%s".formatted(className, functionName))
                             .build();
                 }).toList();
     }
 
-    private static String createReturnValueString(String className, List<FixtureConstantDefinition> correspondingConstants) {
-        final var parameterString = correspondingConstants.stream()
-                .map(FixtureConstantDefinition::getName)
-                .collect(Collectors.joining(", "));
-        return "new %s(%s)".formatted(className, parameterString);
+    private static String createReturnValueString(String className, String buildMethod, List<FixtureConstantDefinition> correspondingConstants) {
+        final var setterString = correspondingConstants.stream()
+                .map(constant -> ".%s(%s)".formatted(constant.getOriginalFieldName(), constant.getName()))
+                .collect(Collectors.joining("\n%s".formatted(WHITESPACE_16)));
+        return "%s.%s()\n%s%s".formatted(className, buildMethod, WHITESPACE_16, setterString);
     }
 }

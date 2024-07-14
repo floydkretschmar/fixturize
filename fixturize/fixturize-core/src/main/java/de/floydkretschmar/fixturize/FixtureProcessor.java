@@ -7,6 +7,7 @@ import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
+import de.floydkretschmar.fixturize.stategies.creation.FixtureBuilderStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorStrategy;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -25,6 +26,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_4;
+import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_8;
+
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
@@ -41,6 +45,7 @@ public class FixtureProcessor extends AbstractProcessor {
 
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
         creationMethodStrategies.add(new FixtureConstructorStrategy());
+        creationMethodStrategies.add(new FixtureBuilderStrategy());
 
         final var names = getNames(element);
 
@@ -77,14 +82,14 @@ public class FixtureProcessor extends AbstractProcessor {
     private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies, Map<String, FixtureConstantDefinition> constantMap) {
         return creationMethodStrategies.stream()
                 .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap).stream())
-                .map(method -> "    public %s %s() {\n        return %s;\n    }".formatted(method.getReturnType(), method.getName(), method.getReturnValue()))
+                .map(method -> "%spublic %s %s() {\n%sreturn %s;\n%s}".formatted(WHITESPACE_4, method.getReturnType(), method.getName(), WHITESPACE_8, method.getReturnValue(), WHITESPACE_4))
                 .collect(Collectors.joining("\n\n"));
     }
 
     private static String getConstantsString(Stream<FixtureConstantDefinition> constants) {
         return constants
                 .sorted(Comparator.comparing(FixtureConstantDefinition::getName))
-                .map(constant -> "    public static %s %s = %s;".formatted(constant.getType(), constant.getName(), constant.getValue()))
+                .map(constant -> "%spublic static %s %s = %s;".formatted(WHITESPACE_4, constant.getType(), constant.getName(), constant.getValue()))
                 .collect(Collectors.joining("\n"));
     }
 
