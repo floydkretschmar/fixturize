@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value;
+package de.floydkretschmar.fixturize.stategies.constants.value.map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,21 +15,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class DeclaredKindValueProviderMapTest {
+class ClassValueProviderMapTest {
 
     @ParameterizedTest
     @CsvSource({
             "java.lang.String",
             "java.util.UUID"})
     void containsKey_whenCalledForDefaultValue_shouldReturnTrue(String targetClassName) {
-        final var map = new DeclaredKindValueProviderMap(Map.of());
+        final var map = new ClassValueProviderMap(Map.of());
 
         assertThat(map.containsKey(targetClassName)).isTrue();
     }
 
     @Test
     void containsKey_whenCalledForUnregisteredValue_shouldReturnFalse() {
-        final var map = new DeclaredKindValueProviderMap(Map.of());
+        final var map = new ClassValueProviderMap(Map.of());
 
         assertThat(map.containsKey("unregisteredType")).isFalse();
     }
@@ -41,7 +41,7 @@ class DeclaredKindValueProviderMapTest {
         when(name.toString()).thenReturn("stringFieldName");
         when(field.getSimpleName()).thenReturn(name);
 
-        final var map = new DeclaredKindValueProviderMap(Map.of());
+        final var map = new ClassValueProviderMap(Map.of());
 
         assertThat(map.get("java.lang.String").provideValueAsString(field)).isEqualTo("\"STRING_FIELD_NAME_VALUE\"");
     }
@@ -52,7 +52,7 @@ class DeclaredKindValueProviderMapTest {
         final var uuid = UUID.fromString(RANDOM_UUID);
         try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            final var map = new DeclaredKindValueProviderMap(Map.of());
+            final var map = new ClassValueProviderMap(Map.of());
 
             assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID));
         }
@@ -61,7 +61,7 @@ class DeclaredKindValueProviderMapTest {
     @Test
     void get_whenDefaultIsOverwritten_shouldReturnCustomValue() {
         final var field = mock(VariableElement.class);
-        final var map = new DeclaredKindValueProviderMap(Map.of("java.util.UUID", f -> "10"));
+        final var map = new ClassValueProviderMap(Map.of("java.util.UUID", f -> "10"));
 
         assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("10");
     }

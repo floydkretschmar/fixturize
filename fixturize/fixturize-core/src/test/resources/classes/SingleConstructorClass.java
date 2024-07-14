@@ -3,6 +3,7 @@ package de.floydkretschmar.fixturize.mocks;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 
+import javax.lang.model.element.ElementKind;
 import java.util.UUID;
 
 @Fixture
@@ -12,6 +13,7 @@ public class SingleConstructorClass {
     private final int intField;
     private final boolean booleanField;
     private final UUID uuidField;
+    private final ElementKind elementKindField;
 
     public SingleConstructorClass() {
         this("", 0, false, null);
@@ -22,6 +24,7 @@ public class SingleConstructorClass {
         this.intField = intField;
         this.booleanField = booleanField;
         this.uuidField = uuidField;
+        this.elementKindField = ElementKind.CLASS;
     }
 
     public SingleConstructorClass(String stringField, boolean booleanField, UUID uuidField) {

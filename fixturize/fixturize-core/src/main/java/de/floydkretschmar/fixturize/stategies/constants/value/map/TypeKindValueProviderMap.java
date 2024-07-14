@@ -1,5 +1,8 @@
-package de.floydkretschmar.fixturize.stategies.constants.value;
+package de.floydkretschmar.fixturize.stategies.constants.value.map;
 
+import de.floydkretschmar.fixturize.stategies.constants.value.provider.ValueProvider;
+
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,8 +16,8 @@ import static javax.lang.model.type.TypeKind.INT;
 import static javax.lang.model.type.TypeKind.LONG;
 import static javax.lang.model.type.TypeKind.SHORT;
 
-public class TypeKindValueProviderMap extends HashMap<TypeKind, ValueProvider> {
-    public TypeKindValueProviderMap(Map<? extends TypeKind, ? extends ValueProvider> map) {
+public class TypeKindValueProviderMap extends HashMap<TypeKind, ValueProvider<VariableElement>> {
+    public TypeKindValueProviderMap(Map<? extends TypeKind, ? extends ValueProvider<VariableElement>> map) {
         super(map);
         this.putIfAbsent(BOOLEAN, field -> "false");
         this.putIfAbsent(CHAR, field -> "\u0000");

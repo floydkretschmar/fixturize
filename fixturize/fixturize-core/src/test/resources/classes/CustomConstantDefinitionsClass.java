@@ -4,6 +4,7 @@ import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 
+import javax.lang.model.element.ElementKind;
 import java.util.UUID;
 
 @Fixture
@@ -17,6 +18,7 @@ public class CustomConstantDefinitionsClass {
     @FixtureConstant(name = "CUSTOM_BOOLEAN_FIELD_NAME_2", value = "true")
     private final boolean booleanField;
     private final UUID uuidField;
+    private final ElementKind elementKindField;
 
     public CustomConstantDefinitionsClass() {
         this("", 0, false, null);
@@ -27,6 +29,7 @@ public class CustomConstantDefinitionsClass {
         this.intField = intField;
         this.booleanField = booleanField;
         this.uuidField = uuidField;
+        this.elementKindField = ElementKind.CLASS;
     }
 
     public CustomConstantDefinitionsClass(String stringField, boolean booleanField, UUID uuidField) {

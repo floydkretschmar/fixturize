@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value;
+package de.floydkretschmar.fixturize.stategies.constants.value.map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
