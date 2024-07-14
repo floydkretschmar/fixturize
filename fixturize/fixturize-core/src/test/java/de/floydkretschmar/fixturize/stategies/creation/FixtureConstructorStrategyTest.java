@@ -5,6 +5,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
+import de.floydkretschmar.fixturize.domain.FixtureConstantDefinitionMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
@@ -22,13 +23,13 @@ import static org.mockito.Mockito.when;
 
 class FixtureConstructorStrategyTest {
 
-    public static final Map<String, FixtureConstantDefinition> FIELD_MAP = Map.of(
+    public static final FixtureConstantDefinitionMap FIELD_MAP = new FixtureConstantDefinitionMap(Map.of(
             "stringField", FixtureConstantDefinition.builder().originalFieldName("stringField").name("STRING_FIELD").type("String").value("\"STRING_FIELD_VALUE\"").build(),
             "intField", FixtureConstantDefinition.builder().originalFieldName("intField").name("INT_FIELD").type("int").value("0").build(),
             "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").name("BOOLEAN_FIELD").type("boolean").value("false").build(),
             "CUSTOM_FIELD_NAME", FixtureConstantDefinition.builder().originalFieldName("originalFieldName").name("CUSTOM_FIELD_NAME").type("boolean").value("true").build(),
             "uuidField", FixtureConstantDefinition.builder().originalFieldName("uuidField").name("UUID_FIELD").type("UUID").value("UUID.randomUUID()").build()
-    );
+    ));
 
     @Test
     void createCreationMethods_whenMultipleConstructorsDefined_shouldCreateCreationMethodsForDefinedConstructors() {
@@ -103,7 +104,7 @@ class FixtureConstructorStrategyTest {
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 
-        final Map<String, FixtureConstantDefinition> fixtureConstantMap = Map.of();
+        final var fixtureConstantMap = new FixtureConstantDefinitionMap(Map.of());
 
         assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, fixtureConstantMap));
     }

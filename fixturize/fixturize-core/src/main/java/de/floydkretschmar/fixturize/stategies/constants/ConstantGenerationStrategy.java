@@ -3,7 +3,9 @@ package de.floydkretschmar.fixturize.stategies.constants;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.stategies.constants.value.DefaultValueProviders;
+import de.floydkretschmar.fixturize.domain.FixtureConstantDefinitionMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderMap;
+import de.floydkretschmar.fixturize.domain.FixtureConstantValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
 
 import javax.lang.model.element.TypeElement;
@@ -17,17 +19,17 @@ import java.util.stream.Stream;
 
 public class ConstantGenerationStrategy {
     private final ConstantsNamingStrategy constantsNamingStrategy;
-    private final DefaultValueProviders valueProviders;
+    private final ConstantValueProviderMap valueProviders;
 
-    public ConstantGenerationStrategy(ConstantsNamingStrategy constantsNamingStrategy, Map<String, ValueProvider> customValueProviders) {
+    public ConstantGenerationStrategy(ConstantsNamingStrategy constantsNamingStrategy, ConstantValueProviderMap valueProviders) {
         this.constantsNamingStrategy = constantsNamingStrategy;
-        this.valueProviders = new DefaultValueProviders(customValueProviders);
+        this.valueProviders = valueProviders;
     }
 
-    public Map<String, FixtureConstantDefinition> generateConstants(TypeElement element) {
+    public ConstantDefinitionMap generateConstants(TypeElement element) {
         final var fields = ElementFilter.fieldsIn(element.getEnclosedElements());
-        return createFixtureConstants(fields.stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return new FixtureConstantDefinitionMap(createFixtureConstants(fields.stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     private Stream<Map.Entry<String, FixtureConstantDefinition>> createFixtureConstants(Stream<VariableElement> fields) {

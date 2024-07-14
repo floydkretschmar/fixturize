@@ -2,9 +2,11 @@ package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
+import de.floydkretschmar.fixturize.domain.FixtureConstantValueProviderMap;
 import de.floydkretschmar.fixturize.domain.FixtureNames;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureBuilderStrategy;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,7 +44,7 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private void processAnnotatedElement(TypeElement element) {
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
-        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, Map.of());
+        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, new FixtureConstantValueProviderMap(Map.of()));
 
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
         creationMethodStrategies.add(new FixtureConstructorStrategy());
@@ -79,7 +82,7 @@ public class FixtureProcessor extends AbstractProcessor {
                 .qualifiedFixtureClassName(qualifiedFixtureClassName).build();
     }
 
-    private static String getCreationMethodsString(TypeElement element, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies, Map<String, FixtureConstantDefinition> constantMap) {
+    private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap) {
         return creationMethodStrategies.stream()
                 .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap).stream())
                 .map(method -> "%spublic %s %s() {\n%sreturn %s;\n%s}".formatted(WHITESPACE_4, method.getReturnType(), method.getName(), WHITESPACE_8, method.getReturnValue(), WHITESPACE_4))
@@ -94,7 +97,7 @@ public class FixtureProcessor extends AbstractProcessor {
     }
 
     private static String getFixtureClassAsString(TypeElement element, FixtureNames names, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
-        final String fixtureClassTemplate = """
+        final var fixtureClassTemplate = """
         %spublic class %sFixture {
         %s
         
@@ -102,11 +105,11 @@ public class FixtureProcessor extends AbstractProcessor {
         }
         """;
 
-        final String packageString = names.hasPackageName() ? "package %s;\n\n".formatted(names.getPackageName()) : "";
+        final var packageString = names.hasPackageName() ? "package %s;\n\n".formatted(names.getPackageName()) : "";
 
-        final Map<String, FixtureConstantDefinition> constantMap = constantsGenerationStrategy.generateConstants(element);
-        final String constantsString = getConstantsString(constantMap.values().stream());
-        final String creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap);
+        final var constantMap = constantsGenerationStrategy.generateConstants(element);
+        final var constantsString = getConstantsString(constantMap.values().stream());
+        final var creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap);
 
         return String.format(fixtureClassTemplate, packageString, names.getSimpleClassName(), constantsString, creationMethodsString);
     }

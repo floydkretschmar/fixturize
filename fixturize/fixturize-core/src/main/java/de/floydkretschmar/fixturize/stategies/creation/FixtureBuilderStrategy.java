@@ -5,13 +5,12 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilders;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
-import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 
 import javax.lang.model.element.TypeElement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,7 +19,7 @@ import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
 
 public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy {
     @Override
-    public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, Map<String, FixtureConstantDefinition> constantMap) {
+    public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap) {
         final var builderAnnotationContainer = element.getAnnotation(FixtureBuilders.class);
         final var builderAnnotation = element.getAnnotation(FixtureBuilder.class);
 
@@ -29,13 +28,7 @@ public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy 
 
         return (Objects.nonNull(builderAnnotationContainer) ? Arrays.stream(builderAnnotationContainer.value()) : Stream.of(builderAnnotation))
                 .map(annotation -> {
-                    final var correspondingConstants = Arrays.stream(annotation.correspondingFields()).map(parameterName -> {
-                        if (constantMap.containsKey(parameterName))
-                            return constantMap.get(parameterName);
-
-                        throw new FixtureCreationException("The parameter %s specified in @FixtureConstructor has no corresponding field in %s"
-                                .formatted(parameterName, element.getSimpleName().toString()));
-                    }).toList();
+                    final var correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.correspondingFields()));
                     final var functionName = correspondingConstants.stream()
                             .map(constant -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, constant.getOriginalFieldName()))
                             .collect(Collectors.joining("And"));

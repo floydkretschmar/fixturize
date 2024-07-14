@@ -1,11 +1,16 @@
-package de.floydkretschmar.fixturize.stategies.constants.value;
+package de.floydkretschmar.fixturize.domain;
+
+import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.StringValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.UUIDValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProvider;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class DefaultValueProviders extends HashMap<String, ValueProvider> {
-    public DefaultValueProviders(Map<? extends String, ? extends ValueProvider> map) {
+public class FixtureConstantValueProviderMap extends HashMap<String, ValueProvider> implements ConstantValueProviderMap {
+    public FixtureConstantValueProviderMap(Map<? extends String, ? extends ValueProvider> map) {
         super(map);
         this.putIfAbsent(boolean.class.getName(), field -> "false");
         this.putIfAbsent(char.class.getName(), field -> "'\u0000'");

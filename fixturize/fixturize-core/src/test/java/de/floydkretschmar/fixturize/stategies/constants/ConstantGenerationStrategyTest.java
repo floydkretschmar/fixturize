@@ -3,6 +3,7 @@ package de.floydkretschmar.fixturize.stategies.constants;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
+import de.floydkretschmar.fixturize.domain.FixtureConstantValueProviderMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -28,7 +29,7 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithValidClass_shouldGeneratedConstants() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), new FixtureConstantValueProviderMap(Map.of()));
 
         final var fields = List.of(
                 createVariableElemementMock("booleanField", boolean.class, null),
@@ -56,7 +57,7 @@ class ConstantGenerationStrategyTest {
     @Test
     void generateConstants_whenDefaultValueProviderGetsOverwritten_shouldGeneratedConstantsUsingExternalValueProvider() {
         final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(),
-                Map.of(UUID.class.getName(), field -> "EXTERNAL_VALUE"));
+                new FixtureConstantValueProviderMap(Map.of(UUID.class.getName(), field -> "EXTERNAL_VALUE")));
 
         final var fields = List.of(
                 createVariableElemementMock("booleanField", boolean.class, null),
@@ -78,7 +79,7 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithAttributeWithUnknownValue_shouldSetValueToNull() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), new FixtureConstantValueProviderMap(Map.of()));
 
         final var fields = List.of(
                 createVariableElemementMock("booleanField", boolean.class, null),
@@ -99,7 +100,7 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithFixtureConstantAnnotation_shouldUseNameFromAnnotationAsKeyAndName() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), new FixtureConstantValueProviderMap(Map.of()));
 
         final var annotation = mock(FixtureConstant.class);
         when(annotation.name()).thenReturn("CUSTOM_NAME");
@@ -125,7 +126,7 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithMultipleFixtureConstantsAnnotations_shouldGenerateConstantPerAnnotation() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), Map.of());
+        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), new FixtureConstantValueProviderMap(Map.of()));
 
         final FixtureConstant annotation = mock(FixtureConstant.class);
         when(annotation.name()).thenReturn("CUSTOM_NAME");
