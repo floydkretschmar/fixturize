@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import com.google.common.base.CaseFormat;
+import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
@@ -9,8 +10,11 @@ import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import javax.lang.model.element.TypeElement;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FixtureConstructorStrategy implements CreationMethodGenerationStrategy {
     public FixtureConstructorStrategy() {
@@ -18,7 +22,13 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
 
     @Override
     public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, Map<String, FixtureConstantDefinition> constantMap) {
-        return Arrays.stream(element.getAnnotation(FixtureConstructors.class).value())
+        final var fixtureConstructors = element.getAnnotation(FixtureConstructors.class);
+        final var fixtureConstructor = element.getAnnotation(FixtureConstructor.class);
+
+        if (Objects.isNull(fixtureConstructors) && Objects.isNull(fixtureConstructor))
+            return List.of();
+
+        return (Objects.nonNull(fixtureConstructors) ? Arrays.stream(fixtureConstructors.value()) : Stream.of(fixtureConstructor))
                 .map(constructorAnnotation -> Arrays.asList(constructorAnnotation.correspondingFieldNames()))
                 .map(correspondingFieldNames -> {
                     final String functionName = correspondingFieldNames.stream().map(name -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, name)).collect(Collectors.joining("And"));
