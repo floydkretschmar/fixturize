@@ -10,7 +10,7 @@ import java.util.UUID;
 @Fixture
 @Builder
 @Value
-@FixtureBuilder(correspondingFields = {"stringField", "intField", "booleanField", "uuidField"})
+@FixtureBuilder
 public class LombokClass {
     String stringField;
     int intField;

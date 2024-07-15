@@ -33,7 +33,12 @@ public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy 
 
         return (Objects.nonNull(builderAnnotationContainer) ? Arrays.stream(builderAnnotationContainer.value()) : Stream.of(builderAnnotation))
                 .map(annotation -> {
-                    final var correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.correspondingFields()));
+                    Collection<FixtureConstantDefinition> correspondingConstants;
+                    if (annotation.correspondingFields().length == 0)
+                        correspondingConstants = constantMap.values().stream().toList();
+                    else
+                        correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.correspondingFields()));
+
                     final var className = element.getSimpleName().toString();
 
                     return FixtureCreationMethodDefinition.builder()
@@ -44,7 +49,7 @@ public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy 
                 }).toList();
     }
 
-    private static String createReturnValueString(String className, String buildMethod, List<FixtureConstantDefinition> correspondingConstants) {
+    private static String createReturnValueString(String className, String buildMethod, Collection<FixtureConstantDefinition> correspondingConstants) {
         final var setterString = correspondingConstants.stream()
                 .map(constant -> ".%s(%s)".formatted(constant.getOriginalFieldName(), constant.getName()))
                 .collect(Collectors.joining("\n%s".formatted(WHITESPACE_16)));

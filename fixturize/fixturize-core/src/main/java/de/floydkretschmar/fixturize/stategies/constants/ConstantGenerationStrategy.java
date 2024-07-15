@@ -9,6 +9,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -25,8 +26,15 @@ public class ConstantGenerationStrategy {
 
     public ConstantDefinitionMap generateConstants(TypeElement element) {
         final var fields = ElementFilter.fieldsIn(element.getEnclosedElements());
-        return new FixtureConstantDefinitionMap(createFixtureConstants(fields.stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        final var linkedHashMap = createFixtureConstants(fields.stream())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s", u));
+                        },
+                        LinkedHashMap::new));
+        return new FixtureConstantDefinitionMap(linkedHashMap);
     }
 
     private Stream<Map.Entry<String, FixtureConstantDefinition>> createFixtureConstants(Stream<VariableElement> fields) {

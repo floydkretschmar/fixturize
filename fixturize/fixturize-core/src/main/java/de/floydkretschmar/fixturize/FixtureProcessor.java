@@ -2,15 +2,15 @@ package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.ClassValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.ElementKindValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.TypeKindValueProviderMap;
 import de.floydkretschmar.fixturize.domain.FixtureNames;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
+import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.map.ClassValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.map.ElementKindValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.map.TypeKindValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureBuilderStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorStrategy;
@@ -26,7 +26,6 @@ import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,7 +99,6 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private static String getConstantsString(Stream<FixtureConstantDefinition> constants) {
         return constants
-                .sorted(Comparator.comparing(FixtureConstantDefinition::getName))
                 .map(constant -> "%spublic static %s %s = %s;".formatted(WHITESPACE_4, constant.getType(), constant.getName(), constant.getValue()))
                 .collect(Collectors.joining("\n"));
     }

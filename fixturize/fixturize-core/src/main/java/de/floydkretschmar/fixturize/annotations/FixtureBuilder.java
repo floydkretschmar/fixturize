@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Repeatable(FixtureBuilders.class)
 public @interface FixtureBuilder {
-    String[] correspondingFields();
+    String[] correspondingFields() default {};
     String buildMethod() default "builder";
 }

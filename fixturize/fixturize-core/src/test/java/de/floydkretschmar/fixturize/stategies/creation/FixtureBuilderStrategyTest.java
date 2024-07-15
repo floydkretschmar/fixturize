@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
+import static de.floydkretschmar.fixturize.TestConstants.INT_FIELD_DEFINITION;
+import static de.floydkretschmar.fixturize.TestConstants.STRING_FIELD_DEFINITION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -23,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class FixtureBuilderStrategyTest {
@@ -54,6 +57,7 @@ class FixtureBuilderStrategyTest {
 
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(constantMap, times(1)).getMatchingConstants(List.of("uuidField"));
+        verifyNoMoreInteractions(constantMap);
     }
 
     @Test
@@ -74,6 +78,7 @@ class FixtureBuilderStrategyTest {
                         .name("createTestObjectBuilderFixtureWithStringFieldAndIntField")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
+        verifyNoMoreInteractions(constantMap);
     }
 
     @Test
@@ -89,6 +94,29 @@ class FixtureBuilderStrategyTest {
     }
 
     @Test
+    void createCreationMethods_whenBuilderHasNoFieldsDefined_shouldCreateCreationMethodUsingAllFields() {
+        final var strategy = new FixtureBuilderStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var element = mockTypeElement(Stream.of(
+                List.of()));
+        final var constantMap = mock(ConstantDefinitionMap.class);
+        when(constantMap.values()).thenReturn(List.of(STRING_FIELD_DEFINITION, INT_FIELD_DEFINITION));
+
+        final var result = strategy.generateCreationMethods(element, constantMap);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.stream()).contains(
+                FixtureCreationMethodDefinition.builder()
+                        .returnType("TestObject.TestObjectBuilder")
+                        .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.intField(INT_FIELD)"
+                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .name("createTestObjectBuilderFixtureWithStringFieldAndIntField")
+                        .build());
+
+        verify(constantMap, times(1)).values();
+        verifyNoMoreInteractions(constantMap);
+    }
+
+    @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
         final var strategy = new FixtureBuilderStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
@@ -98,6 +126,8 @@ class FixtureBuilderStrategyTest {
         when(constantMap.getMatchingConstants(anyCollection())).thenThrow(new FixtureCreationException("error"));
 
         assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap));
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField", "booleanField", "uuidField"));
+        verifyNoMoreInteractions(constantMap);
     }
 
     private static ConstantDefinitionMap mockConstantMap() {

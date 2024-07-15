@@ -42,7 +42,7 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
                 }).toList();
     }
 
-    private static String createReturnValueString(String className, List<FixtureConstantDefinition> correspondingConstants) {
+    private static String createReturnValueString(String className, Collection<FixtureConstantDefinition> correspondingConstants) {
         final var parameterString = correspondingConstants.stream()
                 .map(FixtureConstantDefinition::getName)
                 .collect(Collectors.joining(", "));
