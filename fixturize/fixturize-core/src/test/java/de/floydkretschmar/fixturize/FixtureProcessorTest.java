@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
+import javax.annotation.processing.Processor;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -34,7 +35,11 @@ class FixtureProcessorTest {
                 Arguments.of(
                         "classes/BuilderClass.java",
                         "de.floydkretschmar.fixturize.mocks.BuilderClassFixture",
-                        "fixtures/BuilderClassFixture.java")
+                        "fixtures/BuilderClassFixture.java"),
+                Arguments.of(
+                        "classes/LombokClass.java",
+                        "de.floydkretschmar.fixturize.mocks.LombokClassFixture",
+                        "fixtures/LombokClassFixture.java")
         );
     }
 
@@ -46,10 +51,16 @@ class FixtureProcessorTest {
         final var url = Resources.getResource(expectedFixtureClassPath);
         final var expectedFixture = Resources.toString(url, StandardCharsets.UTF_8);
 
+        Class<?> lombokAnnotationProcessor = getClass().getClassLoader().loadClass("lombok.launch.AnnotationProcessorHider$AnnotationProcessor");
+        Class<?> lombokClaimingProcessor = getClass().getClassLoader().loadClass("lombok.launch.AnnotationProcessorHider$ClaimingProcessor");
+
         try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
             final var compilation = javac()
-                    .withProcessors(new FixtureProcessor())
+                    .withProcessors(
+                            new FixtureProcessor(),
+                            (Processor)lombokAnnotationProcessor.getDeclaredConstructor().newInstance(),
+                            (Processor)lombokClaimingProcessor.getDeclaredConstructor().newInstance())
                     .compile(JavaFileObjects.forResource(classPath));
             assertThat(compilation).succeeded();
             assertThat(compilation)
