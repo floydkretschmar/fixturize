@@ -1,6 +1,8 @@
 package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
+import com.google.common.base.Enums;
+import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureNames;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
@@ -11,6 +13,7 @@ import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProvi
 import de.floydkretschmar.fixturize.stategies.constants.value.map.ClassValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.map.ElementKindValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.map.TypeKindValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.provider.CustomValueProviderService;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureBuilderStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.FixtureConstructorStrategy;
@@ -22,12 +25,15 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,11 +52,8 @@ public class FixtureProcessor extends AbstractProcessor {
     }
 
     private void processAnnotatedElement(TypeElement element) {
+        final var valueProviderService = initializeValueProviderService(element.getAnnotationsByType(FixtureValueProvider.class));
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
-        final var valueProviderService = new ConstantValueProviderService(
-                new TypeKindValueProviderMap(Map.of()),
-                new ElementKindValueProviderMap(Map.of()),
-                new ClassValueProviderMap(Map.of()));
         final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService);
 
         final var methodNamingStrategy = new UpperCamelCaseAndNamingStrategy();
@@ -71,6 +74,32 @@ public class FixtureProcessor extends AbstractProcessor {
         } catch (IOException e) {
             throw new FixtureCreationException("Failed to create source file %s for fixture.".formatted(names.getQualifiedClassName()));
         }
+    }
+
+    private static ConstantValueProviderService initializeValueProviderService(FixtureValueProvider[] customFixtureProviders) {
+        final var customValueProviderService = new CustomValueProviderService();
+        final var customTypeKindValueProviders = Arrays.stream(customFixtureProviders)
+                .filter(provider -> Enums.getIfPresent(TypeKind.class, provider.targetProviderType()).isPresent())
+                .collect(Collectors.toMap(
+                        provider -> TypeKind.valueOf(provider.targetProviderType()),
+                        annotation -> customValueProviderService.<VariableElement>createClassValueProvider(annotation.valueProviderCallback())));
+        final var customElementKindValueProviders = Arrays.stream(customFixtureProviders)
+                .filter(provider -> Enums.getIfPresent(ElementKind.class, provider.targetProviderType()).isPresent())
+                .collect(Collectors.toMap(
+                        provider -> ElementKind.valueOf(provider.targetProviderType()),
+                        annotation -> customValueProviderService.createClassValueProvider(annotation.valueProviderCallback())));
+        final var customClassValueProviders = Arrays.stream(customFixtureProviders)
+                .filter(provider -> !Enums.getIfPresent(TypeKind.class, provider.targetProviderType()).isPresent() &&
+                        !Enums.getIfPresent(ElementKind.class, provider.targetProviderType()).isPresent())
+                .collect(Collectors.toMap(
+                        FixtureValueProvider::targetProviderType,
+                        annotation -> customValueProviderService.<VariableElement>createClassValueProvider(annotation.valueProviderCallback())
+                ));
+
+        return new ConstantValueProviderService(
+                new TypeKindValueProviderMap(customTypeKindValueProviders),
+                new ElementKindValueProviderMap(customElementKindValueProviders),
+                new ClassValueProviderMap(customClassValueProviders));
     }
 
     private FixtureNames getNames(TypeElement element) {

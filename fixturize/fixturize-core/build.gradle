@@ -17,18 +17,21 @@ ext {
     guavaVersion = "33.2.1-jre"
     mockitoVersion = "5.12.0"
     compileTestingVersion = "0.21.0"
+    lombokVersion = "1.18.34"
+    nashornVersion = "15.4"
 }
 
 dependencies {
     implementation "com.google.auto.service:auto-service:$autoServiceVersion"
     implementation "com.google.guava:guava:$guavaVersion"
+    implementation "org.openjdk.nashorn:nashorn-core:$nashornVersion"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:$assertJVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation "com.google.testing.compile:compile-testing:$compileTestingVersion"
-    testImplementation 'org.projectlombok:lombok:1.18.34'
+    testImplementation "org.projectlombok:lombok:$lombokVersion"
 }
 
 test {
