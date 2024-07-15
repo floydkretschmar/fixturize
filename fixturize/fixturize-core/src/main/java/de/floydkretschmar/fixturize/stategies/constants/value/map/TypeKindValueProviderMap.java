@@ -29,7 +29,7 @@ public class TypeKindValueProviderMap extends HashMap<TypeKind, ValueProvider<Va
     public TypeKindValueProviderMap(Map<? extends TypeKind, ? extends ValueProvider<VariableElement>> map) {
         super(map);
         this.putIfAbsent(ARRAY, field -> "new %s {}".formatted(field.asType().toString()));
-        this.putIfAbsent(BOOLEAN,  new BooleanValueProvider());
+        this.putIfAbsent(BOOLEAN, new BooleanValueProvider());
         this.putIfAbsent(BYTE, new ByteValueProvider());
         this.putIfAbsent(CHAR, new CharacterValueProvider());
         this.putIfAbsent(DOUBLE, new DoubleValueProvider());

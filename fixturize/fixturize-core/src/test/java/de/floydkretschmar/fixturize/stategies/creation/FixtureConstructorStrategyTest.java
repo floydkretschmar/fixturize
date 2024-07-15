@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.annotations.FixtureConstructors;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
@@ -117,14 +116,7 @@ class FixtureConstructorStrategyTest {
             return fixtureConstructor;
         }).toArray(FixtureConstructor[]::new);
 
-        if (constructors.length > 1) {
-            final var fixtureConstructors = mock(FixtureConstructors.class);
-            when(fixtureConstructors.value()).thenReturn(constructors);
-            when(element.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureConstructors.class)))).thenReturn(fixtureConstructors);
-        }
-        else if (constructors.length == 1) {
-            when(element.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureConstructor.class)))).thenReturn(constructors[0]);
-        }
+        when(element.getAnnotationsByType(ArgumentMatchers.argThat(param -> param.equals(FixtureConstructor.class)))).thenReturn(constructors);
 
         final var name = mock(Name.class);
         when(name.toString()).thenReturn("TestObject");

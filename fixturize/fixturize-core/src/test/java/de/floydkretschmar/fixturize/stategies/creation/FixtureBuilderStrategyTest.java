@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
-import de.floydkretschmar.fixturize.annotations.FixtureBuilders;
 import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
 import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
@@ -19,7 +18,7 @@ import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
 import static de.floydkretschmar.fixturize.TestConstants.INT_FIELD_DEFINITION;
 import static de.floydkretschmar.fixturize.TestConstants.STRING_FIELD_DEFINITION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -147,20 +146,13 @@ class FixtureBuilderStrategyTest {
     private static TypeElement mockTypeElement(Stream<List<String>> definedFixtureBuilders) {
         final var element = mock(TypeElement.class);
         final var builders = definedFixtureBuilders.map(parameterNames -> {
-            final var FixtureBuilder = mock(FixtureBuilder.class);
-            when(FixtureBuilder.correspondingFields()).thenReturn(parameterNames.toArray(String[]::new));
-            when(FixtureBuilder.buildMethod()).thenReturn("builder");
-            return FixtureBuilder;
+            final var builder = mock(FixtureBuilder.class);
+            when(builder.correspondingFields()).thenReturn(parameterNames.toArray(String[]::new));
+            when(builder.buildMethod()).thenReturn("builder");
+            return builder;
         }).toArray(FixtureBuilder[]::new);
 
-        if (builders.length > 1) {
-            final var FixtureBuilders = mock(FixtureBuilders.class);
-            when(FixtureBuilders.value()).thenReturn(builders);
-            when(element.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureBuilders.class)))).thenReturn(FixtureBuilders);
-        }
-        else if (builders.length == 1) {
-            when(element.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureBuilder.class)))).thenReturn(builders[0]);
-        }
+        when(element.getAnnotationsByType(ArgumentMatchers.argThat(param -> param.equals(FixtureBuilder.class)))).thenReturn(builders);
 
         final var name = mock(Name.class);
         when(name.toString()).thenReturn("TestObject");
