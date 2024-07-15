@@ -5,6 +5,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.lang.model.element.ElementKind;
 import java.util.UUID;
 
 @Fixture
@@ -16,4 +17,5 @@ public class LombokClass {
     int intField;
     boolean booleanField;
     UUID uuidField;
+    ElementKind[] elementKindsField;
 }

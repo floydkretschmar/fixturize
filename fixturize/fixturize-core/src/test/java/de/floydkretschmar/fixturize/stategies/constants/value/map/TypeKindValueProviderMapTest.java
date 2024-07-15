@@ -8,6 +8,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import java.util.Map;
 
+import static javax.lang.model.type.TypeKind.CHAR;
 import static javax.lang.model.type.TypeKind.INT;
 import static javax.lang.model.type.TypeKind.OTHER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +43,6 @@ class TypeKindValueProviderMapTest {
     @ParameterizedTest
     @CsvSource({
             "BOOLEAN, false",
-            "CHAR, '\u0000'",
             "BYTE, 0",
             "INT, 0",
             "SHORT, Short.valueOf((short)0)",
@@ -54,6 +54,14 @@ class TypeKindValueProviderMapTest {
         final var map = new TypeKindValueProviderMap(Map.of());
 
         assertThat(map.get(targetClassName).provideValueAsString(field)).isEqualTo(expectedDefaultValue);
+    }
+
+    @Test
+    void get_whenCalledForCHAR_shouldReturnExpectedDefaultValue() {
+        final var field = mock(VariableElement.class);
+        final var map = new TypeKindValueProviderMap(Map.of());
+
+        assertThat(map.get(CHAR).provideValueAsString(field)).isEqualTo("' '");
     }
 
     @Test

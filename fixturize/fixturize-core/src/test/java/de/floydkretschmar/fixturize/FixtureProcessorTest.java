@@ -39,7 +39,11 @@ class FixtureProcessorTest {
                 Arguments.of(
                         "classes/LombokClass.java",
                         "de.floydkretschmar.fixturize.mocks.LombokClassFixture",
-                        "fixtures/LombokClassFixture.java")
+                        "fixtures/LombokClassFixture.java"),
+                Arguments.of(
+                        "classes/SupportedTypesClass.java",
+                        "de.floydkretschmar.fixturize.mocks.SupportedTypesClassFixture",
+                        "fixtures/SupportedTypesClassFixture.java")
         );
     }
 
