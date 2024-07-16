@@ -19,7 +19,8 @@ import java.lang.annotation.Target;
 public @interface FixtureConstructor {
     /***
      * Returns the string representation of the parameters defining the constructor that should be used for the creation
-     * of the fixture.
+     * of the fixture. The parameters have to be in the same order in the constructor that is being referenced. The value
+     * itself has to be either the name of the corresponding field or {@link FixtureConstant#name()} if specified.
      * @return the constructor parameter representations
      */
     String[] constructorParameters();

@@ -1,8 +1,8 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
-import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
+import de.floydkretschmar.fixturize.domain.Constant;
+import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import org.junit.jupiter.api.Test;
@@ -27,11 +27,11 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-class FixtureBuilderStrategyTest {
+class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenMultipleBuildersDefined_shouldCreateCreationMethodsForDefinedBuilders() {
-        final var strategy = new FixtureBuilderStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField"),
                 List.of("uuidField")));
@@ -41,13 +41,13 @@ class FixtureBuilderStrategyTest {
 
         assertThat(result).hasSize(2);
         assertThat(result.stream()).contains(
-                FixtureCreationMethodDefinition.builder()
+                CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
                                 .formatted(WHITESPACE_16, WHITESPACE_16))
                         .name("createTestObjectBuilderFixtureWithStringFieldAndIntField")
                         .build(),
-                FixtureCreationMethodDefinition.builder()
+                CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.uuidField(uuidFieldName)"
                                 .formatted(WHITESPACE_16))
@@ -61,7 +61,7 @@ class FixtureBuilderStrategyTest {
 
     @Test
     void createCreationMethods_whenSingleBuilderDefined_shouldCreateCreationMethodForDefinedBuilder() {
-        final var strategy = new FixtureBuilderStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField")));
         final var constantMap = mockConstantMap();
@@ -70,7 +70,7 @@ class FixtureBuilderStrategyTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
-                FixtureCreationMethodDefinition.builder()
+                CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
                                 .formatted(WHITESPACE_16, WHITESPACE_16))
@@ -82,11 +82,11 @@ class FixtureBuilderStrategyTest {
 
     @Test
     void createCreationMethods_whenNoBuilderDefined_shouldReturnEmptyList() {
-        final var strategy = new FixtureBuilderStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of());
 
         final var constantMap = mockConstantMap();
-        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, constantMap);
+        final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap);
 
         assertThat(result).hasSize(0);
         verifyNoInteractions(constantMap);
@@ -94,7 +94,7 @@ class FixtureBuilderStrategyTest {
 
     @Test
     void createCreationMethods_whenBuilderHasNoFieldsDefined_shouldCreateCreationMethodUsingAllFields() {
-        final var strategy = new FixtureBuilderStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of()));
         final var constantMap = mock(ConstantDefinitionMap.class);
@@ -104,7 +104,7 @@ class FixtureBuilderStrategyTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
-                FixtureCreationMethodDefinition.builder()
+                CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.intField(INT_FIELD)"
                                 .formatted(WHITESPACE_16, WHITESPACE_16))
@@ -117,7 +117,7 @@ class FixtureBuilderStrategyTest {
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        final var strategy = new FixtureBuilderStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 
@@ -133,7 +133,7 @@ class FixtureBuilderStrategyTest {
         final var constantMap = mock(ConstantDefinitionMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenAnswer(call -> {
             final var argument = call.<Collection<String>>getArgument(0);
-            return argument.stream().map(name -> FixtureConstantDefinition.builder()
+            return argument.stream().map(name -> Constant.builder()
                     .originalFieldName(name)
                     .name("%sName".formatted(name))
                     .type("%sType".formatted(name))

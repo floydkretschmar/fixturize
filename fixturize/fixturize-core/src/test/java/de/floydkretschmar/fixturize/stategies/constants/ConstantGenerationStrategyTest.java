@@ -2,7 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstants;
-import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
+import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 
 class ConstantGenerationStrategyTest {
     @Test
-    void generateConstants_whenCalledWithValidClass_shouldGeneratedConstants() {
+    void generateConstants_whenCalledWithValidClass_shouldGenerateConstants() {
         final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
 
         final var fields = List.of(
@@ -37,8 +37,8 @@ class ConstantGenerationStrategyTest {
         final var result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                "intField", FixtureConstantDefinition.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build()));
+                "booleanField", Constant.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                "intField", Constant.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build()));
     }
 
     @Test
@@ -55,9 +55,9 @@ class ConstantGenerationStrategyTest {
         final var result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                "intField", FixtureConstantDefinition.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build(),
-                "unknownObject", FixtureConstantDefinition.builder().originalFieldName("unknownObject").value("null").type("java.util.Date").name("UNKNOWN_OBJECT").build()));
+                "booleanField", Constant.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
+                "intField", Constant.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build(),
+                "unknownObject", Constant.builder().originalFieldName("unknownObject").value("null").type("java.util.Date").name("UNKNOWN_OBJECT").build()));
     }
 
     @Test
@@ -81,8 +81,8 @@ class ConstantGenerationStrategyTest {
         final var result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "CUSTOM_NAME", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
-                "CUSTOM_NAME_2", FixtureConstantDefinition.builder().originalFieldName("booleanField2").value("false").type("boolean").name("CUSTOM_NAME_2").build()
+                "CUSTOM_NAME", Constant.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
+                "CUSTOM_NAME_2", Constant.builder().originalFieldName("booleanField2").value("false").type("boolean").name("CUSTOM_NAME_2").build()
         ));
     }
 
@@ -106,8 +106,8 @@ class ConstantGenerationStrategyTest {
         final var result = stategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "CUSTOM_NAME", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
-                "CUSTOM_NAME_2", FixtureConstantDefinition.builder().originalFieldName("booleanField").value("false").type("boolean").name("CUSTOM_NAME_2").build()
+                "CUSTOM_NAME", Constant.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
+                "CUSTOM_NAME_2", Constant.builder().originalFieldName("booleanField").value("false").type("boolean").name("CUSTOM_NAME_2").build()
         ));
     }
 

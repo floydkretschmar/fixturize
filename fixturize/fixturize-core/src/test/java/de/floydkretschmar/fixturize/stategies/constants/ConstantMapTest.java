@@ -14,7 +14,7 @@ import static de.floydkretschmar.fixturize.TestConstants.UUID_FIELD_DEFINITION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class FixtureConstantDefinitionMapTest {
+class ConstantMapTest {
 
     private static final FixtureConstantDefinitionMap CONSTANTS_MAP = new FixtureConstantDefinitionMap(Map.of(
             "stringField", STRING_FIELD_DEFINITION,

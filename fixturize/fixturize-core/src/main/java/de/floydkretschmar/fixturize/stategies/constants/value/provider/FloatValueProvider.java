@@ -2,7 +2,12 @@ package de.floydkretschmar.fixturize.stategies.constants.value.provider;
 
 import javax.lang.model.element.VariableElement;
 
-public class FloatValueProvider implements ValueProvider<VariableElement> {
+/***
+ * Default value provider for {@link Float} and {@link float}.
+ *
+ * @author Floyd Kretschmar
+ */
+public class FloatValueProvider implements ValueProvider {
     @Override
     public String provideValueAsString(VariableElement field) {
         return "0.0F";

@@ -12,7 +12,6 @@ import de.floydkretschmar.fixturize.stategies.constants.value.provider.StringVal
 import de.floydkretschmar.fixturize.stategies.constants.value.provider.UUIDValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.provider.ValueProvider;
 
-import javax.lang.model.element.VariableElement;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -29,9 +28,22 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 
-public class ClassValueProviderMap extends HashMap<String, ValueProvider<VariableElement>> {
-    public ClassValueProviderMap(Map<? extends String, ? extends ValueProvider<VariableElement>> map) {
-        super(map);
+/***
+ * An extension of the {@link HashMap} class that registers a default {@link ValueProvider}s for a number of different
+ * classes, given no custom provider has been defined for the specified class.
+ *
+ * @author Floyd Kretschmar
+ */
+public class ClassValueProviderMap extends HashMap<String, ValueProvider> {
+
+    /***
+     * Constructs a {@link ElementKindValueProviderMap } registering default {@link ValueProvider}s for a number of different
+     * classes, given no custom {@link ValueProvider} has been provided for the specified class.
+     *
+     * @param customClassValueProviders - the list of custom {@link ValueProvider}s
+     */
+    public ClassValueProviderMap(Map<? extends String, ? extends ValueProvider> customClassValueProviders) {
+        super(customClassValueProviders);
         this.putIfAbsent(String.class.getName(), new StringValueProvider());
         this.putIfAbsent(UUID.class.getName(), new UUIDValueProvider());
         this.putIfAbsent(Boolean.class.getName(),  new BooleanValueProvider());

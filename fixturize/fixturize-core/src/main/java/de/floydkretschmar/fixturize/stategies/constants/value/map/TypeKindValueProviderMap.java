@@ -10,7 +10,6 @@ import de.floydkretschmar.fixturize.stategies.constants.value.provider.LongValue
 import de.floydkretschmar.fixturize.stategies.constants.value.provider.ShortValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.provider.ValueProvider;
 
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +24,22 @@ import static javax.lang.model.type.TypeKind.INT;
 import static javax.lang.model.type.TypeKind.LONG;
 import static javax.lang.model.type.TypeKind.SHORT;
 
-public class TypeKindValueProviderMap extends HashMap<TypeKind, ValueProvider<VariableElement>> {
-    public TypeKindValueProviderMap(Map<? extends TypeKind, ? extends ValueProvider<VariableElement>> map) {
-        super(map);
+/***
+ * An extension of the {@link HashMap} class that registers a default {@link ValueProvider}s for a number of different
+ * {@link TypeKind}s, given no custom provider has been defined for the specified {@link TypeKind}.
+ *
+ * @author Floyd Kretschmar
+ */
+public class TypeKindValueProviderMap extends HashMap<TypeKind, ValueProvider> {
+
+    /***
+     * Constructs a {@link TypeKindValueProviderMap } registering default {@link ValueProvider}s for a number of different
+     * {@link TypeKind}s, given no custom {@link ValueProvider} has been provided for the specified {@link TypeKind}.
+     *
+     * @param customTypeKindValueProviders - the list of custom {@link ValueProvider}s
+     */
+    public TypeKindValueProviderMap(Map<? extends TypeKind, ? extends ValueProvider> customTypeKindValueProviders) {
+        super(customTypeKindValueProviders);
         this.putIfAbsent(ARRAY, field -> "new %s {}".formatted(field.asType().toString()));
         this.putIfAbsent(BOOLEAN, new BooleanValueProvider());
         this.putIfAbsent(BYTE, new ByteValueProvider());

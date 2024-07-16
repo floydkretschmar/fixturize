@@ -1,8 +1,8 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.FixtureConstantDefinition;
-import de.floydkretschmar.fixturize.domain.FixtureCreationMethodDefinition;
+import de.floydkretschmar.fixturize.domain.Constant;
+import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import org.junit.jupiter.api.Test;
@@ -23,11 +23,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-class FixtureConstructorStrategyTest {
+class ConstructorCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenMultipleConstructorsDefined_shouldCreateCreationMethodsForDefinedConstructors() {
-        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new ConstructorCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField"),
                 List.of("uuidField")));
@@ -37,12 +37,12 @@ class FixtureConstructorStrategyTest {
 
         assertThat(result).hasSize(2);
         assertThat(result.stream()).contains(
-                FixtureCreationMethodDefinition.builder()
+                CreationMethod.builder()
                         .returnType("TestObject")
                         .returnValue("new TestObject(stringFieldName, intFieldName)")
                         .name("createTestObjectFixtureWithStringFieldAndIntField")
                         .build(),
-                FixtureCreationMethodDefinition.builder()
+                CreationMethod.builder()
                         .returnType("TestObject")
                         .returnValue("new TestObject(uuidFieldName)")
                         .name("createTestObjectFixtureWithUuidField")
@@ -53,7 +53,7 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenSingleConstructorDefined_shouldCreateCreationMethodForDefinedConstructor() {
-        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new ConstructorCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField")));
         final var constantMap = mockConstantMap();
@@ -62,7 +62,7 @@ class FixtureConstructorStrategyTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
-                FixtureCreationMethodDefinition.builder()
+                CreationMethod.builder()
                         .returnType("TestObject")
                         .returnValue("new TestObject(stringFieldName, intFieldName)")
                         .name("createTestObjectFixtureWithStringFieldAndIntField")
@@ -72,11 +72,11 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenNoConstructorDefined_shouldReturnEmptyList() {
-        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new ConstructorCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of());
 
         final var constantMap = mockConstantMap();
-        final Collection<FixtureCreationMethodDefinition> result = strategy.generateCreationMethods(element, constantMap);
+        final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap);
 
         assertThat(result).hasSize(0);
         verifyNoInteractions(constantMap);
@@ -84,7 +84,7 @@ class FixtureConstructorStrategyTest {
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        final var strategy = new FixtureConstructorStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new ConstructorCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 
@@ -98,7 +98,7 @@ class FixtureConstructorStrategyTest {
         final var constantMap = mock(ConstantDefinitionMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenAnswer(call -> {
             final var argument = call.<Collection<String>>getArgument(0);
-            return argument.stream().map(name -> FixtureConstantDefinition.builder()
+            return argument.stream().map(name -> Constant.builder()
                     .originalFieldName(name)
                     .name("%sName".formatted(name))
                     .type("%sType".formatted(name))
