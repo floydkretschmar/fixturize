@@ -18,6 +18,8 @@ public class SupportedTypesClassFixture {
     public static java.lang.Long LONG_CLASS_FIELD = 0L;
     public static java.lang.Short SHORT_CLASS_FIELD = Short.valueOf((short)0);
     public static java.lang.String STRING_FIELD = "STRING_FIELD_VALUE";
+    public static java.math.BigDecimal BIG_DECIMAL_FIELD = java.math.BigDecimal.ZERO;
+    public static java.math.BigInteger BIG_INTEGER_FIELD = java.math.BigInteger.ZERO;
     public static java.time.Instant INSTANT_FIELD = java.time.Instant.now();
     public static java.time.Duration DURATION_FIELD = java.time.Duration.ZERO;
     public static java.time.LocalDate LOCAL_DATE_FIELD = java.time.LocalDate.now();

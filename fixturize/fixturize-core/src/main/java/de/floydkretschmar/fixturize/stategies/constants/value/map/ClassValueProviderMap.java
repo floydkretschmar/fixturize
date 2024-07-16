@@ -54,8 +54,8 @@ public class ClassValueProviderMap extends HashMap<String, ValueProvider> {
         this.putIfAbsent(Integer.class.getName(), new IntegerValueProvider());
         this.putIfAbsent(Long.class.getName(), new LongValueProvider());
         this.putIfAbsent(Short.class.getName(), new ShortValueProvider());
-        this.putIfAbsent(BigDecimal.class.getName(), field -> "BigDecimal.ZERO");
-        this.putIfAbsent(BigInteger.class.getName(), field -> "BigInteger.ZERO");
+        this.putIfAbsent(BigDecimal.class.getName(), field -> "java.math.BigDecimal.ZERO");
+        this.putIfAbsent(BigInteger.class.getName(), field -> "java.math.BigInteger.ZERO");
         this.putIfAbsent(Instant.class.getName(), field -> "java.time.Instant.now()");
         this.putIfAbsent(Duration.class.getName(), field -> "java.time.Duration.ZERO");
         this.putIfAbsent(LocalDate.class.getName(), field -> "java.time.LocalDate.now()");

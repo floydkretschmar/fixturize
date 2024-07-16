@@ -4,6 +4,8 @@ import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import lombok.Builder;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,6 +42,9 @@ public class SupportedTypesClass {
     private Short shortClassField;
 
     private String stringField;
+
+    private BigDecimal bigDecimalField;
+    private BigInteger bigIntegerField;
 
     private Instant instantField;
     private Duration durationField;

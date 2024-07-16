@@ -57,7 +57,7 @@ import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_8;
  * and {@link CreationMethodGenerationStrategy} respectively.
  */
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
-@SupportedSourceVersion(SourceVersion.RELEASE_21)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class FixtureProcessor extends AbstractProcessor {
     @Override
