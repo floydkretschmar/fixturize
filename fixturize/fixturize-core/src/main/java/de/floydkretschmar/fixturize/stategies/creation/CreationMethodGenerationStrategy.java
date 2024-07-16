@@ -15,7 +15,7 @@ import java.util.Collection;
  * class also annotated with {@link Fixture} one generation method with the following
  * structure will be generated:
  * <br><br>
- * public <b>returnType</b> <b>methodName</b>() {
+ * public static <b>returnType</b> <b>methodName</b>() {
  * return <b>returnValue</b>;
  * }
  * <br><br>

@@ -6,7 +6,7 @@ public class BuilderClassFixture {
     public static boolean BOOLEAN_FIELD = false;
     public static java.util.UUID UUID_FIELD = java.util.UUID.fromString("6b21f215-bf9e-445a-9dd2-5808a3a98d52");
 
-    public BuilderClass.BuilderClassBuilder createBuilderClassBuilderFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
+    public static BuilderClass.BuilderClassBuilder createBuilderClassBuilderFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
         return BuilderClass.builder()
                 .stringField(STRING_FIELD)
                 .intField(INT_FIELD)
