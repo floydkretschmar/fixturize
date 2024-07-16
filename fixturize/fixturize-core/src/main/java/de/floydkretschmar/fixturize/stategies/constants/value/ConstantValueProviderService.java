@@ -17,13 +17,15 @@ public class ConstantValueProviderService implements ValueProviderService {
     @Override
     public String getValueFor(VariableElement field) {
         final var fieldType = field.asType();
-        if (typeKindValueProviders.containsKey(fieldType.getKind()))
-            return typeKindValueProviders.get(fieldType.getKind()).provideValueAsString(field);
+        final var typeKind = fieldType.getKind();
+        if (typeKindValueProviders.containsKey(typeKind))
+            return typeKindValueProviders.get(typeKind).provideValueAsString(field);
 
-        if (fieldType.getKind() == TypeKind.DECLARED) {
+        if (typeKind == TypeKind.DECLARED) {
             final var declaredElement = ((DeclaredType)fieldType).asElement();
-            if (elementKindValueProviderMap.containsKey(declaredElement.getKind()))
-                return elementKindValueProviderMap.get(declaredElement.getKind()).provideValueAsString(declaredElement);
+            final var elementKind = declaredElement.getKind();
+            if (elementKindValueProviderMap.containsKey(elementKind))
+                return elementKindValueProviderMap.get(elementKind).provideValueAsString(field);
         }
 
         final var fullQualifiedTypeName = fieldType.toString();

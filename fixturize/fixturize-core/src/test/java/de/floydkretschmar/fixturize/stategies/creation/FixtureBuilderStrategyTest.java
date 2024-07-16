@@ -147,8 +147,8 @@ class FixtureBuilderStrategyTest {
         final var element = mock(TypeElement.class);
         final var builders = definedFixtureBuilders.map(parameterNames -> {
             final var builder = mock(FixtureBuilder.class);
-            when(builder.correspondingFields()).thenReturn(parameterNames.toArray(String[]::new));
-            when(builder.buildMethod()).thenReturn("builder");
+            when(builder.usedSetters()).thenReturn(parameterNames.toArray(String[]::new));
+            when(builder.builderMethod()).thenReturn("builder");
             return builder;
         }).toArray(FixtureBuilder[]::new);
 

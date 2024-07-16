@@ -112,7 +112,7 @@ class FixtureConstructorStrategyTest {
         final var element = mock(TypeElement.class);
         final var constructors = definedFixtureConstructors.map(parameterNames -> {
             final var fixtureConstructor = mock(FixtureConstructor.class);
-            when(fixtureConstructor.correspondingFields()).thenReturn(parameterNames.toArray(String[]::new));
+            when(fixtureConstructor.constructorParameters()).thenReturn(parameterNames.toArray(String[]::new));
             return fixtureConstructor;
         }).toArray(FixtureConstructor[]::new);
 

@@ -7,7 +7,7 @@ import javax.lang.model.element.ElementKind;
 import java.util.UUID;
 
 @Fixture
-@FixtureConstructor(correspondingFields = {"stringField", "intField", "booleanField", "uuidField"})
+@FixtureConstructor(constructorParameters = {"stringField", "intField", "booleanField", "uuidField"})
 public class SingleConstructorClass {
     private final String stringField;
     private final int intField;

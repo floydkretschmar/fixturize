@@ -24,16 +24,16 @@ public class FixtureBuilderStrategy implements CreationMethodGenerationStrategy 
         return Arrays.stream(element.getAnnotationsByType(FixtureBuilder.class))
                 .map(annotation -> {
                     Collection<FixtureConstantDefinition> correspondingConstants;
-                    if (annotation.correspondingFields().length == 0)
+                    if (annotation.usedSetters().length == 0)
                         correspondingConstants = constantMap.values().stream().toList();
                     else
-                        correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.correspondingFields()));
+                        correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.usedSetters()));
 
                     final var className = element.getSimpleName().toString();
 
                     return FixtureCreationMethodDefinition.builder()
                             .returnType("%s.%sBuilder".formatted(className, className))
-                            .returnValue(createReturnValueString(className, annotation.buildMethod(), correspondingConstants))
+                            .returnValue(createReturnValueString(className, annotation.builderMethod(), correspondingConstants))
                             .name(this.namingStrategy.createMethodName("%sBuilder".formatted(className), correspondingConstants))
                             .build();
                 }).toList();

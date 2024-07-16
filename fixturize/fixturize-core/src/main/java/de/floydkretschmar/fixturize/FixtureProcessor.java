@@ -79,20 +79,20 @@ public class FixtureProcessor extends AbstractProcessor {
     private static ConstantValueProviderService initializeValueProviderService(FixtureValueProvider[] customFixtureProviders) {
         final var customValueProviderService = new CustomValueProviderService();
         final var customTypeKindValueProviders = Arrays.stream(customFixtureProviders)
-                .filter(provider -> Enums.getIfPresent(TypeKind.class, provider.targetProviderType()).isPresent())
+                .filter(provider -> Enums.getIfPresent(TypeKind.class, provider.targetType()).isPresent())
                 .collect(Collectors.toMap(
-                        provider -> TypeKind.valueOf(provider.targetProviderType()),
+                        provider -> TypeKind.valueOf(provider.targetType()),
                         annotation -> customValueProviderService.<VariableElement>createClassValueProvider(annotation.valueProviderCallback())));
         final var customElementKindValueProviders = Arrays.stream(customFixtureProviders)
-                .filter(provider -> Enums.getIfPresent(ElementKind.class, provider.targetProviderType()).isPresent())
+                .filter(provider -> Enums.getIfPresent(ElementKind.class, provider.targetType()).isPresent())
                 .collect(Collectors.toMap(
-                        provider -> ElementKind.valueOf(provider.targetProviderType()),
-                        annotation -> customValueProviderService.createClassValueProvider(annotation.valueProviderCallback())));
+                        provider -> ElementKind.valueOf(provider.targetType()),
+                        annotation -> customValueProviderService.<VariableElement>createClassValueProvider(annotation.valueProviderCallback())));
         final var customClassValueProviders = Arrays.stream(customFixtureProviders)
-                .filter(provider -> !Enums.getIfPresent(TypeKind.class, provider.targetProviderType()).isPresent() &&
-                        !Enums.getIfPresent(ElementKind.class, provider.targetProviderType()).isPresent())
+                .filter(provider -> !Enums.getIfPresent(TypeKind.class, provider.targetType()).isPresent() &&
+                        !Enums.getIfPresent(ElementKind.class, provider.targetType()).isPresent())
                 .collect(Collectors.toMap(
-                        FixtureValueProvider::targetProviderType,
+                        FixtureValueProvider::targetType,
                         annotation -> customValueProviderService.<VariableElement>createClassValueProvider(annotation.valueProviderCallback())
                 ));
 

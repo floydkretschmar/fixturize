@@ -6,8 +6,8 @@ import lombok.Builder;
 
 @Builder
 @Fixture
-@FixtureValueProvider(targetProviderType = "java.lang.String", valueProviderCallback = "\"\\\"\" + field.getSimpleName().toString() + \"Value\" + \"\\\"\"")
-@FixtureValueProvider(targetProviderType = "INT", valueProviderCallback = "10")
+@FixtureValueProvider(targetType = "java.lang.String", valueProviderCallback = "\"\\\"\" + field.getSimpleName().toString() + \"Value\" + \"\\\"\"")
+@FixtureValueProvider(targetType = "INT", valueProviderCallback = "10")
 public class CustomValueProviderClass {
     private String stringField;
     private int intField;

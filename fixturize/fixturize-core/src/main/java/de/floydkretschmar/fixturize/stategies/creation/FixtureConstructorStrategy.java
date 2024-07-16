@@ -21,7 +21,7 @@ public class FixtureConstructorStrategy implements CreationMethodGenerationStrat
     public Collection<FixtureCreationMethodDefinition> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap) {
         return Arrays.stream(element.getAnnotationsByType(FixtureConstructor.class))
                 .map(annotation -> {
-                    final var correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.correspondingFields()));
+                    final var correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.constructorParameters()));
                     final var className = element.getSimpleName().toString();
 
                     return FixtureCreationMethodDefinition.builder()
