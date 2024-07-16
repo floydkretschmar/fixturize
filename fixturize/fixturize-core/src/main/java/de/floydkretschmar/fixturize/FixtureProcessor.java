@@ -39,6 +39,23 @@ import java.util.stream.Stream;
 import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_4;
 import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_8;
 
+/**
+ * Processes all classes annotated with {@link de.floydkretschmar.fixturize.annotations.Fixture} and tries to generate
+ * a corresponding fixture class for all of these classes. A fixture class generally has the following format:
+ * <br><br>
+ * public class <b>className</b>Fixture { <br>
+ * <b>constant1</b><br>
+ * ...<br>
+ * <b>constantM</b><br>
+ * <br>
+ * <b>creationMethod1</b><br>
+ * ...<br>
+ * <b>creationMethod2</b><br>
+ * }<br>
+ * <br>
+ * For the exact format of each <b>constant</b> and <b>creationMethod</b> please reference {@link ConstantGenerationStrategy}
+ * and {@link CreationMethodGenerationStrategy} respectively.
+ */
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
