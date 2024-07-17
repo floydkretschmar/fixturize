@@ -24,6 +24,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -57,13 +58,23 @@ import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_8;
  * and {@link CreationMethodGenerationStrategy} respectively.
  */
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
-@SupportedSourceVersion(SourceVersion.RELEASE_17)
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
 public class FixtureProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        annotations.forEach(annnotation -> roundEnv.getElementsAnnotatedWith(annnotation).forEach(element -> this.processAnnotatedElement((TypeElement)element)));
-        return true;
+        boolean hasErrors = false;
+        for (TypeElement annotation : annotations) {
+            for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
+                try {
+                    this.processAnnotatedElement((TypeElement) element);
+                } catch (Exception e) {
+                    hasErrors = true;
+                    if (!roundEnv.processingOver()) break;
+                }
+            }
+        }
+        return !hasErrors;
     }
 
     private void processAnnotatedElement(TypeElement element) {

@@ -3,6 +3,7 @@ package de.floydkretschmar.fixturize;
 import com.google.common.io.Resources;
 import com.google.testing.compile.JavaFileObjects;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -10,7 +11,10 @@ import org.mockito.Mockito;
 
 import javax.annotation.processing.Processor;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
@@ -51,29 +55,54 @@ class FixtureProcessorTest {
         );
     }
 
-    @SneakyThrows
     @ParameterizedTest(name = "{0}")
     @MethodSource("process_getParameters")
     void process_whenCalled_generateFixtureClass(String classPath, String expectedFixtureClassName, String expectedFixtureClassPath) {
         final var uuid = UUID.fromString(RANDOM_UUID);
-        final var url = Resources.getResource(expectedFixtureClassPath);
-        final var expectedFixture = Resources.toString(url, StandardCharsets.UTF_8);
-
-        Class<?> lombokAnnotationProcessor = getClass().getClassLoader().loadClass("lombok.launch.AnnotationProcessorHider$AnnotationProcessor");
-        Class<?> lombokClaimingProcessor = getClass().getClassLoader().loadClass("lombok.launch.AnnotationProcessorHider$ClaimingProcessor");
+        final var expectedFixture = loadExpectedFixture(expectedFixtureClassPath);
 
         try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            final var compilation = javac()
-                    .withProcessors(
-                            new FixtureProcessor(),
-                            (Processor)lombokAnnotationProcessor.getDeclaredConstructor().newInstance(),
-                            (Processor)lombokClaimingProcessor.getDeclaredConstructor().newInstance())
-                    .compile(JavaFileObjects.forResource(classPath));
-            assertThat(compilation).succeeded();
-            assertThat(compilation)
-                    .generatedSourceFile(expectedFixtureClassName)
-                    .contentsAsString(StandardCharsets.UTF_8).isEqualTo(expectedFixture);
+            assertCompiledClasses(List.of(classPath), Map.of(expectedFixtureClassName, expectedFixture));
         }
+    }
+
+    @Test
+    void process_whenFixtureIsCrossReferencing_generateFixtureClass() {
+        final var expectedFixture1 = loadExpectedFixture("fixtures/CrossReferencingClassFixture.java");
+        final var expectedFixture2 = loadExpectedFixture("fixtures/CrossReferencedClassFixture.java");
+
+        assertCompiledClasses(
+                List.of("classes/CrossReferencingClass.java", "classes/CrossReferencedClass.java"),
+                Map.of(
+                        "de.floydkretschmar.fixturize.mocks.CrossReferencingClassFixture", expectedFixture1,
+                        "de.floydkretschmar.fixturize.mocks.CrossReferencedClassFixture", expectedFixture2
+                ));
+    }
+
+    @SneakyThrows
+    private static String loadExpectedFixture(String expectedFixtureClassPath) {
+        final var url = Resources.getResource(expectedFixtureClassPath);
+        return Resources.toString(url, StandardCharsets.UTF_8);
+    }
+
+    @SneakyThrows
+    private void assertCompiledClasses(List<String> classPaths, Map<String, String> expectedFixture) {
+        final var lombokAnnotationProcessor = getClass().getClassLoader().loadClass("lombok.launch.AnnotationProcessorHider$AnnotationProcessor");
+        final var lombokClaimingProcessor = getClass().getClassLoader().loadClass("lombok.launch.AnnotationProcessorHider$ClaimingProcessor");
+
+        final var compilation = javac()
+                .withProcessors(
+                        new FixtureProcessor(),
+                        (Processor) lombokAnnotationProcessor.getDeclaredConstructor().newInstance(),
+                        (Processor) lombokClaimingProcessor.getDeclaredConstructor().newInstance())
+                .compile(classPaths.stream().map(JavaFileObjects::forResource).collect(Collectors.toSet()));
+        assertThat(compilation).succeeded();
+
+        expectedFixture.forEach((expectedFixtureName, expectedFixtureValue) -> {
+            assertThat(compilation)
+                    .generatedSourceFile(expectedFixtureName)
+                    .contentsAsString(StandardCharsets.UTF_8).isEqualTo(expectedFixtureValue);
+        });
     }
 }
