@@ -11,7 +11,7 @@ import java.util.UUID;
 @Fixture
 @Builder
 @Value
-@FixtureBuilder
+@FixtureBuilder(methodName = "createLombokFixture")
 public class LombokClass {
     String stringField;
     int intField;

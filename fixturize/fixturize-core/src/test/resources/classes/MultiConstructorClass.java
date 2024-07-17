@@ -6,8 +6,8 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import java.util.UUID;
 
 @Fixture
-@FixtureConstructor(constructorParameters = {"stringField", "intField", "booleanField", "uuidField"})
-@FixtureConstructor(constructorParameters = {"stringField", "booleanField", "uuidField"})
+@FixtureConstructor(methodName = "createMultiConstructorFixture", constructorParameters = {"stringField", "intField", "booleanField", "uuidField"})
+@FixtureConstructor(methodName = "createMultiConstructorFixture2", constructorParameters = {"stringField", "booleanField", "uuidField"})
 public class MultiConstructorClass {
     private final String stringField;
     private final int intField;

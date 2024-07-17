@@ -31,7 +31,7 @@ class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenMultipleBuildersDefined_shouldCreateCreationMethodsForDefinedBuilders() {
-        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy();
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField"),
                 List.of("uuidField")));
@@ -45,13 +45,13 @@ class BuilderCreationMethodStrategyTest {
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
                                 .formatted(WHITESPACE_16, WHITESPACE_16))
-                        .name("createTestObjectBuilderFixtureWithStringFieldAndIntField")
+                        .name("methodName")
                         .build(),
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.uuidField(uuidFieldName)"
                                 .formatted(WHITESPACE_16))
-                        .name("createTestObjectBuilderFixtureWithUuidField")
+                        .name("methodName")
                         .build());
 
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
@@ -61,7 +61,7 @@ class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenSingleBuilderDefined_shouldCreateCreationMethodForDefinedBuilder() {
-        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy();
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField")));
         final var constantMap = mockConstantMap();
@@ -74,7 +74,7 @@ class BuilderCreationMethodStrategyTest {
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
                                 .formatted(WHITESPACE_16, WHITESPACE_16))
-                        .name("createTestObjectBuilderFixtureWithStringFieldAndIntField")
+                        .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verifyNoMoreInteractions(constantMap);
@@ -82,7 +82,7 @@ class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenNoBuilderDefined_shouldReturnEmptyList() {
-        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy();
         final var element = mockTypeElement(Stream.of());
 
         final var constantMap = mockConstantMap();
@@ -94,7 +94,7 @@ class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenBuilderHasNoFieldsDefined_shouldCreateCreationMethodUsingAllFields() {
-        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy();
         final var element = mockTypeElement(Stream.of(
                 List.of()));
         final var constantMap = mock(ConstantDefinitionMap.class);
@@ -108,7 +108,7 @@ class BuilderCreationMethodStrategyTest {
                         .returnType("TestObject.TestObjectBuilder")
                         .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.intField(INT_FIELD)"
                                 .formatted(WHITESPACE_16, WHITESPACE_16))
-                        .name("createTestObjectBuilderFixtureWithStringFieldAndIntField")
+                        .name("methodName")
                         .build());
 
         verify(constantMap, times(1)).values();
@@ -117,7 +117,7 @@ class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        final var strategy = new BuilderCreationMethodStrategy(new UpperCamelCaseAndNamingStrategy());
+        final var strategy = new BuilderCreationMethodStrategy();
         final var element = mockTypeElement(Stream.of(
                 List.of("stringField", "intField", "booleanField", "uuidField")));
 
@@ -147,6 +147,7 @@ class BuilderCreationMethodStrategyTest {
         final var element = mock(TypeElement.class);
         final var builders = definedFixtureBuilders.map(parameterNames -> {
             final var builder = mock(FixtureBuilder.class);
+            when(builder.methodName()).thenReturn("methodName");
             when(builder.usedSetters()).thenReturn(parameterNames.toArray(String[]::new));
             when(builder.builderMethod()).thenReturn("builder");
             return builder;

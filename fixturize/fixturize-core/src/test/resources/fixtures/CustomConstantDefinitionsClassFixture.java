@@ -8,11 +8,11 @@ public class CustomConstantDefinitionsClassFixture {
     public static java.util.UUID UUID_FIELD = java.util.UUID.fromString("6b21f215-bf9e-445a-9dd2-5808a3a98d52");
     public static javax.lang.model.element.ElementKind ELEMENT_KIND_FIELD = javax.lang.model.element.ElementKind.PACKAGE;
 
-    public static CustomConstantDefinitionsClass createCustomConstantDefinitionsClassFixtureWithStringFieldAndIntFieldAndBooleanFieldAndUuidField() {
+    public static CustomConstantDefinitionsClass createCustomConstantFixture() {
         return new CustomConstantDefinitionsClass(CUSTOM_STRING_FIELD_NAME, INT_FIELD, CUSTOM_BOOLEAN_FIELD_NAME, UUID_FIELD);
     }
 
-    public static CustomConstantDefinitionsClass createCustomConstantDefinitionsClassFixtureWithStringFieldAndBooleanFieldAndUuidField() {
+    public static CustomConstantDefinitionsClass createCustomConstantFixture2() {
         return new CustomConstantDefinitionsClass(CUSTOM_STRING_FIELD_NAME, CUSTOM_BOOLEAN_FIELD_NAME_2, UUID_FIELD);
     }
 }

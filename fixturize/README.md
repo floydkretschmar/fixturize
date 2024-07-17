@@ -139,8 +139,8 @@ and/or `@FixtureBuilder`. For example, the following annotations
 @Builder
 @Value
 @Fixture
-@FixtureBuilder
-@FixtureBuilder(usedSetter = {"orderNo"})
+@FixtureBuilder(methodName = "createOrderFixture")
+@FixtureBuilder(methodName = "createOrderFixtureWithOrderNo", usedSetter = {"orderNo"})
 static class Order {
     String orderNo;
     Instant date;
@@ -156,7 +156,7 @@ static class OrderFixture {
     public static Instant DATE = Instant.now();
     public static String CUSTOMER_NAME = "CUSTOMER_NAME_VALUE";
 
-    public static Order.OrderBuilder createOrderFixtureWithOrderNoAndDateAndCustomerName() {
+  public static Order.OrderBuilder createOrderFixture() {
         return Order.builder()
                 .orderNo(ORDER_NO)
                 .date(DATE)

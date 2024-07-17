@@ -18,6 +18,13 @@ import java.lang.annotation.Target;
 @Repeatable(FixtureBuilders.class)
 public @interface FixtureBuilder {
     /**
+     * Returns the name of the creation method.
+     *
+     * @return the name.
+     */
+    String methodName();
+
+    /**
      * Returns the string representation of the setter methods used during for initialization of the builder object.
      *
      * @return The setter method representations

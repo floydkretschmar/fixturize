@@ -18,12 +18,6 @@ import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
  * with {@link Fixture}. If {@link FixtureBuilder#usedSetters()} is empty, all fields will be used.
  */
 public class BuilderCreationMethodStrategy implements CreationMethodGenerationStrategy {
-    private final CreationMethodNamingStrategy namingStrategy;
-
-    public BuilderCreationMethodStrategy(CreationMethodNamingStrategy namingStrategy) {
-        this.namingStrategy = namingStrategy;
-    }
-
     /**
      * Returns a {@link Collection} of all {@link CreationMethod}s that have been generated
      * for the provided element and constants according to the specified {@link FixtureBuilder} strategy.
@@ -47,7 +41,7 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
                     return CreationMethod.builder()
                             .returnType("%s.%sBuilder".formatted(className, className))
                             .returnValue(createReturnValueString(className, annotation.builderMethod(), correspondingConstants))
-                            .name(this.namingStrategy.createMethodName("%sBuilder".formatted(className), correspondingConstants))
+                            .name(annotation.methodName())
                             .build();
                 }).toList();
     }

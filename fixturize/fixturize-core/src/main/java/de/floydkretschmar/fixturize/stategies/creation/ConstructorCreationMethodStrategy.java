@@ -19,12 +19,6 @@ import java.util.stream.Collectors;
  * corresponding field or {@link FixtureConstant#name()} if specified on the corresponding field..
  */
 public class ConstructorCreationMethodStrategy implements CreationMethodGenerationStrategy {
-    private final CreationMethodNamingStrategy namingStrategy;
-
-    public ConstructorCreationMethodStrategy(CreationMethodNamingStrategy namingStrategy) {
-        this.namingStrategy = namingStrategy;
-    }
-
     /**
      * Returns a {@link Collection} of all {@link CreationMethod}s that have been generated
      * for the provided element and constants according to the specified {@link FixtureConstructor} strategy.
@@ -43,7 +37,7 @@ public class ConstructorCreationMethodStrategy implements CreationMethodGenerati
                     return CreationMethod.builder()
                             .returnType(className)
                             .returnValue(createReturnValueString(className, correspondingConstants))
-                            .name(this.namingStrategy.createMethodName(className, correspondingConstants))
+                            .name(annotation.methodName())
                             .build();
                 }).toList();
     }

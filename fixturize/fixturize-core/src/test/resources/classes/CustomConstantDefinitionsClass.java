@@ -8,8 +8,8 @@ import javax.lang.model.element.ElementKind;
 import java.util.UUID;
 
 @Fixture
-@FixtureConstructor(constructorParameters = {"CUSTOM_STRING_FIELD_NAME", "intField", "CUSTOM_BOOLEAN_FIELD_NAME", "uuidField"})
-@FixtureConstructor(constructorParameters = {"CUSTOM_STRING_FIELD_NAME", "CUSTOM_BOOLEAN_FIELD_NAME_2", "uuidField"})
+@FixtureConstructor(methodName = "createCustomConstantFixture", constructorParameters = {"CUSTOM_STRING_FIELD_NAME", "intField", "CUSTOM_BOOLEAN_FIELD_NAME", "uuidField"})
+@FixtureConstructor(methodName = "createCustomConstantFixture2",constructorParameters = {"CUSTOM_STRING_FIELD_NAME", "CUSTOM_BOOLEAN_FIELD_NAME_2", "uuidField"})
 public class CustomConstantDefinitionsClass {
     @FixtureConstant(name = "CUSTOM_STRING_FIELD_NAME", value = "\"CUSTOM_CONSTANT_VALUE\"")
     private final String stringField;

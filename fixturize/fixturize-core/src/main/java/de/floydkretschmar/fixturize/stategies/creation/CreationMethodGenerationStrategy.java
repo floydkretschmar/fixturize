@@ -27,7 +27,7 @@ import java.util.Collection;
  *             <li><b>className</b>.<b>className</b>Builder in the case of {@link FixtureBuilder}</li>
  *         </ul>
  *     </li>
- *     <li><b>methodName</b>: based on the {@link CreationMethodNamingStrategy} specified</li>
+ *     <li><b>methodName</b>defined by {@link FixtureBuilder#methodName()} or {@link FixtureConstructor#methodName()}</li>
  *     <li><b>returnValue</b>:
  *         <ul>
  *             <li>new <b>className</b>(<b>constructorParameters</b>) in case of {@link FixtureConstructor}</li>

@@ -6,7 +6,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import java.util.UUID;
 
 @Fixture
-@FixtureBuilder(usedSetters = {"stringField", "intField", "booleanField", "uuidField"})
+@FixtureBuilder(methodName = "createBuilderClassFixture", usedSetters = {"stringField", "intField", "booleanField", "uuidField"})
 public class BuilderClass {
     private String stringField;
     private int intField;
