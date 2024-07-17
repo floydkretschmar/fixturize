@@ -1,5 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
+import de.floydkretschmar.fixturize.ReflectionUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstants;
@@ -13,10 +14,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -71,13 +70,9 @@ public class ConstantGenerationStrategy {
     public ConstantDefinitionMap generateConstants(TypeElement element) {
         final var fields = ElementFilter.fieldsIn(element.getEnclosedElements());
         final var linkedHashMap = createConstantsForFields(fields.stream())
-                .collect(Collectors.toMap(
+                .collect(ReflectionUtils.toLinkedMap(
                         Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (u, v) -> {
-                            throw new IllegalStateException(String.format("Duplicate key %s", u));
-                        },
-                        LinkedHashMap::new));
+                        Map.Entry::getValue));
         return new FixtureConstantDefinitionMap(linkedHashMap);
     }
 

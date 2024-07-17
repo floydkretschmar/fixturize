@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import de.floydkretschmar.fixturize.stategies.constants.value.map.ClassValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.ElementKindValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.map.TypeKindValueProviderMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,13 +8,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.List;
 
 import static javax.lang.model.element.ElementKind.ENUM;
+import static javax.lang.model.element.ElementKind.ENUM_CONSTANT;
 import static javax.lang.model.type.TypeKind.DECLARED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,9 +37,6 @@ class ConstantValueProviderServiceTest {
     private ClassValueProviderMap classMap;
 
     @Mock
-    private ElementKindValueProviderMap elementKindMap;
-
-    @Mock
     private VariableElement field;
 
     @Test
@@ -50,7 +47,7 @@ class ConstantValueProviderServiceTest {
         when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(true);
         when(typeKindMap.get(any(TypeKind.class))). thenReturn(f -> "value");
 
-        final var service = new ConstantValueProviderService(typeKindMap, elementKindMap, classMap);
+        final var service = new ConstantValueProviderService(typeKindMap, classMap);
 
         final var result = service.getValueFor(field);
         assertThat(result).isEqualTo("value");
@@ -70,20 +67,21 @@ class ConstantValueProviderServiceTest {
         when(type.getKind()).thenReturn(DECLARED);
         when(type.toString()).thenReturn("declaredType");
 
+        final var enumConstant = mock(Element.class);
+        when(enumConstant.getKind()).thenReturn(ENUM_CONSTANT);
+        when(enumConstant.toString()).thenReturn("CONSTANT_VALUE");
+        when(typeElement.getEnclosedElements()).thenReturn((List) List.of(enumConstant));
+
+
         when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(false);
         when(classMap.containsKey(anyString())).thenReturn(false);
-        when(elementKindMap.containsKey(any(ElementKind.class))). thenReturn(true);
-        when(elementKindMap.get(any(ElementKind.class))). thenReturn(f -> "value");
 
-        final var service = new ConstantValueProviderService(typeKindMap, elementKindMap, classMap);
+        final var service = new ConstantValueProviderService(typeKindMap, classMap);
 
         final var result = service.getValueFor(field);
-        assertThat(result).isEqualTo("value");
+        assertThat(result).isEqualTo("declaredType.CONSTANT_VALUE");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
         verify(classMap, times(1)).containsKey("declaredType");
-        verify(elementKindMap, times(1)).containsKey(ENUM);
-        verify(elementKindMap, times(1)).get(ENUM);
-        verifyNoMoreInteractions(typeKindMap, classMap, elementKindMap);
     }
 
     @Test
@@ -97,17 +95,14 @@ class ConstantValueProviderServiceTest {
         when(type.toString()).thenReturn("declaredType");
 
         when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(false);
-        when(elementKindMap.containsKey(any(ElementKind.class))). thenReturn(false);
         when(classMap.containsKey(any(String.class))). thenReturn(false);
 
-        final var service = new ConstantValueProviderService(typeKindMap, elementKindMap, classMap);
+        final var service = new ConstantValueProviderService(typeKindMap, classMap);
 
         final var result = service.getValueFor(field);
         assertThat(result).isEqualTo("null");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(elementKindMap, times(1)).containsKey(ENUM);
         verify(classMap, times(1)).containsKey("declaredType");
-        verifyNoMoreInteractions(typeKindMap, elementKindMap, classMap);
     }
 
     @Test
@@ -120,7 +115,7 @@ class ConstantValueProviderServiceTest {
         when(classMap.containsKey(any(String.class))). thenReturn(true);
         when(classMap.get(any(String.class))). thenReturn(f -> "value");
 
-        final var service = new ConstantValueProviderService(typeKindMap, elementKindMap, classMap);
+        final var service = new ConstantValueProviderService(typeKindMap, classMap);
 
         final var result = service.getValueFor(field);
         assertThat(result).isEqualTo("value");
@@ -139,7 +134,7 @@ class ConstantValueProviderServiceTest {
         when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(false);
         when(classMap.containsKey(any(String.class))). thenReturn(false);
 
-        final var service = new ConstantValueProviderService(typeKindMap, elementKindMap, classMap);
+        final var service = new ConstantValueProviderService(typeKindMap, classMap);
 
         final var result = service.getValueFor(field);
         assertThat(result).isEqualTo("null");

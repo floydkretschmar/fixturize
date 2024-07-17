@@ -1,17 +1,26 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
+import de.floydkretschmar.fixturize.ReflectionUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
+import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.ElementFilter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
+import static de.floydkretschmar.fixturize.ReflectionUtils.findSetterForFields;
+import static javax.lang.model.element.Modifier.PUBLIC;
 
 /**
  * The strategy that generates on creation method for each {@link FixtureBuilder} annotation on a class also annotated
@@ -40,15 +49,37 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
 
                     return CreationMethod.builder()
                             .returnType("%s.%sBuilder".formatted(className, className))
-                            .returnValue(createReturnValueString(className, annotation.builderMethod(), correspondingConstants))
+                            .returnValue(createReturnValueString(element, className, annotation.builderMethod(), correspondingConstants))
                             .name(annotation.methodName())
                             .build();
                 }).toList();
     }
 
-    private static String createReturnValueString(String className, String buildMethod, Collection<Constant> correspondingConstants) {
+    private static Map<String, String> getConstantToSetterMap(Element element, String buildMethodName, Collection<Constant> correspondingConstants) {
+        var fieldNames = correspondingConstants.stream().map(Constant::getOriginalFieldName).toList();
+        final var buildMethod = ElementFilter.methodsIn(element.getEnclosedElements()).stream()
+                .filter(method -> method.getSimpleName().toString().equals(buildMethodName))
+                .findFirst()
+                .orElse(null);
+
+        if (Objects.isNull(buildMethod)) return Map.of();
+
+        final var builderType = ((DeclaredType) buildMethod.getReturnType()).asElement();
+        return findSetterForFields(builderType, fieldNames, PUBLIC)
+                .collect(ReflectionUtils.toLinkedMap(
+                        Map.Entry::getKey,
+                        entry -> entry
+                                .getValue()
+                                .orElseThrow(() -> new FixtureCreationException("No valid setter could be found on %s to set %s".formatted(builderType, entry.getKey())))
+                                .toString()));
+    }
+
+    private static String createReturnValueString(Element element, String className, String buildMethod, Collection<Constant> correspondingConstants) {
+        final var fieldToSetterMap = getConstantToSetterMap(element, buildMethod, correspondingConstants);
         final var setterString = correspondingConstants.stream()
-                .map(constant -> ".%s(%s)".formatted(constant.getOriginalFieldName(), constant.getName()))
+                .map(constant -> ".%s(%s)".formatted(
+                        fieldToSetterMap.containsKey(constant.getOriginalFieldName()) ? fieldToSetterMap.get(constant.getOriginalFieldName()) : constant.getOriginalFieldName(),
+                        constant.getName()))
                 .collect(Collectors.joining("\n%s".formatted(WHITESPACE_16)));
         return "%s.%s()\n%s%s".formatted(className, buildMethod, WHITESPACE_16, setterString);
     }

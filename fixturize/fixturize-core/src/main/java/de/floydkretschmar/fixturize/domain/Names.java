@@ -3,6 +3,8 @@ package de.floydkretschmar.fixturize.domain;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.lang.model.element.TypeElement;
+
 /**
  * Contains all names related to the generation of a fixture class.
  */
@@ -36,5 +38,22 @@ public class Names {
      */
     public boolean hasPackageName() {
         return !this.getPackageName().isEmpty();
+    }
+
+    public static Names from(TypeElement element) {
+        final var qualifiedClassName = element.getQualifiedName().toString();
+        final var lastDot = qualifiedClassName.lastIndexOf('.');
+        var packageName = "";
+        if (lastDot > 0) {
+            packageName = qualifiedClassName.substring(0, lastDot);
+        }
+        final var simpleClassName = qualifiedClassName.substring(lastDot + 1);
+        final var qualifiedFixtureClassName = qualifiedClassName + "Fixture";
+
+        return Names.builder()
+                .qualifiedClassName(qualifiedClassName)
+                .simpleClassName(simpleClassName)
+                .packageName(packageName)
+                .qualifiedFixtureClassName(qualifiedFixtureClassName).build();
     }
 }

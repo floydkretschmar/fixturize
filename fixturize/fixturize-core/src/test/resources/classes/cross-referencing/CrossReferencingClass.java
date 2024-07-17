@@ -13,4 +13,7 @@ public class CrossReferencingClass {
     String referenceId;
     CrossReferencedClass referenceInstance;
     SingleConstructorClass constructorReferenceInstance;
+    CrossReferencedConstructorClass constructorClassInstance;
+    CrossReferencedBuilderClass builderClassInstance;
+    CrossReferencedLombokClass lombokClassInstance;
 }

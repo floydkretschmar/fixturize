@@ -10,9 +10,6 @@ import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnak
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.ClassValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.ElementKindValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.TypeKindValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.creation.BuilderCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.ConstructorCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
@@ -85,7 +82,7 @@ public class FixtureProcessor extends AbstractProcessor {
         creationMethodStrategies.add(new ConstructorCreationMethodStrategy());
         creationMethodStrategies.add(new BuilderCreationMethodStrategy());
 
-        final var names = getNames(element);
+        final var names = Names.from(element);
 
         try {
             final var fixtureFile = processingEnv.getFiler()
@@ -106,11 +103,6 @@ public class FixtureProcessor extends AbstractProcessor {
                 .collect(Collectors.toMap(
                         provider -> TypeKind.valueOf(provider.targetType()),
                         annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())));
-        final var customElementKindValueProviders = Arrays.stream(customFixtureProviders)
-                .filter(provider -> Enums.getIfPresent(ElementKind.class, provider.targetType()).isPresent())
-                .collect(Collectors.toMap(
-                        provider -> ElementKind.valueOf(provider.targetType()),
-                        annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())));
         final var customClassValueProviders = Arrays.stream(customFixtureProviders)
                 .filter(provider -> !Enums.getIfPresent(TypeKind.class, provider.targetType()).isPresent() &&
                         !Enums.getIfPresent(ElementKind.class, provider.targetType()).isPresent())
@@ -119,27 +111,7 @@ public class FixtureProcessor extends AbstractProcessor {
                         annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())
                 ));
 
-        return new ConstantValueProviderService(
-                new TypeKindValueProviderMap(customTypeKindValueProviders),
-                new ElementKindValueProviderMap(customElementKindValueProviders),
-                new ClassValueProviderMap(customClassValueProviders));
-    }
-
-    private Names getNames(TypeElement element) {
-        final var qualifiedClassName = element.getQualifiedName().toString();
-        final var lastDot = qualifiedClassName.lastIndexOf('.');
-        var packageName = "";
-        if (lastDot > 0) {
-            packageName = qualifiedClassName.substring(0, lastDot);
-        }
-        final var simpleClassName = qualifiedClassName.substring(lastDot + 1);
-        final var qualifiedFixtureClassName = qualifiedClassName + "Fixture";
-
-        return Names.builder()
-                .qualifiedClassName(qualifiedClassName)
-                .simpleClassName(simpleClassName)
-                .packageName(packageName)
-                .qualifiedFixtureClassName(qualifiedFixtureClassName).build();
+        return new ConstantValueProviderService(customTypeKindValueProviders, customClassValueProviders);
     }
 
     private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap) {

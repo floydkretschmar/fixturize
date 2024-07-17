@@ -1,53 +1,55 @@
 package de.floydkretschmar.fixturize.mocks;
 
 import de.floydkretschmar.fixturize.annotations.Fixture;
-import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 
 import java.util.UUID;
 
 @Fixture
-@FixtureBuilder(methodName = "createBuilderClassFixture", usedSetters = {"stringField", "intField", "booleanField", "uuidField"})
-public class BuilderClass {
+public class CrossReferencedBuilderClass {
     private String stringField;
     private int intField;
     private boolean booleanField;
     private UUID uuidField;
 
-    public static BuilderClassBuilder builder() {
-        return new BuilderClass.BuilderClassBuilder();
+    private CrossReferencedBuilderClass() {
+
     }
 
-    static class BuilderClassBuilder {
+    public static CrossReferencedBuilderClassBuilder builder() {
+        return new CrossReferencedBuilderClass.CrossReferencedBuilderClassBuilder();
+    }
+
+    static class CrossReferencedBuilderClassBuilder {
         private String stringField;
         private int intField;
         private boolean booleanField;
         private UUID uuidField;
 
-        public BuilderClassBuilder() {
+        public CrossReferencedBuilderClassBuilder() {
         }
 
-        public BuilderClassBuilder stringField(String stringField) {
+        public CrossReferencedBuilderClassBuilder setStringField(String stringField) {
             this.stringField = stringField;
             return this;
         }
 
-        public BuilderClassBuilder intField(int intField) {
+        public CrossReferencedBuilderClassBuilder setIntField(int intField) {
             this.intField = intField;
             return this;
         }
 
-        public BuilderClassBuilder booleanField(boolean booleanField) {
+        public CrossReferencedBuilderClassBuilder setBooleanField(boolean booleanField) {
             this.booleanField = booleanField;
             return this;
         }
 
-        public BuilderClassBuilder uuidField(UUID uuidField) {
+        public CrossReferencedBuilderClassBuilder setUuidField(UUID uuidField) {
             this.uuidField = uuidField;
             return this;
         }
 
-        public BuilderClass build() {
-            final var builderClassObject = new BuilderClass();
+        public CrossReferencedBuilderClass build() {
+            final var builderClassObject = new CrossReferencedBuilderClass();
             builderClassObject.stringField = this.stringField;
             builderClassObject.intField = this.intField;
             builderClassObject.booleanField = this.booleanField;
