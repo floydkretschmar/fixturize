@@ -172,33 +172,34 @@ static class OrderFixture {
 
 ## Default value providers
 
-| Type                              | Default value                                                                            |
-|-----------------------------------|------------------------------------------------------------------------------------------|
-| `boolean` and `java.lang.Boolean` | `false`                                                                                  |
-| `byte` and `java.lang.Byte`       | 0                                                                                        |
-| `char` and `java.lang.Character`  | ' '                                                                                      |
-| `double` and `java.lang.Double`   | 0.0                                                                                      |
-| `float` and `java.lang.Float`     | 0.0F                                                                                     |
-| `int` and `java.lang.Integer`     | 0                                                                                        |
-| `long` and `java.lang.Long`       | 0L                                                                                       |
-| `short` and `java.lang.Short`     | `Short.valueOf((short)0)`                                                                |
-| `java.math.BigDecimal`            | `java.math.BigDecimal.ZERO`                                                              |
-| `java.math.BigInteger`            | `java.math.BigInteger.ZERO`                                                              |
-| `java.time.Instant`               | `java.time.Instant.now()`                                                                |
-| `java.time.Duration`              | `java.time.Duration.ZERO`                                                                |
-| `java.time.LocalDate`             | `java.time.LocalDate.now()`                                                              |
-| `java.time.LocalDateTime`         | `java.time.LocalDateTime.now()`                                                          |
-| `java.time.LocalTime`             | `java.time.LocalTime.now()`                                                              |
-| `java.util.Date`                  | `new new java.util.Date()`                                                               |
-| `java.util.Collection`            | `java.util.List.of()`                                                                    |
-| `java.util.List`                  | `java.util.List.of()`                                                                    |
-| `java.util.Map`                   | `java.util.Map.of()`                                                                     |
-| `java.util.Set`                   | `java.util.Set.of()`                                                                     |
-| `java.util.Queue`                 | `new java.util.PriorityQueue<>()`                                                        |
-| `java.util.UUID`                  | `java.util.UUID.fromString(randomUUID)` where `randomUUID` will be an actual UUID string |
-| all arrays                        | `mew <ArrayType>[] {}` where `<ArrayType>` is the type of the field                      |
-| all enums                         | the first defined enum constant                                                          |
-| default fallback                  | `null`                                                                                   |
+| Type                                  | Default value                                                                                                           |
+|---------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `boolean` and `java.lang.Boolean`     | `false`                                                                                                                 |
+| `byte` and `java.lang.Byte`           | 0                                                                                                                       |
+| `char` and `java.lang.Character`      | ' '                                                                                                                     |
+| `double` and `java.lang.Double`       | 0.0                                                                                                                     |
+| `float` and `java.lang.Float`         | 0.0F                                                                                                                    |
+| `int` and `java.lang.Integer`         | 0                                                                                                                       |
+| `long` and `java.lang.Long`           | 0L                                                                                                                      |
+| `short` and `java.lang.Short`         | `Short.valueOf((short)0)`                                                                                               |
+| `java.math.BigDecimal`                | `java.math.BigDecimal.ZERO`                                                                                             |
+| `java.math.BigInteger`                | `java.math.BigInteger.ZERO`                                                                                             |
+| `java.time.Instant`                   | `java.time.Instant.now()`                                                                                               |
+| `java.time.Duration`                  | `java.time.Duration.ZERO`                                                                                               |
+| `java.time.LocalDate`                 | `java.time.LocalDate.now()`                                                                                             |
+| `java.time.LocalDateTime`             | `java.time.LocalDateTime.now()`                                                                                         |
+| `java.time.LocalTime`                 | `java.time.LocalTime.now()`                                                                                             |
+| `java.util.Date`                      | `new new java.util.Date()`                                                                                              |
+| `java.util.Collection`                | `java.util.List.of()`                                                                                                   |
+| `java.util.List`                      | `java.util.List.of()`                                                                                                   |
+| `java.util.Map`                       | `java.util.Map.of()`                                                                                                    |
+| `java.util.Set`                       | `java.util.Set.of()`                                                                                                    |
+| `java.util.Queue`                     | `new java.util.PriorityQueue<>()`                                                                                       |
+| `java.util.UUID`                      | `java.util.UUID.fromString(randomUUID)` where `randomUUID` will be an actual UUID string                                |
+| all arrays                            | `mew <ArrayType>[] {}` where `<ArrayType>` is the type of the field                                                     |
+| all enums                             | the first defined enum constant                                                                                         |
+| other classes annotated with @Fixture | the creation method defined by the first @FixtureConstructor of @FixtureBuilder that is present on the referenced class |
+| default fallback                      | `null`                                                                                                                  |
 
 ## Requirements
 

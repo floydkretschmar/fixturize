@@ -11,4 +11,6 @@ import lombok.Value;
 public class CrossReferencingClass {
     @FixtureConstant(name = "REFERENCE_ID", value = "de.floydkretschmar.fixturize.mocks.CrossReferencedClassFixture.ID")
     String referenceId;
+    CrossReferencedClass referenceInstance;
+    SingleConstructorClass constructorReferenceInstance;
 }

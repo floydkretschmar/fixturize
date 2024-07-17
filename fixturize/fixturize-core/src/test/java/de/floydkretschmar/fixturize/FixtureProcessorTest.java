@@ -70,13 +70,11 @@ class FixtureProcessorTest {
     @Test
     void process_whenFixtureIsCrossReferencing_generateFixtureClass() {
         final var expectedFixture1 = loadExpectedFixture("fixtures/CrossReferencingClassFixture.java");
-        final var expectedFixture2 = loadExpectedFixture("fixtures/CrossReferencedClassFixture.java");
 
         assertCompiledClasses(
-                List.of("classes/CrossReferencingClass.java", "classes/CrossReferencedClass.java"),
+                List.of("classes/CrossReferencingClass.java", "classes/CrossReferencedClass.java", "classes/SingleConstructorClass.java"),
                 Map.of(
-                        "de.floydkretschmar.fixturize.mocks.CrossReferencingClassFixture", expectedFixture1,
-                        "de.floydkretschmar.fixturize.mocks.CrossReferencedClassFixture", expectedFixture2
+                        "de.floydkretschmar.fixturize.mocks.CrossReferencingClassFixture", expectedFixture1
                 ));
     }
 

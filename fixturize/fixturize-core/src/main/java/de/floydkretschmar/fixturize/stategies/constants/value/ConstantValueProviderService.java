@@ -42,18 +42,18 @@ public class ConstantValueProviderService implements ValueProviderService {
         if (typeKindValueProviders.containsKey(typeKind))
             return typeKindValueProviders.get(typeKind).provideValueAsString(field);
 
-        if (typeKind == TypeKind.DECLARED) {
-            final var declaredElement = ((DeclaredType)fieldType).asElement();
-            final var elementKind = declaredElement.getKind();
-            if (elementKindValueProviderMap.containsKey(elementKind))
-                return elementKindValueProviderMap.get(elementKind).provideValueAsString(field);
-        }
-
         final var fullQualifiedTypeName = fieldType.toString();
         final var genericStartIndex = fullQualifiedTypeName.indexOf('<');
         final var classKey = genericStartIndex > 0 ? fullQualifiedTypeName.substring(0, genericStartIndex) : fullQualifiedTypeName;
         if (classValueProviders.containsKey(classKey))
             return classValueProviders.get(classKey).provideValueAsString(field);
+
+        if (typeKind == TypeKind.DECLARED) {
+            final var declaredElement = ((DeclaredType) fieldType).asElement();
+            final var elementKind = declaredElement.getKind();
+            if (elementKindValueProviderMap.containsKey(elementKind))
+                return elementKindValueProviderMap.get(elementKind).provideValueAsString(field);
+        }
 
         return "null";
     }

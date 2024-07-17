@@ -19,6 +19,7 @@ import static javax.lang.model.element.ElementKind.ENUM;
 import static javax.lang.model.type.TypeKind.DECLARED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -67,8 +68,10 @@ class ConstantValueProviderServiceTest {
         when(type.asElement()).thenReturn(typeElement);
         when(field.asType()).thenReturn(type);
         when(type.getKind()).thenReturn(DECLARED);
+        when(type.toString()).thenReturn("declaredType");
 
         when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(false);
+        when(classMap.containsKey(anyString())).thenReturn(false);
         when(elementKindMap.containsKey(any(ElementKind.class))). thenReturn(true);
         when(elementKindMap.get(any(ElementKind.class))). thenReturn(f -> "value");
 
@@ -77,10 +80,10 @@ class ConstantValueProviderServiceTest {
         final var result = service.getValueFor(field);
         assertThat(result).isEqualTo("value");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
+        verify(classMap, times(1)).containsKey("declaredType");
         verify(elementKindMap, times(1)).containsKey(ENUM);
         verify(elementKindMap, times(1)).get(ENUM);
-        verifyNoMoreInteractions(typeKindMap, elementKindMap);
-        verifyNoInteractions(classMap);
+        verifyNoMoreInteractions(typeKindMap, classMap, elementKindMap);
     }
 
     @Test
