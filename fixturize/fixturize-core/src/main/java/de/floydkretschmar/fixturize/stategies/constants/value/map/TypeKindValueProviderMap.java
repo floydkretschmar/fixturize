@@ -24,7 +24,7 @@ import static javax.lang.model.type.TypeKind.INT;
 import static javax.lang.model.type.TypeKind.LONG;
 import static javax.lang.model.type.TypeKind.SHORT;
 
-/***
+/**
  * An extension of the {@link HashMap} class that registers a default {@link ValueProvider}s for a number of different
  * {@link TypeKind}s, given no custom provider has been defined for the specified {@link TypeKind}.
  *
@@ -32,7 +32,7 @@ import static javax.lang.model.type.TypeKind.SHORT;
  */
 public class TypeKindValueProviderMap extends HashMap<TypeKind, ValueProvider> {
 
-    /***
+    /**
      * Constructs a {@link TypeKindValueProviderMap } registering default {@link ValueProvider}s for a number of different
      * {@link TypeKind}s, given no custom {@link ValueProvider} has been provided for the specified {@link TypeKind}.
      *

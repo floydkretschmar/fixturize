@@ -28,7 +28,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 
-/***
+/**
  * An extension of the {@link HashMap} class that registers a default {@link ValueProvider}s for a number of different
  * classes, given no custom provider has been defined for the specified class.
  *
@@ -36,7 +36,7 @@ import java.util.UUID;
  */
 public class ClassValueProviderMap extends HashMap<String, ValueProvider> {
 
-    /***
+    /**
      * Constructs a {@link ElementKindValueProviderMap } registering default {@link ValueProvider}s for a number of different
      * classes, given no custom {@link ValueProvider} has been provided for the specified class.
      *

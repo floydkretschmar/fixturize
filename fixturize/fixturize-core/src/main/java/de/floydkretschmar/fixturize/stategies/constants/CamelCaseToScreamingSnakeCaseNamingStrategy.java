@@ -5,7 +5,7 @@ import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 
 import java.util.regex.Pattern;
 
-/***
+/**
  * Creates a constant name by transforming the camel case field name into screaming snake case.
  */
 public class CamelCaseToScreamingSnakeCaseNamingStrategy implements ConstantsNamingStrategy {

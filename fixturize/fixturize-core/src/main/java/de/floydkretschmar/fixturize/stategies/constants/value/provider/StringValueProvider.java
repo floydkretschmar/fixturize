@@ -4,7 +4,7 @@ import com.google.common.base.CaseFormat;
 
 import javax.lang.model.element.VariableElement;
 
-/***
+/**
  * Default value provider for {@link String}.
  *
  * @author Floyd Kretschmar

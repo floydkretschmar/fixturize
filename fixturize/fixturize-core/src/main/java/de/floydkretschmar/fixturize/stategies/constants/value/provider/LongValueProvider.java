@@ -2,7 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.provider;
 
 import javax.lang.model.element.VariableElement;
 
-/***
+/**
  * Default value provider for {@link Long} and {@link long}.
  *
  * @author Floyd Kretschmar

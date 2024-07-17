@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/***
+/**
  * Indicates that a generated fixture should contain a method to create said fixture using the builder pattern. This
  * implies that the annotated class has the corresponding methods and classes to facilitate the use of the builder
  * pattern.
@@ -17,14 +17,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Repeatable(FixtureBuilders.class)
 public @interface FixtureBuilder {
-    /***
+    /**
      * Returns the string representation of the setter methods used during for initialization of the builder object.
      *
      * @return The setter method representations
      */
     String[] usedSetters() default {};
 
-    /***
+    /**
      * Returns the string representation of the static method used to create a builder object for the annotated class.
      *
      * @return The builder method representation

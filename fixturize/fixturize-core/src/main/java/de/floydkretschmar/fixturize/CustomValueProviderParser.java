@@ -7,13 +7,13 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.function.Function;
 
-/***
+/**
  * Creates value providers from string definitions using the nashorn script engine.
  *
  * @author Floyd Kretschmar
  */
 public class CustomValueProviderParser {
-    /***
+    /**
      * Returns a valid {@link ValueProvider} for a provided string representation defining a custom {@link ValueProvider}.
      * The string representation has to be a single line of code that in the end returns a string, which will in turn be used
      * to create a constant during fixture generation.

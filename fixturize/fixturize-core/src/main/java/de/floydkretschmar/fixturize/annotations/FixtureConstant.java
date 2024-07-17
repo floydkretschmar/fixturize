@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/***
+/**
  * Defines how an annotated field should be transformed into a corresponding constant in the generated fixture.
  *
  * @author Floyd Kretschmar
@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Repeatable(FixtureConstants.class)
 public @interface FixtureConstant {
-    /***
+    /**
      * Returns the name of the constant in the generated fixture.
      * @return the constant name
      */

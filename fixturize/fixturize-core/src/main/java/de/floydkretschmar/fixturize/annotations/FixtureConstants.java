@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/***
+/**
  * The annotation container that allows the repeated use of {@link FixtureConstant}.
  *
  * @author Floyd Kretschmar
@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface FixtureConstants {
-    /***
+    /**
      * Returns all instances of {@link FixtureConstant} with which the target has been annotated.
      * @return all fixture constant annotations
      */

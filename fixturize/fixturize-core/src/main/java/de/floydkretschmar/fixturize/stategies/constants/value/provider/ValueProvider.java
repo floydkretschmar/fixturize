@@ -2,7 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.provider;
 
 import javax.lang.model.element.VariableElement;
 
-/***
+/**
  * Defines a function that provides a string representation of a value used to construct a constant using a provided field.
  *
  * @author Floyd Kretschmar

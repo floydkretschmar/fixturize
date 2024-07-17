@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static javax.lang.model.element.ElementKind.ENUM;
 
-/***
+/**
  * An extension of the {@link HashMap} class that registers a default {@link ValueProvider}s for a number of different
  * {@link ElementKind}s, given no custom provider has been defined for the specified {@link ElementKind}.
  *
@@ -17,7 +17,7 @@ import static javax.lang.model.element.ElementKind.ENUM;
  */
 public class ElementKindValueProviderMap extends HashMap<ElementKind, ValueProvider> {
 
-    /***
+    /**
      * Constructs a {@link ElementKindValueProviderMap } registering default {@link ValueProvider}s for a number of different
      * {@link ElementKind}s, given no custom {@link ValueProvider} has been provided for the specified {@link ElementKind}.
      *

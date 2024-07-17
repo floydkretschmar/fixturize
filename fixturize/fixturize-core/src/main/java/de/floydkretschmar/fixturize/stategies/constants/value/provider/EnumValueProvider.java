@@ -4,14 +4,14 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 
-/***
+/**
  * Default value provider for enums.
  *
  * @author Floyd Kretschmar
  */
 public class EnumValueProvider implements ValueProvider {
 
-    /***
+    /**
      * Returns the default value to use for constant construction of enum fields. In case enum constants are defined,
      * per default the first defined constant will be returned. In case no constants are defined, "null" is returned.
      *
