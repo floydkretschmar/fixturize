@@ -66,7 +66,8 @@ public class FixtureProcessor extends AbstractProcessor {
                     this.processAnnotatedElement((TypeElement) element);
                 } catch (Exception e) {
                     hasErrors = true;
-                    if (!roundEnv.processingOver()) break;
+                    if (!roundEnv.processingOver())
+                        break;
                 }
             }
         }

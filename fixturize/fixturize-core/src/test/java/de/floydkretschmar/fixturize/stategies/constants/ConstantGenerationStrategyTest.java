@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
-import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import org.junit.jupiter.api.Test;
@@ -28,8 +27,8 @@ class ConstantGenerationStrategyTest {
         final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
 
         final var fields = List.of(
-                createVariableElemementMock("booleanField", boolean.class, null),
-                createVariableElemementMock("intField", int.class, null)
+                createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{}),
+                createVariableElemementMock("intField", int.class, new FixtureConstant[]{})
         );
 
         final var element = mock(TypeElement.class);
@@ -45,9 +44,9 @@ class ConstantGenerationStrategyTest {
     void generateConstants_whenCalledWithAttributeWithUnknownValue_shouldSetValueToNull() {
 
         final var fields = List.of(
-                createVariableElemementMock("booleanField", boolean.class, null),
-                createVariableElemementMock("intField", int.class, null),
-                createVariableElemementMock("unknownObject", Date.class, null)
+                createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{}),
+                createVariableElemementMock("intField", int.class, new FixtureConstant[]{}),
+                createVariableElemementMock("unknownObject", Date.class, new FixtureConstant[]{})
         );
         final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
         final var element = mock(TypeElement.class);
@@ -130,13 +129,7 @@ class ConstantGenerationStrategyTest {
         when(fieldElement.getSimpleName()).thenReturn(fieldName);
         when(fieldElement.getKind()).thenReturn(ElementKind.FIELD);
 
-        if (Objects.nonNull(fixtureConstants) && fixtureConstants.length == 1)
-            when(fieldElement.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureConstant.class)))).thenReturn(fixtureConstants[0]);
-        else if (Objects.nonNull(fixtureConstants) && fixtureConstants.length > 1) {
-            final var constants = mock(FixtureConstants.class);
-            when(constants.value()).thenReturn(fixtureConstants);
-            when(fieldElement.getAnnotation(ArgumentMatchers.argThat(param -> param.equals(FixtureConstants.class)))).thenReturn(constants);
-        }
+        when(fieldElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> param.equals(FixtureConstant.class)))).thenReturn(fixtureConstants);
 
         return fieldElement;
     }

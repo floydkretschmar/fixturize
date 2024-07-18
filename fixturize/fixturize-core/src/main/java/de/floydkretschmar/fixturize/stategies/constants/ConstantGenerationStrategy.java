@@ -3,7 +3,6 @@ package de.floydkretschmar.fixturize.stategies.constants;
 import de.floydkretschmar.fixturize.ReflectionUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
-import de.floydkretschmar.fixturize.annotations.FixtureConstants;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
@@ -15,7 +14,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -78,40 +76,38 @@ public class ConstantGenerationStrategy {
 
     private Stream<Map.Entry<String, Constant>> createConstantsForFields(Stream<VariableElement> fields) {
         return fields.flatMap(field -> {
-            final var constantsAnnotation = field.getAnnotation(FixtureConstants.class);
+            final var constantsAnnotations = field.getAnnotationsByType(FixtureConstant.class);
 
-            if (Objects.isNull(constantsAnnotation)) {
-                final var constantAnnotation = field.getAnnotation(FixtureConstant.class);
-                final var constantDefinition = createConstant(constantAnnotation, field);
-                final var key = Objects.nonNull(constantAnnotation) ? constantDefinition.getName() : field.getSimpleName().toString();
+            if (constantsAnnotations.length == 0) {
+                final var constantDefinition = createConstant(field);
+                final var key = field.getSimpleName().toString();
                 return Stream.of(Map.entry(key, constantDefinition));
             }
 
-            return Arrays.stream(constantsAnnotation.value()).map(constantAnnotation -> {
-                final var constantDefinition = createConstant(constantAnnotation, field);
-                return Map.entry(constantDefinition.getName(), constantDefinition);
-            });
+            return Arrays.stream(constantsAnnotations)
+                    .map(constantAnnotation -> {
+                        final var constantDefinition = createConstant(constantAnnotation, field);
+                        return Map.entry(constantDefinition.getName(), constantDefinition);
+                    });
         });
     }
 
     private Constant createConstant(FixtureConstant constantAnnotation, VariableElement field) {
+        return Constant.builder()
+                .type(field.asType().toString())
+                .name(constantAnnotation.name())
+                .value(!constantAnnotation.value().isEmpty() ? constantAnnotation.value() : this.valueProviderService.getValueFor(field))
+                .originalFieldName(field.getSimpleName().toString())
+                .build();
+    }
+
+    private Constant createConstant(VariableElement field) {
         final var originalFieldName = field.getSimpleName().toString();
-        final var constantDefinitionBuilder = Constant.builder().type(field.asType().toString());
-        if (Objects.nonNull(constantAnnotation)) {
-            constantDefinitionBuilder.name(constantAnnotation.name());
-        } else {
-            final var constantName = constantsNamingStrategy.createConstantName(originalFieldName);
-            constantDefinitionBuilder.name(constantName);
-        }
-
-        if (Objects.nonNull(constantAnnotation) && !constantAnnotation.value().isEmpty()) {
-            constantDefinitionBuilder.value(constantAnnotation.value());
-        } else {
-            final var constantValue = this.valueProviderService.getValueFor(field);
-            constantDefinitionBuilder.value(constantValue);
-        }
-
-        constantDefinitionBuilder.originalFieldName(originalFieldName);
-        return constantDefinitionBuilder.build();
+        return Constant.builder()
+                .type(field.asType().toString())
+                .name(constantsNamingStrategy.createConstantName(originalFieldName))
+                .value(this.valueProviderService.getValueFor(field))
+                .originalFieldName(originalFieldName)
+                .build();
     }
 }
