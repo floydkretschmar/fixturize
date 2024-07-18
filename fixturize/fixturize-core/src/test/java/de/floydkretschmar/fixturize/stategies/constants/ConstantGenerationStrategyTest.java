@@ -1,136 +1,113 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
+import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
-import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import static de.floydkretschmar.fixturize.TestFixtures.BOOLEAN_FIELD_DEFINITION;
+import static de.floydkretschmar.fixturize.TestFixtures.BOOLEAN_FIELD_NAME;
+import static de.floydkretschmar.fixturize.TestFixtures.INT_FIELD_DEFINITION;
+import static de.floydkretschmar.fixturize.TestFixtures.INT_FIELD_NAME;
+import static de.floydkretschmar.fixturize.TestFixtures.createConstantFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstantFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createNamingStrategyMock;
+import static de.floydkretschmar.fixturize.TestFixtures.createValueProviderServiceMock;
+import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class ConstantGenerationStrategyTest {
+    private ConstantsNamingStrategy namingStrategy;
+
+    private ValueProviderService valueProviderService;
+
+    private ConstantGenerationStrategy strategy;
+
+    @BeforeEach
+    void setup() {
+        namingStrategy = createNamingStrategyMock();
+        valueProviderService = createValueProviderServiceMock();
+        strategy = new ConstantGenerationStrategy(namingStrategy, valueProviderService);
+    }
     @Test
     void generateConstants_whenCalledWithValidClass_shouldGenerateConstants() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
-
         final var fields = List.of(
-                createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{}),
-                createVariableElemementMock("intField", int.class, new FixtureConstant[]{})
+                TestFixtures.<FixtureConstant>createVariableElementFixture(BOOLEAN_FIELD_NAME),
+                TestFixtures.<FixtureConstant>createVariableElementFixture(INT_FIELD_NAME)
         );
 
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List)fields);
-        final var result = stategy.generateConstants(element);
+
+        final var result = strategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", Constant.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                "intField", Constant.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build()));
-    }
-
-    @Test
-    void generateConstants_whenCalledWithAttributeWithUnknownValue_shouldSetValueToNull() {
-
-        final var fields = List.of(
-                createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{}),
-                createVariableElemementMock("intField", int.class, new FixtureConstant[]{}),
-                createVariableElemementMock("unknownObject", Date.class, new FixtureConstant[]{})
-        );
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
-        final var element = mock(TypeElement.class);
-        when(element.getEnclosedElements()).thenReturn((List)fields);
-        final var result = stategy.generateConstants(element);
-
-        assertThat(result).containsAllEntriesOf(Map.of(
-                "booleanField", Constant.builder().originalFieldName("booleanField").value("false").type("boolean").name("BOOLEAN_FIELD").build(),
-                "intField", Constant.builder().originalFieldName("intField").value("0").type("int").name("INT_FIELD").build(),
-                "unknownObject", Constant.builder().originalFieldName("unknownObject").value("null").type("java.util.Date").name("UNKNOWN_OBJECT").build()));
+                BOOLEAN_FIELD_NAME, BOOLEAN_FIELD_DEFINITION,
+                INT_FIELD_NAME, INT_FIELD_DEFINITION));
+        fields.forEach(field -> verify(field, times(1)).getAnnotationsByType(FixtureConstant.class));
+        verify(namingStrategy, times(1)).createConstantName(BOOLEAN_FIELD_NAME);
+        verify(namingStrategy, times(1)).createConstantName(INT_FIELD_NAME);
+        verify(valueProviderService, times(1)).getValueFor(argThat(arg -> arg.getSimpleName().toString().equals(BOOLEAN_FIELD_NAME)));
+        verify(valueProviderService, times(1)).getValueFor(argThat(arg -> arg.getSimpleName().toString().equals(INT_FIELD_NAME)));
+        verifyNoMoreInteractions(namingStrategy, valueProviderService);
     }
 
     @Test
     void generateConstants_whenCalledWithFixtureConstantAnnotation_shouldUseNameFromAnnotationAsKeyAndName() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
-
-        final var annotation = mock(FixtureConstant.class);
-        when(annotation.name()).thenReturn("CUSTOM_NAME");
-        when(annotation.value()).thenReturn("true");
-        final var annotation2 = mock(FixtureConstant.class);
-        when(annotation2.name()).thenReturn("CUSTOM_NAME_2");
-        when(annotation2.value()).thenReturn("");
+        final var annotation = createFixtureConstantFixture("CUSTOM_NAME", "true");
+        final var annotation2 = createFixtureConstantFixture("CUSTOM_NAME_2", "");
 
         final var fields = List.of(
-            createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{annotation}),
-            createVariableElemementMock("booleanField2", boolean.class, new FixtureConstant[]{annotation2})
+                createVariableElementFixture(BOOLEAN_FIELD_NAME, annotation),
+                createVariableElementFixture("booleanField2", annotation2)
         );
         final var element = mock(TypeElement.class);
-        when(element.getEnclosedElements()).thenReturn((List)fields);
+        when(element.getEnclosedElements()).thenReturn((List) fields);
 
-        final var result = stategy.generateConstants(element);
+        final var result = strategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "CUSTOM_NAME", Constant.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
-                "CUSTOM_NAME_2", Constant.builder().originalFieldName("booleanField2").value("false").type("boolean").name("CUSTOM_NAME_2").build()
+                "CUSTOM_NAME", createConstantFixture(BOOLEAN_FIELD_NAME, "CUSTOM_NAME", "true"),
+                "CUSTOM_NAME_2", createConstantFixture("booleanField2", "CUSTOM_NAME_2")
         ));
+        fields.forEach(field -> verify(field, times(1)).getAnnotationsByType(FixtureConstant.class));
+        verify(valueProviderService, times(1)).getValueFor(argThat(arg -> arg.getSimpleName().toString().equals("booleanField2")));
+        verifyNoMoreInteractions(valueProviderService);
+        verifyNoInteractions(namingStrategy);
     }
 
     @Test
     void generateConstants_whenCalledWithMultipleFixtureConstantsAnnotations_shouldGenerateConstantPerAnnotation() {
-        final var stategy = new ConstantGenerationStrategy(new CamelCaseToScreamingSnakeCaseNamingStrategy(), mockValueMap());
-
-        final FixtureConstant annotation = mock(FixtureConstant.class);
-        when(annotation.name()).thenReturn("CUSTOM_NAME");
-        when(annotation.value()).thenReturn("true");
-        final FixtureConstant annotation2 = mock(FixtureConstant.class);
-        when(annotation2.name()).thenReturn("CUSTOM_NAME_2");
-        when(annotation2.value()).thenReturn("");
+        final var annotation = createFixtureConstantFixture("CUSTOM_NAME", "true");
+        final var annotation2 = createFixtureConstantFixture("CUSTOM_NAME_2", "");
 
         final var fields = List.of(
-            createVariableElemementMock("booleanField", boolean.class, new FixtureConstant[]{annotation, annotation2})
+                createVariableElementFixture(BOOLEAN_FIELD_NAME, annotation, annotation2)
         );
         final var element = mock(TypeElement.class);
-        when(element.getEnclosedElements()).thenReturn((List)fields);
+        when(element.getEnclosedElements()).thenReturn((List) fields);
 
-        final var result = stategy.generateConstants(element);
+        final var result = strategy.generateConstants(element);
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "CUSTOM_NAME", Constant.builder().originalFieldName("booleanField").value("true").type("boolean").name("CUSTOM_NAME").build(),
-                "CUSTOM_NAME_2", Constant.builder().originalFieldName("booleanField").value("false").type("boolean").name("CUSTOM_NAME_2").build()
+                "CUSTOM_NAME", createConstantFixture(BOOLEAN_FIELD_NAME, "CUSTOM_NAME", "true"),
+                "CUSTOM_NAME_2", createConstantFixture(BOOLEAN_FIELD_NAME, "CUSTOM_NAME_2")
         ));
-    }
-
-    private ValueProviderService mockValueMap() {
-        final var valueService = mock(ValueProviderService.class);
-        when(valueService.getValueFor(any())).thenReturn("null");
-        when(valueService.getValueFor(ArgumentMatchers.argThat(arg -> Objects.nonNull(arg) && arg.asType().toString().equals("boolean")))).thenReturn("false");
-        when(valueService.getValueFor(ArgumentMatchers.argThat(arg -> Objects.nonNull(arg) && arg.asType().toString().equals("int")))).thenReturn("0");
-        return valueService;
-    }
-
-    private static VariableElement createVariableElemementMock(String name, Class<?> targetClass, FixtureConstant[] fixtureConstants) {
-        final var fieldElement = mock(VariableElement.class);
-        final var typeMirror = mock(TypeMirror.class);
-        final var fieldName = mock(Name.class);
-
-        when(fieldName.toString()).thenReturn(name);
-        when(fieldElement.asType()).thenReturn(typeMirror);
-        when(typeMirror.toString()).thenReturn(targetClass.getName());
-        when(fieldElement.getSimpleName()).thenReturn(fieldName);
-        when(fieldElement.getKind()).thenReturn(ElementKind.FIELD);
-
-        when(fieldElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> param.equals(FixtureConstant.class)))).thenReturn(fixtureConstants);
-
-        return fieldElement;
+        fields.forEach(field -> verify(field, times(1)).getAnnotationsByType(FixtureConstant.class));
+        verify(valueProviderService, times(1)).getValueFor(argThat(arg -> arg.getSimpleName().toString().equals(BOOLEAN_FIELD_NAME)));
+        verifyNoMoreInteractions(valueProviderService);
+        verifyNoInteractions(namingStrategy);
     }
 }

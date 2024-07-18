@@ -1,19 +1,19 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
+import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
+import static de.floydkretschmar.fixturize.TestFixtures.createConstantDefinitionMapMock;
+import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstructorFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createTypeElementFixture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -21,17 +21,25 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class ConstructorCreationMethodStrategyTest {
+    private ConstantDefinitionMap constantMap;
+    private ConstructorCreationMethodStrategy strategy;
+
+    @BeforeEach
+    void setup() {
+        constantMap = createConstantDefinitionMapMock();
+        strategy = new ConstructorCreationMethodStrategy();
+    }
 
     @Test
     void createCreationMethods_whenMultipleConstructorsDefined_shouldCreateCreationMethodsForDefinedConstructors() {
-        final var strategy = new ConstructorCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField"),
-                List.of("uuidField")));
-        final var constantMap = mockConstantMap();
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureConstructorFixture("methodName", "stringField", "intField"),
+                createFixtureConstructorFixture("methodName2", "uuidField"));
 
         final var result = strategy.generateCreationMethods(element, constantMap);
 
@@ -45,18 +53,22 @@ class ConstructorCreationMethodStrategyTest {
                 CreationMethod.builder()
                         .returnType("TestObject")
                         .returnValue("new TestObject(uuidFieldName)")
-                        .name("methodName")
+                        .name("methodName2")
                         .build());
+
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(constantMap, times(1)).getMatchingConstants(List.of("uuidField"));
+        verify(element, times(1)).getAnnotationsByType(FixtureConstructor.class);
+        verify(element, times(2)).getSimpleName();
+        verifyNoMoreInteractions(constantMap, element);
     }
+
 
     @Test
     void createCreationMethods_whenSingleConstructorDefined_shouldCreateCreationMethodForDefinedConstructor() {
-        final var strategy = new ConstructorCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField")));
-        final var constantMap = mockConstantMap();
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureConstructorFixture("methodName", "stringField", "intField"));
 
         final var result = strategy.generateCreationMethods(element, constantMap);
 
@@ -68,60 +80,35 @@ class ConstructorCreationMethodStrategyTest {
                         .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
+        verify(element, times(1)).getAnnotationsByType(FixtureConstructor.class);
+        verify(element, times(1)).getSimpleName();
+        verifyNoMoreInteractions(constantMap, element);
     }
 
     @Test
     void createCreationMethods_whenNoConstructorDefined_shouldReturnEmptyList() {
-        final var strategy = new ConstructorCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of());
+        final var element = TestFixtures.<FixtureConstructor>createTypeElementFixture("TestObject");
 
-        final var constantMap = mockConstantMap();
         final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap);
 
         assertThat(result).hasSize(0);
+        verify(element, times(1)).getAnnotationsByType(FixtureConstructor.class);
+        verifyNoMoreInteractions(element);
         verifyNoInteractions(constantMap);
     }
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        final var strategy = new ConstructorCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField", "booleanField", "uuidField")));
-
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureConstructorFixture("methodName", "stringField"));
         final var constantMap = mock(ConstantDefinitionMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenThrow(new FixtureCreationException("error"));
 
         assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap));
-    }
 
-    private static ConstantDefinitionMap mockConstantMap() {
-        final var constantMap = mock(ConstantDefinitionMap.class);
-        when(constantMap.getMatchingConstants(anyCollection())).thenAnswer(call -> {
-            final var argument = call.<Collection<String>>getArgument(0);
-            return argument.stream().map(name -> Constant.builder()
-                    .originalFieldName(name)
-                    .name("%sName".formatted(name))
-                    .type("%sType".formatted(name))
-                    .value("%sValue".formatted(name))
-                    .build()).toList();
-        });
-        return constantMap;
-    }
-
-    private static TypeElement mockTypeElement(Stream<List<String>> definedFixtureConstructors) {
-        final var element = mock(TypeElement.class);
-        final var constructors = definedFixtureConstructors.map(parameterNames -> {
-            final var fixtureConstructor = mock(FixtureConstructor.class);
-            when(fixtureConstructor.methodName()).thenReturn("methodName");
-            when(fixtureConstructor.constructorParameters()).thenReturn(parameterNames.toArray(String[]::new));
-            return fixtureConstructor;
-        }).toArray(FixtureConstructor[]::new);
-
-        when(element.getAnnotationsByType(ArgumentMatchers.argThat(param -> param.equals(FixtureConstructor.class)))).thenReturn(constructors);
-
-        final var name = mock(Name.class);
-        when(name.toString()).thenReturn("TestObject");
-        when(element.getSimpleName()).thenReturn(name);
-        return element;
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField"));
+        verify(element, times(1)).getAnnotationsByType(FixtureConstructor.class);
+        verifyNoMoreInteractions(constantMap, element);
     }
 }

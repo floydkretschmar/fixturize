@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
-import static de.floydkretschmar.fixturize.TestConstants.RANDOM_UUID;
+import static de.floydkretschmar.fixturize.TestFixtures.RANDOM_UUID;
 
 class FixtureProcessorTest {
     public static Stream<Arguments> process_getParameters() {

@@ -71,6 +71,7 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
                         entry -> entry
                                 .getValue()
                                 .orElseThrow(() -> new FixtureCreationException("No valid setter could be found on %s to set %s".formatted(builderType, entry.getKey())))
+                                .getSimpleName()
                                 .toString()));
     }
 

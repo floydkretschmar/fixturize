@@ -18,7 +18,6 @@ class CustomValueProviderParserTest {
         final var element = mock(VariableElement.class);
 
         final var valueProvider = CustomValueProviderParser.parseValueProvider("\"test\"");
-
         final var result = valueProvider.provideValueAsString(element);
 
         assertThat(result).isEqualTo("test");
@@ -32,7 +31,6 @@ class CustomValueProviderParserTest {
         when(name.toString()).thenReturn("simpleName");
 
         final var valueProvider = CustomValueProviderParser.parseValueProvider("field.getSimpleName().toString()");
-
         final var result = valueProvider.provideValueAsString(element);
 
         assertThat(result).isEqualTo("simpleName");

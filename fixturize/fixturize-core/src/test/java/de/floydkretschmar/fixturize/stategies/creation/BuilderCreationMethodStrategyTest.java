@@ -1,22 +1,27 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
+import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
-import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
-import static de.floydkretschmar.fixturize.TestConstants.INT_FIELD_DEFINITION;
-import static de.floydkretschmar.fixturize.TestConstants.STRING_FIELD_DEFINITION;
+import static de.floydkretschmar.fixturize.TestFixtures.INT_FIELD_DEFINITION;
+import static de.floydkretschmar.fixturize.TestFixtures.STRING_FIELD_DEFINITION;
+import static de.floydkretschmar.fixturize.TestFixtures.createConstantDefinitionMapMock;
+import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createExecutableElementFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createFixtureBuilderFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createTypeElementFixture;
+import static javax.lang.model.element.ElementKind.CLASS;
+import static javax.lang.model.element.ElementKind.METHOD;
+import static javax.lang.model.element.Modifier.PUBLIC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -28,14 +33,21 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class BuilderCreationMethodStrategyTest {
+    private ConstantDefinitionMap constantMap;
+    private BuilderCreationMethodStrategy strategy;
+
+    @BeforeEach
+    void setup() {
+        constantMap = createConstantDefinitionMapMock();
+        strategy = new BuilderCreationMethodStrategy();
+    }
 
     @Test
     void createCreationMethods_whenMultipleBuildersDefined_shouldCreateCreationMethodsForDefinedBuilders() {
-        final var strategy = new BuilderCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField"),
-                List.of("uuidField")));
-        final var constantMap = mockConstantMap();
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureBuilderFixture("methodName", "builder", "stringField", "intField"),
+                createFixtureBuilderFixture("methodName2", "builder2", "uuidField"));
 
         final var result = strategy.generateCreationMethods(element, constantMap);
 
@@ -49,22 +61,53 @@ class BuilderCreationMethodStrategyTest {
                         .build(),
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.uuidField(uuidFieldName)"
+                        .returnValue("TestObject.builder2()\n%s.uuidField(uuidFieldName)"
                                 .formatted(WHITESPACE_16))
-                        .name("methodName")
+                        .name("methodName2")
                         .build());
 
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(constantMap, times(1)).getMatchingConstants(List.of("uuidField"));
-        verifyNoMoreInteractions(constantMap);
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verify(element, times(2)).getSimpleName();
+        verify(element, times(2)).getEnclosedElements();
+        verifyNoMoreInteractions(constantMap, element);
     }
 
     @Test
+    void createCreationMethods_whenBuildMethodIsFound_shouldCreateCreationMethodUsingBuilderClass() {
+        final var stringSetter = createExecutableElementFixture("setStringField", METHOD, null, PUBLIC);
+        final var intSetter = createExecutableElementFixture("setIntField", METHOD, null, PUBLIC);
+        final var builderClassType = createDeclaredTypeFixture("TestObject.TestObjectBuilder", CLASS, stringSetter, intSetter);
+        final var builderMethod = createExecutableElementFixture("builder", METHOD, builderClassType);
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureBuilderFixture("methodName", "builder", "stringField", "intField"));
+        when(element.getEnclosedElements()).thenReturn((List) List.of(builderMethod));
+
+        final var result = strategy.generateCreationMethods(element, constantMap);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.stream()).contains(
+                CreationMethod.builder()
+                        .returnType("TestObject.TestObjectBuilder")
+                        .returnValue("TestObject.builder()\n%s.setStringField(stringFieldName)\n%s.setIntField(intFieldName)"
+                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .name("methodName")
+                        .build());
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verify(element, times(1)).getSimpleName();
+        verify(element, times(1)).getEnclosedElements();
+        verifyNoMoreInteractions(constantMap, element);
+    }
+
+
+    @Test
     void createCreationMethods_whenSingleBuilderDefined_shouldCreateCreationMethodForDefinedBuilder() {
-        final var strategy = new BuilderCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField")));
-        final var constantMap = mockConstantMap();
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureBuilderFixture("methodName", "builder", "stringField", "intField"));
 
         final var result = strategy.generateCreationMethods(element, constantMap);
 
@@ -77,27 +120,32 @@ class BuilderCreationMethodStrategyTest {
                         .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
-        verifyNoMoreInteractions(constantMap);
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verify(element, times(1)).getSimpleName();
+        verify(element, times(1)).getEnclosedElements();
+        verifyNoMoreInteractions(constantMap, element);
     }
 
     @Test
     void createCreationMethods_whenNoBuilderDefined_shouldReturnEmptyList() {
-        final var strategy = new BuilderCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of());
+        final var element = TestFixtures.<FixtureBuilder>createTypeElementFixture("TestObject");
 
-        final var constantMap = mockConstantMap();
         final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap);
 
         assertThat(result).hasSize(0);
+
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verifyNoMoreInteractions(element);
         verifyNoInteractions(constantMap);
     }
 
     @Test
     void createCreationMethods_whenBuilderHasNoFieldsDefined_shouldCreateCreationMethodUsingAllFields() {
-        final var strategy = new BuilderCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of()));
-        final var constantMap = mock(ConstantDefinitionMap.class);
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureBuilderFixture("methodName", "builder"));
+
+        constantMap = mock(ConstantDefinitionMap.class);
         when(constantMap.values()).thenReturn(List.of(STRING_FIELD_DEFINITION, INT_FIELD_DEFINITION));
 
         final var result = strategy.generateCreationMethods(element, constantMap);
@@ -106,59 +154,30 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(STRING_FIELD)\n%s.intField(INT_FIELD)"
+                        .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
                                 .formatted(WHITESPACE_16, WHITESPACE_16))
                         .name("methodName")
                         .build());
 
         verify(constantMap, times(1)).values();
-        verifyNoMoreInteractions(constantMap);
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verify(element, times(1)).getSimpleName();
+        verify(element, times(1)).getEnclosedElements();
+        verifyNoMoreInteractions(constantMap, element);
     }
 
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldThrowFixtureCreationException() {
-        final var strategy = new BuilderCreationMethodStrategy();
-        final var element = mockTypeElement(Stream.of(
-                List.of("stringField", "intField", "booleanField", "uuidField")));
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureBuilderFixture("methodName", "builder", "stringField"));
 
-        final var constantMap = mock(ConstantDefinitionMap.class);
+        constantMap = mock(ConstantDefinitionMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenThrow(new FixtureCreationException("error"));
 
         assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap));
-        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField", "booleanField", "uuidField"));
-        verifyNoMoreInteractions(constantMap);
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField"));
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verifyNoMoreInteractions(constantMap, element);
     }
-
-    private static ConstantDefinitionMap mockConstantMap() {
-        final var constantMap = mock(ConstantDefinitionMap.class);
-        when(constantMap.getMatchingConstants(anyCollection())).thenAnswer(call -> {
-            final var argument = call.<Collection<String>>getArgument(0);
-            return argument.stream().map(name -> Constant.builder()
-                    .originalFieldName(name)
-                    .name("%sName".formatted(name))
-                    .type("%sType".formatted(name))
-                    .value("%sValue".formatted(name))
-                    .build()).toList();
-        });
-        return constantMap;
-    }
-
-    private static TypeElement mockTypeElement(Stream<List<String>> definedFixtureBuilders) {
-        final var element = mock(TypeElement.class);
-        final var builders = definedFixtureBuilders.map(parameterNames -> {
-            final var builder = mock(FixtureBuilder.class);
-            when(builder.methodName()).thenReturn("methodName");
-            when(builder.usedSetters()).thenReturn(parameterNames.toArray(String[]::new));
-            when(builder.builderMethod()).thenReturn("builder");
-            return builder;
-        }).toArray(FixtureBuilder[]::new);
-
-        when(element.getAnnotationsByType(ArgumentMatchers.argThat(param -> param.equals(FixtureBuilder.class)))).thenReturn(builders);
-
-        final var name = mock(Name.class);
-        when(name.toString()).thenReturn("TestObject");
-        when(element.getSimpleName()).thenReturn(name);
-        return element;
-    }
-
 }

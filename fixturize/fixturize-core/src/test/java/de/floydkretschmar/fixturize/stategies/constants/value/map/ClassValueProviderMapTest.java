@@ -10,7 +10,7 @@ import javax.lang.model.element.VariableElement;
 import java.util.Map;
 import java.util.UUID;
 
-import static de.floydkretschmar.fixturize.TestConstants.RANDOM_UUID;
+import static de.floydkretschmar.fixturize.TestFixtures.RANDOM_UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
