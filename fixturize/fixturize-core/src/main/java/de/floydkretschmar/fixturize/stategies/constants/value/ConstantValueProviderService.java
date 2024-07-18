@@ -126,26 +126,26 @@ public class ConstantValueProviderService implements ValueProviderService {
     }
 
     private String provideDefaultFallbackValue(Element declaredElement) {
-        var returnValue = provideBuilderCreationMethodAsValue(declaredElement);
+        final var names = Names.from((TypeElement) declaredElement);
+        var returnValue = provideBuilderCreationMethodAsValue(declaredElement, names);
         if (!returnValue.equals(DEFAULT_VALUE)) return returnValue;
 
-        returnValue = provideConstructorCreationMethodAsValue(declaredElement);
+        returnValue = provideConstructorCreationMethodAsValue(declaredElement, names);
         if (!returnValue.equals(DEFAULT_VALUE)) return returnValue;
 
-        returnValue = provideLombokCreationMethodAsValue(declaredElement);
+        returnValue = provideLombokCreationMethodAsValue(declaredElement, names);
         if (!returnValue.equals(DEFAULT_VALUE)) return returnValue;
 
-        returnValue = providePublicConstructorAsValue(declaredElement);
+        returnValue = providePublicConstructorAsValue(declaredElement, names);
         if (!returnValue.equals(DEFAULT_VALUE)) return returnValue;
 
-        returnValue = provideBuildMethodAsValue(declaredElement);
+        returnValue = provideBuildMethodAsValue(declaredElement, names);
         if (!returnValue.equals(DEFAULT_VALUE)) return returnValue;
 
         return returnValue;
     }
 
-    private String provideLombokCreationMethodAsValue(Element declaredElement) {
-        final var names = Names.from((TypeElement) declaredElement);
+    private String provideLombokCreationMethodAsValue(Element declaredElement, Names names) {
         final var fields = ElementFilter.fieldsIn(declaredElement.getEnclosedElements());
 
         if (Objects.nonNull(declaredElement.getAnnotation(Builder.class))) {
@@ -168,8 +168,7 @@ public class ConstantValueProviderService implements ValueProviderService {
         return DEFAULT_VALUE;
     }
 
-    private String provideBuildMethodAsValue(Element declaredElement) {
-        final var names = Names.from((TypeElement) declaredElement);
+    private String provideBuildMethodAsValue(Element declaredElement, Names names) {
         final var builderName = "%s.%sBuilder".formatted(names.getQualifiedClassName(), names.getSimpleClassName());
         final var builderMethod = findMethodWithModifiersByReturnType(declaredElement, builderName, PUBLIC, STATIC);
 
@@ -192,27 +191,27 @@ public class ConstantValueProviderService implements ValueProviderService {
                 buildMethod.getSimpleName().toString());
     }
 
-    private String providePublicConstructorAsValue(Element declaredElement) {
+    private String providePublicConstructorAsValue(Element declaredElement, Names names) {
         final var mostParametersConstructor = ElementFilter.constructorsIn(declaredElement.getEnclosedElements()).stream()
                 .filter(constructor -> constructor.getModifiers().contains(PUBLIC))
                 .max(comparing(constructor -> constructor.getParameters().size()))
                 .orElse(null);
         if (Objects.isNull(mostParametersConstructor)) return DEFAULT_VALUE;
 
-        return createConstructorValue(declaredElement.asType().toString(), mostParametersConstructor.getParameters());
+        return createConstructorValue(names.getQualifiedClassName(), mostParametersConstructor.getParameters());
     }
 
-    private String provideBuilderCreationMethodAsValue(Element declaredElement) {
+    private String provideBuilderCreationMethodAsValue(Element declaredElement, Names names) {
         return Arrays.stream(declaredElement.getAnnotationsByType(FixtureBuilder.class))
                 .max(comparing(annotation -> annotation.usedSetters().length))
-                .map(firstBuilder -> "%sFixture.%s().build()".formatted(declaredElement.asType().toString(), firstBuilder.methodName()))
+                .map(firstBuilder -> "%sFixture.%s().build()".formatted(names.getQualifiedClassName(), firstBuilder.methodName()))
                 .orElse(DEFAULT_VALUE);
     }
 
-    private String provideConstructorCreationMethodAsValue(Element declaredElement) {
+    private String provideConstructorCreationMethodAsValue(Element declaredElement, Names names) {
         return Arrays.stream(declaredElement.getAnnotationsByType(FixtureConstructor.class))
                 .max(comparing(annotation -> annotation.constructorParameters().length))
-                .map(firstBuilder -> "%sFixture.%s()".formatted(declaredElement.asType().toString(), firstBuilder.methodName()))
+                .map(firstBuilder -> "%sFixture.%s()".formatted(names.getQualifiedClassName(), firstBuilder.methodName()))
                 .orElse(DEFAULT_VALUE);
     }
 

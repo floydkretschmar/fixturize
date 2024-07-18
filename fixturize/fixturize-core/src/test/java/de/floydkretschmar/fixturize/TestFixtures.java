@@ -23,8 +23,10 @@ import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
+import static javax.lang.model.element.ElementKind.FIELD;
 import static javax.lang.model.type.TypeKind.DECLARED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -71,16 +73,20 @@ public class TestFixtures {
 
     public static FixtureConstructor createFixtureConstructorFixture(String methodName, String... parameterNames) {
         final var annotation = mock(FixtureConstructor.class);
-        when(annotation.methodName()).thenReturn(methodName);
-        when(annotation.constructorParameters()).thenReturn(parameterNames);
+        if (Objects.nonNull(methodName))
+            when(annotation.methodName()).thenReturn(methodName);
+        if (parameterNames.length > 0)
+            when(annotation.constructorParameters()).thenReturn(parameterNames);
         return annotation;
     }
 
     public static FixtureBuilder createFixtureBuilderFixture(String methodName, String builderMethod, String... usedSetters) {
         final var builder = mock(FixtureBuilder.class);
-        when(builder.methodName()).thenReturn(methodName);
+        if (Objects.nonNull(methodName))
+            when(builder.methodName()).thenReturn(methodName);
+        if (Objects.nonNull(builderMethod))
+            when(builder.builderMethod()).thenReturn(builderMethod);
         when(builder.usedSetters()).thenReturn(usedSetters);
-        when(builder.builderMethod()).thenReturn(builderMethod);
         return builder;
     }
 
@@ -97,17 +103,31 @@ public class TestFixtures {
         return typeMirror;
     }
 
-    public static <T extends Annotation> VariableElement createVariableElementFixture(String name, T... annotations) {
-        final var variableElement = mock(VariableElement.class);
-        final var variableName = mock(Name.class);
-        final var variableType = createTypeMirrorFixture(DECLARED, "%sType".formatted(name));
+    public static <T extends Annotation> VariableElement createVariableElementFixtureForValueProviderServiceTest(String name, TypeKind typeKind, boolean mockVariableName, ElementKind elementKind) {
+        final var type = typeKind == DECLARED ? createTypeMirrorFixture(DECLARED, "%sType".formatted(name)) : createTypeMirrorFixture(typeKind);
+        return createVariableElementFixture(name, type, mockVariableName, elementKind, null);
+    }
 
-        when(variableName.toString()).thenReturn(name);
+    public static <T extends Annotation> VariableElement createVariableElementFixtureForConstantGenerationStrategyTest(String name, T... annotations) {
+        return createVariableElementFixture(name, createTypeMirrorFixture(DECLARED, "%sType".formatted(name)), true, FIELD, annotations);
+    }
+
+    private static <T extends Annotation> VariableElement createVariableElementFixture(String name, TypeMirror variableType, boolean mockVariableName, ElementKind elementKind, T[] annotations) {
+        final var variableElement = mock(VariableElement.class);
+
+        if (mockVariableName) {
+            final var variableName = mock(Name.class);
+            when(variableName.toString()).thenReturn(name);
+            when(variableElement.getSimpleName()).thenReturn(variableName);
+        }
 
         when(variableElement.asType()).thenReturn(variableType);
-        when(variableElement.getSimpleName()).thenReturn(variableName);
-        when(variableElement.getKind()).thenReturn(ElementKind.FIELD);
-        when(variableElement.getAnnotationsByType(any())).thenReturn(annotations);
+
+        if (Objects.nonNull(elementKind))
+            when(variableElement.getKind()).thenReturn(elementKind);
+
+        if (Objects.nonNull(annotations))
+            when(variableElement.getAnnotationsByType(any())).thenReturn(annotations);
 
         return variableElement;
     }
@@ -121,41 +141,63 @@ public class TestFixtures {
         when(typeElement.getAnnotationsByType(any())).thenReturn(annotations);
         when(typeElement.getSimpleName()).thenReturn(typeName);
         when(typeElement.getEnclosedElements()).thenReturn(List.of());
+
         return typeElement;
     }
 
     public static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, Element... enclosedElements) {
+        return createDeclaredTypeFixture(name, elementKind, false, enclosedElements);
+    }
+
+    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind) {
+        return createDeclaredTypeFixture(name, elementKind, true, null);
+    }
+
+    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, Element... enclosedElements) {
+        return createDeclaredTypeFixture(name, elementKind, true, enclosedElements);
+    }
+
+    private static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, boolean mockQualifiedName, Element[] enclosedElements) {
         final var declaredType = mock(DeclaredType.class);
-        final var declaredElement = mock(Element.class);
+        final var declaredElement = mock(TypeElement.class);
 
         when(declaredType.asElement()).thenReturn(declaredElement);
         when(declaredType.getKind()).thenReturn(DECLARED);
         when(declaredType.toString()).thenReturn(name);
 
         when(declaredElement.getKind()).thenReturn(elementKind);
-        when(declaredElement.getEnclosedElements()).thenReturn((List) List.of(enclosedElements));
+        if (mockQualifiedName) {
+            final var declaredElementName = mock(Name.class);
+            when(declaredElementName.toString()).thenReturn(name);
+            when(declaredElement.getQualifiedName()).thenReturn(declaredElementName);
+        }
+
+        if (Objects.nonNull(enclosedElements))
+            when(declaredElement.getEnclosedElements()).thenReturn((List) List.of(enclosedElements));
 
         return declaredType;
     }
 
     public static ExecutableElement createExecutableElementFixture(String name, ElementKind elementKind, DeclaredType returnType, Modifier... modifiers) {
         final var executableElement = createExecutableElementFixture(name, elementKind, returnType);
-
         when(executableElement.getModifiers()).thenReturn(Set.of(modifiers));
-
         return executableElement;
     }
 
     public static ExecutableElement createExecutableElementFixture(String name, ElementKind elementKind, DeclaredType returnType) {
-        final var executableElement = mock(ExecutableElement.class);
+        final var executableElement = createExecutableElementFixture(elementKind, null);
         final var executableElementName = mock(Name.class);
-
         when(executableElementName.toString()).thenReturn(name);
-
-        when(executableElement.getKind()).thenReturn(elementKind);
         when(executableElement.getReturnType()).thenReturn(returnType);
         when(executableElement.getSimpleName()).thenReturn(executableElementName);
+        return executableElement;
+    }
 
+    public static ExecutableElement createExecutableElementFixture(ElementKind elementKind, Modifier... modifiers) {
+        final var executableElement = mock(ExecutableElement.class);
+        when(executableElement.getKind()).thenReturn(elementKind);
+        if (Objects.nonNull(modifiers))
+            when(executableElement.getModifiers()).thenReturn(Set.of(modifiers));
         return executableElement;
     }
 
