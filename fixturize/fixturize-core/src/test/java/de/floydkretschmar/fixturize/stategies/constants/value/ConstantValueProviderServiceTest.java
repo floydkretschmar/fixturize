@@ -353,7 +353,7 @@ class ConstantValueProviderServiceTest {
 
     @Test
     void getValueFor_whenFallbackDefinedBuilderMethod_returnBuilderValueWithAllAvailableSetters() {
-        final var classBuilderType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass.LombokClassBuilder", CLASS, false, false);
+        final var classBuilderType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass.LombokClassBuilder", CLASS, false);
         final var setter1 = createExecutableElementFixture("setIntegerField", METHOD, classBuilderType, PUBLIC);
         final var setter2 = createExecutableElementFixture("setBooleanField", METHOD, classBuilderType, PUBLIC);
 
@@ -436,7 +436,7 @@ class ConstantValueProviderServiceTest {
 
     @Test
     void getValueFor_whenFallbackDefinedBuilderMethodButNoBuildMethodFound_returnDefaultValue() {
-        final var classBuilderType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass.LombokClassBuilder", CLASS, false, false);
+        final var classBuilderType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass.LombokClassBuilder", CLASS, false);
 
         final var builderMethod = createExecutableElementFixture(METHOD, PUBLIC, STATIC);
         when(builderMethod.getReturnType()).thenReturn(classBuilderType);

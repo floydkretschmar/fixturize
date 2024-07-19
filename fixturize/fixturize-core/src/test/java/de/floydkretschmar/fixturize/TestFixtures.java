@@ -146,22 +146,22 @@ public class TestFixtures {
     }
 
     public static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, Element... enclosedElements) {
-        return createDeclaredTypeFixture(name, elementKind, false, true, enclosedElements);
+        return createDeclaredTypeFixture(name, elementKind, true, enclosedElements);
     }
 
     public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind) {
-        return createDeclaredTypeFixtureForValueProviderServiceTest(name, elementKind, true, true);
+        return createDeclaredTypeFixtureForValueProviderServiceTest(name, elementKind, true);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, boolean mockQualifiedName, boolean mockKinds) {
-        return createDeclaredTypeFixture(name, elementKind, mockQualifiedName, mockKinds, null);
+    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, boolean mockKinds) {
+        return createDeclaredTypeFixture(name, elementKind, mockKinds, null);
     }
 
     public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, Element... enclosedElements) {
-        return createDeclaredTypeFixture(name, elementKind, true, true, enclosedElements);
+        return createDeclaredTypeFixture(name, elementKind, true, enclosedElements);
     }
 
-    private static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, boolean mockQualifiedName, boolean mockKinds, Element[] enclosedElements) {
+    private static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, boolean mockKinds, Element[] enclosedElements) {
         final var declaredType = mock(DeclaredType.class);
         final var declaredElement = mock(TypeElement.class);
 
@@ -171,12 +171,6 @@ public class TestFixtures {
         if (mockKinds) {
             when(declaredType.getKind()).thenReturn(DECLARED);
             when(declaredElement.getKind()).thenReturn(elementKind);
-        }
-
-        if (mockQualifiedName) {
-            final var declaredElementName = mock(Name.class);
-            when(declaredElementName.toString()).thenReturn(name);
-            when(declaredElement.getQualifiedName()).thenReturn(declaredElementName);
         }
 
         if (Objects.nonNull(enclosedElements))

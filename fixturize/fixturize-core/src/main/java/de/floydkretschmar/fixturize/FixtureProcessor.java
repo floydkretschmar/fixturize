@@ -80,7 +80,7 @@ public class FixtureProcessor extends AbstractProcessor {
         creationMethodStrategies.add(new ConstructorCreationMethodStrategy());
         creationMethodStrategies.add(new BuilderCreationMethodStrategy());
 
-        final var names = Names.from(element);
+        final var names = Names.from(element.getQualifiedName().toString());
 
         try {
             final var fixtureFile = processingEnv.getFiler()

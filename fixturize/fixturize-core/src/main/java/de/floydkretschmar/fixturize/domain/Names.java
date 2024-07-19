@@ -3,8 +3,6 @@ package de.floydkretschmar.fixturize.domain;
 import lombok.Builder;
 import lombok.Value;
 
-import javax.lang.model.element.TypeElement;
-
 /**
  * Contains all names related to the generation of a fixture class.
  */
@@ -32,6 +30,12 @@ public class Names {
     String qualifiedFixtureClassName;
 
     /**
+     * The fully qualified name of the class for which the fixture is being generated without the generics part if
+     * it exists.
+     */
+    String qualifiedClassNameWithoutGeneric;
+
+    /**
      * Returns a boolean indicating if a package name exists, or if it is empty.
      *
      * @return true if the package name exists, false if it is an empty string
@@ -40,20 +44,24 @@ public class Names {
         return !this.getPackageName().isEmpty();
     }
 
-    public static Names from(TypeElement element) {
-        final var qualifiedClassName = element.getQualifiedName().toString();
-        final var lastDot = qualifiedClassName.lastIndexOf('.');
+    public static Names from(String qualifiedClassName) {
+        final var genericStartIndex = qualifiedClassName.indexOf('<');
+        final var qualifiedClassNameWithoutGeneric = genericStartIndex > 0 ?
+                qualifiedClassName.substring(0, genericStartIndex) : qualifiedClassName;
+        final var lastDot = qualifiedClassNameWithoutGeneric.lastIndexOf('.');
+
         var packageName = "";
-        if (lastDot > 0) {
-            packageName = qualifiedClassName.substring(0, lastDot);
-        }
+        if (lastDot > 0)
+            packageName = qualifiedClassNameWithoutGeneric.substring(0, lastDot);
+
         final var simpleClassName = qualifiedClassName.substring(lastDot + 1);
-        final var qualifiedFixtureClassName = qualifiedClassName + "Fixture";
+        final var qualifiedFixtureClassName = qualifiedClassNameWithoutGeneric + "Fixture";
 
         return Names.builder()
                 .qualifiedClassName(qualifiedClassName)
                 .simpleClassName(simpleClassName)
                 .packageName(packageName)
+                .qualifiedClassNameWithoutGeneric(qualifiedClassNameWithoutGeneric)
                 .qualifiedFixtureClassName(qualifiedFixtureClassName).build();
     }
 }

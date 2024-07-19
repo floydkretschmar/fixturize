@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -82,19 +81,17 @@ public class ConstantValueProviderService implements ValueProviderService {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
 
-        final var fullQualifiedTypeName = fieldType.toString();
-        final var genericStartIndex = fullQualifiedTypeName.indexOf('<');
-        final var classKey = genericStartIndex > 0 ? fullQualifiedTypeName.substring(0, genericStartIndex) : fullQualifiedTypeName;
-        if (valueProviders.containsKey(classKey))
-            return valueProviders.get(classKey).provideValueAsString(field);
+        final var names = Names.from(fieldType.toString());
+        if (valueProviders.containsKey(names.getQualifiedClassNameWithoutGeneric()))
+            return valueProviders.get(names.getQualifiedClassNameWithoutGeneric()).provideValueAsString(field);
 
         if (typeKind == TypeKind.DECLARED) {
             final var declaredElement = ((DeclaredType) fieldType).asElement();
             final var elementKind = declaredElement.getKind();
             if (elementKind == ENUM) {
-                return provideValueForEnum(declaredElement, fullQualifiedTypeName);
+                return provideValueForEnum(declaredElement, names);
             } else if (elementKind == CLASS) {
-                return provideDefaultFallbackValue(declaredElement);
+                return provideDefaultFallbackValue(declaredElement, names);
             }
         }
 
@@ -106,7 +103,7 @@ public class ConstantValueProviderService implements ValueProviderService {
     }
 
 
-    private String provideValueForEnum(Element declaredElement, String fullQualifiedTypeName) {
+    private String provideValueForEnum(Element declaredElement, Names names) {
         final var firstEnumElement = declaredElement.getEnclosedElements().stream()
                 .filter(element -> element.getKind().equals(ElementKind.ENUM_CONSTANT))
                 .map(Object::toString)
@@ -115,11 +112,10 @@ public class ConstantValueProviderService implements ValueProviderService {
         if (firstEnumElement.isEmpty())
             return DEFAULT_VALUE;
 
-        return "%s.%s".formatted(fullQualifiedTypeName, firstEnumElement.get());
+        return "%s.%s".formatted(names.getQualifiedClassName(), firstEnumElement.get());
     }
 
-    private String provideDefaultFallbackValue(Element declaredElement) {
-        final var names = Names.from((TypeElement) declaredElement);
+    private String provideDefaultFallbackValue(Element declaredElement, Names names) {
         var returnValue = provideBuilderCreationMethodAsValue(declaredElement, names);
         if (!returnValue.equals(DEFAULT_VALUE)) return returnValue;
 
