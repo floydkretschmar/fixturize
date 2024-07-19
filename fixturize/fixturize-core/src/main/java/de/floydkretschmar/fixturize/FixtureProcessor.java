@@ -9,6 +9,8 @@ import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnak
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.FallbackValueProvider;
 import de.floydkretschmar.fixturize.stategies.creation.BuilderCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.ConstructorCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
@@ -101,8 +103,9 @@ public class FixtureProcessor extends AbstractProcessor {
                         FixtureValueProvider::targetType,
                         annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())
                 ));
+        final var fallbackValueProvider = new FallbackValueProvider();
 
-        return new ConstantValueProviderService(customValueProviders);
+        return new ConstantValueProviderService(new ValueProviderMap(customValueProviders), fallbackValueProvider);
     }
 
     private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap) {

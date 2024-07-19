@@ -104,8 +104,8 @@ public class TestFixtures {
     }
 
     public static VariableElement createVariableElementFixtureForValueProviderServiceTest(String name, TypeKind typeKind, boolean mockVariableName, ElementKind elementKind) {
-        final var type = typeKind == DECLARED ? createTypeMirrorFixture(DECLARED, "%sType".formatted(name)) : createTypeMirrorFixture(typeKind);
-        return createVariableElementFixture(name, type, mockVariableName, elementKind, null);
+//        final var type = typeKind == DECLARED ? createTypeMirrorFixture(DECLARED, "%sType".formatted(name)) : createTypeMirrorFixture(typeKind);
+        return createVariableElementFixture(name, null, mockVariableName, elementKind, null);
     }
 
     public static <T extends Annotation> VariableElement createVariableElementFixtureForConstantGenerationStrategyTest(String name, T... annotations) {
@@ -121,7 +121,8 @@ public class TestFixtures {
             when(variableElement.getSimpleName()).thenReturn(variableName);
         }
 
-        when(variableElement.asType()).thenReturn(variableType);
+        if (Objects.nonNull(variableType))
+            when(variableElement.asType()).thenReturn(variableType);
 
         if (Objects.nonNull(elementKind))
             when(variableElement.getKind()).thenReturn(elementKind);
@@ -146,29 +147,35 @@ public class TestFixtures {
     }
 
     public static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, Element... enclosedElements) {
-        return createDeclaredTypeFixture(name, elementKind, true, enclosedElements);
+        return createDeclaredTypeFixtureCore(name, elementKind, enclosedElements);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind) {
-        return createDeclaredTypeFixtureForValueProviderServiceTest(name, elementKind, true);
+    public static DeclaredType createDeclaredTypeFixtureForFallbackTest() {
+        return createDeclaredTypeFixture(null, null, null);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, boolean mockKinds) {
-        return createDeclaredTypeFixture(name, elementKind, mockKinds, null);
+    public static DeclaredType createDeclaredTypeFixtureForFallbackTest(String name) {
+        return createDeclaredTypeFixture(name, null, null);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, Element... enclosedElements) {
-        return createDeclaredTypeFixture(name, elementKind, true, enclosedElements);
+    public static DeclaredType createDeclaredTypeFixtureForFallbackTest(Element... enclosedElements) {
+        return createDeclaredTypeFixture(null, null, enclosedElements);
     }
 
-    private static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, boolean mockKinds, Element[] enclosedElements) {
+    public static DeclaredType createDeclaredTypeFixtureForFallbackTest(String name, Element... enclosedElements) {
+        return createDeclaredTypeFixture(name, null, enclosedElements);
+    }
+
+    private static DeclaredType createDeclaredTypeFixtureCore(String name, ElementKind elementKind, Element[] enclosedElements) {
         final var declaredType = mock(DeclaredType.class);
         final var declaredElement = mock(TypeElement.class);
 
         when(declaredType.asElement()).thenReturn(declaredElement);
-        when(declaredType.toString()).thenReturn(name);
 
-        if (mockKinds) {
+        if (Objects.nonNull(name))
+            when(declaredType.toString()).thenReturn(name);
+
+        if (Objects.nonNull(elementKind)) {
             when(declaredType.getKind()).thenReturn(DECLARED);
             when(declaredElement.getKind()).thenReturn(elementKind);
         }
