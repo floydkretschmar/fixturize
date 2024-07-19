@@ -32,14 +32,17 @@ import static de.floydkretschmar.fixturize.TestFixtures.createFixtureBuilderFixt
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstructorFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createTypeMirrorFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixtureForValueProviderServiceTest;
+import static de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService.DEFAULT_VALUE;
 import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.CONSTRUCTOR;
 import static javax.lang.model.element.ElementKind.ENUM;
 import static javax.lang.model.element.ElementKind.ENUM_CONSTANT;
 import static javax.lang.model.element.ElementKind.FIELD;
+import static javax.lang.model.element.ElementKind.METHOD;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 import static javax.lang.model.type.TypeKind.BOOLEAN;
 import static javax.lang.model.type.TypeKind.DECLARED;
 import static javax.lang.model.type.TypeKind.INT;
@@ -72,8 +75,6 @@ class ConstantValueProviderServiceTest {
     void setup() {
         service = new ConstantValueProviderService(typeKindMap, classMap);
     }
-
-    // TODO: Missing tests for searching for builder methods and all the DEFAULT_VALUE case
 
     @Test
     void getValueFor_whenCalledForDefinedTypeKind_returnCorrespondingValueString() {
@@ -126,6 +127,23 @@ class ConstantValueProviderServiceTest {
         assertThat(result).isEqualTo("EnumType.CONSTANT_VALUE");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
         verify(classMap, times(1)).containsKey("EnumType");
+        verifyNoMoreInteractions(typeKindMap, classMap);
+    }
+
+    @Test
+    void getValueFor_whenCalledForEnumWithoutConstants_returnDefaultValue() {
+        final var type = createDeclaredTypeFixture("EnumType", ENUM);
+        when(field.asType()).thenReturn(type);
+
+        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
+        when(classMap.containsKey(anyString())).thenReturn(false);
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo(DEFAULT_VALUE);
+        verify(typeKindMap, times(1)).containsKey(DECLARED);
+        verify(classMap, times(1)).containsKey("EnumType");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 
     @Test
@@ -146,6 +164,7 @@ class ConstantValueProviderServiceTest {
         assertThat(result).isEqualTo("FixtureBuilderClassFixture.methodName1().build()");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
         verify(classMap, times(1)).containsKey("FixtureBuilderClass");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 
     @Test
@@ -168,6 +187,7 @@ class ConstantValueProviderServiceTest {
         assertThat(result).isEqualTo("FixtureConstructorClassFixture.methodName1()");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
         verify(classMap, times(1)).containsKey("FixtureConstructorClass");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 
     @Test
@@ -202,6 +222,7 @@ class ConstantValueProviderServiceTest {
         verify(classMap, times(1)).containsKey("LombokClass");
         verify(classMap, times(1)).containsKey("classWithValueProviderFieldType");
         verify(classMap, times(1)).get("classWithValueProviderFieldType");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 
     @Test
@@ -238,6 +259,7 @@ class ConstantValueProviderServiceTest {
         verify(classMap, times(1)).containsKey("LombokClass");
         verify(classMap, times(1)).containsKey("classWithValueProviderFieldType");
         verify(classMap, times(1)).get("classWithValueProviderFieldType");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 
 
@@ -281,6 +303,7 @@ class ConstantValueProviderServiceTest {
         verify(classMap, times(1)).containsKey("LombokClass");
         verify(classMap, times(1)).containsKey("classWithValueProviderFieldType");
         verify(classMap, times(1)).get("classWithValueProviderFieldType");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 
     @Test
@@ -311,6 +334,7 @@ class ConstantValueProviderServiceTest {
         assertThat(result).isEqualTo("new LombokClass()");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
         verify(classMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 
     @Test
@@ -351,6 +375,135 @@ class ConstantValueProviderServiceTest {
 
         assertThat(result).isEqualTo("new LombokClass(10, true)");
         verify(typeKindMap, times(1)).containsKey(DECLARED);
+        verify(typeKindMap, times(1)).containsKey(INT);
+        verify(typeKindMap, times(1)).containsKey(BOOLEAN);
+        verify(typeKindMap, times(1)).get(INT);
+        verify(typeKindMap, times(1)).get(BOOLEAN);
         verify(classMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(typeKindMap, classMap);
+    }
+
+    @Test
+    void getValueFor_whenFallbackDefinedBuilderMethod_returnBuilderValueWithAllAvailableSetters() {
+        final var classBuilderType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass.LombokClassBuilder", CLASS, false, false);
+        final var setter1 = createExecutableElementFixture("setIntegerField", METHOD, classBuilderType, PUBLIC);
+        final var setter2 = createExecutableElementFixture("setBooleanField", METHOD, classBuilderType, PUBLIC);
+
+        final var builderMethod = createExecutableElementFixture("builder", METHOD, classBuilderType, PUBLIC, STATIC);
+        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", INT, false, FIELD);
+        when(field1.toString()).thenReturn("integerField");
+        final var field2 = createVariableElementFixtureForValueProviderServiceTest("booleanField", BOOLEAN, false, FIELD);
+        when(field2.toString()).thenReturn("booleanField");
+        final var field3 = mock(VariableElement.class);
+        when(field3.toString()).thenReturn("fieldWithoutSetter");
+        when(field3.getKind()).thenReturn(FIELD);
+        final var classType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass", CLASS, builderMethod, field1, field2, field3);
+
+        final var buildMethod = createExecutableElementFixture("build", METHOD, classType, PUBLIC);
+        when(classBuilderType.asElement().getEnclosedElements()).thenReturn((List) List.of(setter1, setter2, buildMethod));
+
+        final var typeAsElement = (TypeElement) classType.asElement();
+        when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
+                .thenReturn(new FixtureBuilder[]{});
+        when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureConstructor.class))))
+                .thenReturn(new FixtureConstructor[]{});
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(Builder.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(AllArgsConstructor.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(RequiredArgsConstructor.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(NoArgsConstructor.class))))
+                .thenReturn(null);
+
+        when(field.asType()).thenReturn(classType);
+
+        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
+        when(typeKindMap.containsKey(eq(INT))).thenReturn(true);
+        when(typeKindMap.containsKey(eq(BOOLEAN))).thenReturn(true);
+        when(typeKindMap.get(eq(INT))).thenReturn(field -> "10");
+        when(typeKindMap.get(eq(BOOLEAN))).thenReturn(field -> "true");
+        when(classMap.containsKey(anyString())).thenReturn(false);
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo("LombokClass.builder().setIntegerField(10).setBooleanField(true).build()");
+        verify(typeKindMap, times(1)).containsKey(DECLARED);
+        verify(typeKindMap, times(1)).containsKey(INT);
+        verify(typeKindMap, times(1)).containsKey(BOOLEAN);
+        verify(typeKindMap, times(1)).get(INT);
+        verify(typeKindMap, times(1)).get(BOOLEAN);
+        verify(classMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(typeKindMap, classMap);
+    }
+
+    @Test
+    void getValueFor_whenFallbackDefinedBuilderMethodButNoBuilderFound_returnDefaultValue() {
+        final var field1 = mock(VariableElement.class);
+        final var field2 = mock(VariableElement.class);
+        final var classType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass", CLASS, field1, field2);
+
+        final var typeAsElement = (TypeElement) classType.asElement();
+        when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
+                .thenReturn(new FixtureBuilder[]{});
+        when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureConstructor.class))))
+                .thenReturn(new FixtureConstructor[]{});
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(Builder.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(AllArgsConstructor.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(RequiredArgsConstructor.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(NoArgsConstructor.class))))
+                .thenReturn(null);
+
+        when(field.asType()).thenReturn(classType);
+
+        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
+        when(classMap.containsKey(anyString())).thenReturn(false);
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo(DEFAULT_VALUE);
+        verify(typeKindMap, times(1)).containsKey(DECLARED);
+        verify(classMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(typeKindMap, classMap);
+    }
+
+    @Test
+    void getValueFor_whenFallbackDefinedBuilderMethodButNoBuildMethodFound_returnDefaultValue() {
+        final var classBuilderType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass.LombokClassBuilder", CLASS, false, false);
+
+        final var builderMethod = createExecutableElementFixture(METHOD, PUBLIC, STATIC);
+        when(builderMethod.getReturnType()).thenReturn(classBuilderType);
+        final var field1 = mock(VariableElement.class);
+        final var field2 = mock(VariableElement.class);
+        final var classType = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass", CLASS, builderMethod, field1, field2);
+
+        final var typeAsElement = (TypeElement) classType.asElement();
+        when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
+                .thenReturn(new FixtureBuilder[]{});
+        when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureConstructor.class))))
+                .thenReturn(new FixtureConstructor[]{});
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(Builder.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(AllArgsConstructor.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(RequiredArgsConstructor.class))))
+                .thenReturn(null);
+        when(typeAsElement.getAnnotation(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(NoArgsConstructor.class))))
+                .thenReturn(null);
+
+        when(field.asType()).thenReturn(classType);
+
+        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
+        when(classMap.containsKey(anyString())).thenReturn(false);
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo(DEFAULT_VALUE);
+        verify(typeKindMap, times(1)).containsKey(DECLARED);
+        verify(classMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(typeKindMap, classMap);
     }
 }

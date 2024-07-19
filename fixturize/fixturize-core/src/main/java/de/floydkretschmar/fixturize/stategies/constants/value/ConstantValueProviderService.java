@@ -38,7 +38,6 @@ import static javax.lang.model.element.Modifier.STATIC;
 /**
  * Decides which value during constant creation should be used for a given {@link VariableElement}. Also defines the default
  * fallback strategy for getting values where no value provider is defined:
- *
  * 1. If type is annotated with {@link FixtureConstructor} or {@link FixtureBuilder}: use the annotation with the most
  * {@link FixtureConstructor#constructorParameters()} or {@link FixtureBuilder#usedSetters()} and use the creation method
  * defined by that annotation
@@ -61,7 +60,7 @@ public class ConstantValueProviderService implements ValueProviderService {
     /**
      * The default constant value if all other strategies for generation fail.
      */
-    private static final String DEFAULT_VALUE = "null";
+    public static final String DEFAULT_VALUE = "null";
 
     /**
      * All default and custom value providers for {@link TypeKind}s.
@@ -179,10 +178,10 @@ public class ConstantValueProviderService implements ValueProviderService {
 
         if (Objects.isNull(buildMethod)) return DEFAULT_VALUE;
 
-        final var fields = ElementFilter.fieldsIn(builderType.getEnclosedElements());
+        final var fields = ElementFilter.fieldsIn(declaredElement.getEnclosedElements());
         final var builderSetter = findSetterForFields(builderType, fields, PUBLIC)
                 .filter(entry -> entry.getValue().isPresent())
-                .collect(ReflectionUtils.toLinkedMap(entry -> entry.getValue().get().getSimpleName().toString(), entry -> this.getValueFor(entry.getKey())));
+                .collect(ReflectionUtils.toLinkedMap(entry -> entry.getValue().orElseThrow().getSimpleName().toString(), entry -> this.getValueFor(entry.getKey())));
 
         return createBuilderValue(
                 builderSetter,

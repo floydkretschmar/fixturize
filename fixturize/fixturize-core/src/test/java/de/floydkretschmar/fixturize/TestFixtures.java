@@ -103,7 +103,7 @@ public class TestFixtures {
         return typeMirror;
     }
 
-    public static <T extends Annotation> VariableElement createVariableElementFixtureForValueProviderServiceTest(String name, TypeKind typeKind, boolean mockVariableName, ElementKind elementKind) {
+    public static VariableElement createVariableElementFixtureForValueProviderServiceTest(String name, TypeKind typeKind, boolean mockVariableName, ElementKind elementKind) {
         final var type = typeKind == DECLARED ? createTypeMirrorFixture(DECLARED, "%sType".formatted(name)) : createTypeMirrorFixture(typeKind);
         return createVariableElementFixture(name, type, mockVariableName, elementKind, null);
     }
@@ -146,26 +146,33 @@ public class TestFixtures {
     }
 
     public static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, Element... enclosedElements) {
-        return createDeclaredTypeFixture(name, elementKind, false, enclosedElements);
+        return createDeclaredTypeFixture(name, elementKind, false, true, enclosedElements);
     }
 
     public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind) {
-        return createDeclaredTypeFixture(name, elementKind, true, null);
+        return createDeclaredTypeFixtureForValueProviderServiceTest(name, elementKind, true, true);
+    }
+
+    public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, boolean mockQualifiedName, boolean mockKinds) {
+        return createDeclaredTypeFixture(name, elementKind, mockQualifiedName, mockKinds, null);
     }
 
     public static DeclaredType createDeclaredTypeFixtureForValueProviderServiceTest(String name, ElementKind elementKind, Element... enclosedElements) {
-        return createDeclaredTypeFixture(name, elementKind, true, enclosedElements);
+        return createDeclaredTypeFixture(name, elementKind, true, true, enclosedElements);
     }
 
-    private static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, boolean mockQualifiedName, Element[] enclosedElements) {
+    private static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, boolean mockQualifiedName, boolean mockKinds, Element[] enclosedElements) {
         final var declaredType = mock(DeclaredType.class);
         final var declaredElement = mock(TypeElement.class);
 
         when(declaredType.asElement()).thenReturn(declaredElement);
-        when(declaredType.getKind()).thenReturn(DECLARED);
         when(declaredType.toString()).thenReturn(name);
 
-        when(declaredElement.getKind()).thenReturn(elementKind);
+        if (mockKinds) {
+            when(declaredType.getKind()).thenReturn(DECLARED);
+            when(declaredElement.getKind()).thenReturn(elementKind);
+        }
+
         if (mockQualifiedName) {
             final var declaredElementName = mock(Name.class);
             when(declaredElementName.toString()).thenReturn(name);
