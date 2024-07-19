@@ -1,5 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
+import de.floydkretschmar.fixturize.domain.Names;
+
 import javax.lang.model.element.VariableElement;
 import java.util.UUID;
 
@@ -18,7 +20,7 @@ public class UUIDValueProvider implements ValueProvider {
      * @return the text representation of the constant value
      */
     @Override
-    public String provideValueAsString(VariableElement field) {
+    public String provideValueAsString(VariableElement field, Names names) {
         return "java.util.UUID.fromString(\"%s\")".formatted(UUID.randomUUID().toString());
     }
 }

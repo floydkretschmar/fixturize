@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import com.google.common.base.CaseFormat;
+import de.floydkretschmar.fixturize.domain.Names;
 
 import javax.lang.model.element.VariableElement;
 
@@ -19,7 +20,7 @@ public class StringValueProvider implements ValueProvider {
      * @return the text representation of the constant value
      */
     @Override
-    public String provideValueAsString(VariableElement field) {
+    public String provideValueAsString(VariableElement field, Names names) {
         return "\"%s_VALUE\"".formatted(CaseFormat.LOWER_CAMEL.to(
                 CaseFormat.UPPER_UNDERSCORE, field.getSimpleName().toString()));
     }

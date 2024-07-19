@@ -83,7 +83,7 @@ public class ConstantValueProviderService implements ValueProviderService {
 
         final var names = Names.from(fieldType.toString());
         if (valueProviders.containsKey(names.getQualifiedClassNameWithoutGeneric()))
-            return valueProviders.get(names.getQualifiedClassNameWithoutGeneric()).provideValueAsString(field);
+            return valueProviders.get(names.getQualifiedClassNameWithoutGeneric()).provideValueAsString(field, names);
 
         if (typeKind == TypeKind.DECLARED) {
             final var declaredElement = ((DeclaredType) fieldType).asElement();

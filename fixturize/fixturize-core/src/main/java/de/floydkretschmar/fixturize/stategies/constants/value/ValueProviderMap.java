@@ -62,18 +62,18 @@ public class ValueProviderMap extends HashMap<String, ValueProvider> {
         this.putIfAbsent(Integer.class.getName(), new IntegerValueProvider());
         this.putIfAbsent(Long.class.getName(), new LongValueProvider());
         this.putIfAbsent(Short.class.getName(), new ShortValueProvider());
-        this.putIfAbsent(BigDecimal.class.getName(), field -> "java.math.BigDecimal.ZERO");
-        this.putIfAbsent(BigInteger.class.getName(), field -> "java.math.BigInteger.ZERO");
-        this.putIfAbsent(Instant.class.getName(), field -> "java.time.Instant.now()");
-        this.putIfAbsent(Duration.class.getName(), field -> "java.time.Duration.ZERO");
-        this.putIfAbsent(LocalDate.class.getName(), field -> "java.time.LocalDate.now()");
-        this.putIfAbsent(LocalDateTime.class.getName(), field -> "java.time.LocalDateTime.now()");
-        this.putIfAbsent(LocalTime.class.getName(), field -> "java.time.LocalTime.now()");
-        this.putIfAbsent(Date.class.getName(), field -> "new java.util.Date()");
-        this.putIfAbsent(Collection.class.getName(), field -> "java.util.List.of()");
-        this.putIfAbsent(List.class.getName(), field -> "java.util.List.of()");
-        this.putIfAbsent(Map.class.getName(), field -> "java.util.Map.of()");
-        this.putIfAbsent(Set.class.getName(), field -> "java.util.Set.of()");
-        this.putIfAbsent(Queue.class.getName(), field -> "new java.util.PriorityQueue<>()");
+        this.putIfAbsent(BigDecimal.class.getName(), (field, names) -> "java.math.BigDecimal.ZERO");
+        this.putIfAbsent(BigInteger.class.getName(), (field, names) -> "java.math.BigInteger.ZERO");
+        this.putIfAbsent(Instant.class.getName(), (field, names) -> "java.time.Instant.now()");
+        this.putIfAbsent(Duration.class.getName(), (field, names) -> "java.time.Duration.ZERO");
+        this.putIfAbsent(LocalDate.class.getName(), (field, names) -> "java.time.LocalDate.now()");
+        this.putIfAbsent(LocalDateTime.class.getName(), (field, names) -> "java.time.LocalDateTime.now()");
+        this.putIfAbsent(LocalTime.class.getName(), (field, names) -> "java.time.LocalTime.now()");
+        this.putIfAbsent(Date.class.getName(), (field, names) -> "new java.util.Date()");
+        this.putIfAbsent(Collection.class.getName(), (field, names) -> "java.util.List.of()");
+        this.putIfAbsent(List.class.getName(), (field, names) -> "java.util.List.of()");
+        this.putIfAbsent(Map.class.getName(), (field, names) -> "java.util.Map.of()");
+        this.putIfAbsent(Set.class.getName(), (field, names) -> "java.util.Set.of()");
+        this.putIfAbsent(Queue.class.getName(), (field, names) -> "new java.util.PriorityQueue<>()");
     }
 }

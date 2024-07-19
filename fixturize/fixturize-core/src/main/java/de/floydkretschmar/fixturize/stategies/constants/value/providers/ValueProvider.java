@@ -1,5 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
+import de.floydkretschmar.fixturize.domain.Names;
+
 import javax.lang.model.element.VariableElement;
 
 /**
@@ -16,5 +18,5 @@ public interface ValueProvider {
      * @param field - for which the value is being provided
      * @return the string representation of the value
      */
-    String provideValueAsString(VariableElement field);
+    String provideValueAsString(VariableElement field, Names name);
 }

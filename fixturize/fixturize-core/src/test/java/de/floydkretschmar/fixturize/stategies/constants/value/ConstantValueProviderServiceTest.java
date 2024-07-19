@@ -74,7 +74,7 @@ class ConstantValueProviderServiceTest {
         when(field.asType()).thenReturn(type);
 
         when(valueProviderMap.containsKey(any(String.class))).thenReturn(true);
-        when(valueProviderMap.get(any(String.class))).thenReturn(f -> "value");
+        when(valueProviderMap.get(any(String.class))).thenReturn((f, n) -> "value");
 
         final var result = service.getValueFor(field);
 
@@ -188,8 +188,8 @@ class ConstantValueProviderServiceTest {
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
         when(valueProviderMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
         when(valueProviderMap.containsKey(eq("integerFieldType"))).thenReturn(true);
-        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
-        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn(f -> "10");
+        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn((f, n) -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn((f, n) -> "10");
 
         final var result = service.getValueFor(field);
 
@@ -222,9 +222,9 @@ class ConstantValueProviderServiceTest {
 
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
         when(valueProviderMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
-        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn((f, n) -> "classWithValueProviderFieldTypeValue");
         when(valueProviderMap.containsKey(eq("integerFieldType"))).thenReturn(true);
-        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn(field -> "10");
+        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn((f, n) -> "10");
 
         final var result = service.getValueFor(field);
 
@@ -268,7 +268,7 @@ class ConstantValueProviderServiceTest {
 
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
         when(valueProviderMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
-        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn((f, n) -> "classWithValueProviderFieldTypeValue");
 
         final var result = service.getValueFor(field);
 
@@ -337,8 +337,8 @@ class ConstantValueProviderServiceTest {
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
         when(valueProviderMap.containsKey(eq("integerParameterType"))).thenReturn(true);
         when(valueProviderMap.containsKey(eq("booleanParameterType"))).thenReturn(true);
-        when(valueProviderMap.get(eq("integerParameterType"))).thenReturn(field -> "10");
-        when(valueProviderMap.get(eq("booleanParameterType"))).thenReturn(field -> "true");
+        when(valueProviderMap.get(eq("integerParameterType"))).thenReturn((f, n) -> "10");
+        when(valueProviderMap.get(eq("booleanParameterType"))).thenReturn((f, n) -> "true");
 
         final var result = service.getValueFor(field);
 
@@ -389,8 +389,8 @@ class ConstantValueProviderServiceTest {
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
         when(valueProviderMap.containsKey(eq("integerFieldType"))).thenReturn(true);
         when(valueProviderMap.containsKey(eq("booleanFieldType"))).thenReturn(true);
-        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn(field -> "10");
-        when(valueProviderMap.get(eq("booleanFieldType"))).thenReturn(field -> "true");
+        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn((f, n) -> "10");
+        when(valueProviderMap.get(eq("booleanFieldType"))).thenReturn((f, n) -> "true");
 
         final var result = service.getValueFor(field);
 

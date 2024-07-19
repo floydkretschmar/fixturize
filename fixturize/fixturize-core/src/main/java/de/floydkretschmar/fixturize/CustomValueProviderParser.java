@@ -5,7 +5,6 @@ import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValuePro
 
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.util.function.Function;
 
 /**
  * Creates value providers from string definitions using the nashorn script engine.
@@ -26,11 +25,15 @@ public class CustomValueProviderParser {
         final var engine = engineManager.getEngineByName("nashorn");
 
         try {
-            final var valueProviderAsJs = "function(field) %s".formatted(valueProviderDefinition);
-            final var evaluationResult = engine.eval("new java.util.function.Function(%s)".formatted(valueProviderAsJs));
-            final var function = (Function<Object, Object>) evaluationResult;
+            final var valueProviderAsJs = "function(field, names) %s".formatted(valueProviderDefinition);
+            final var evaluationResult = engine.eval("""
+                    var ValueProvider = Java.type('de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider');
+                    new ValueProvider(%s);""".formatted(valueProviderAsJs));
 
-            return field -> function.apply(field).toString();
+            final var function = (ValueProvider) evaluationResult;
+
+//            return (field, names) -> function.apply(field, names).toString();
+            return function;
         } catch (ScriptException e) {
             throw new FixtureCreationException("The provided custom value provider %s could not be parsed as a valid value provider".formatted(valueProviderDefinition));
         }

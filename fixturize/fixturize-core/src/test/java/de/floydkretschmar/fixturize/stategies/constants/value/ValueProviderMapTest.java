@@ -1,5 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
+import de.floydkretschmar.fixturize.domain.Names;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -89,16 +90,18 @@ class ValueProviderMapTest {
     void get_whenCalledForDefaultValue_shouldReturnExpectedDefaultValue(String targetClassName, String expectedDefaultValue) {
         final var field = mock(VariableElement.class);
         final var map = new ValueProviderMap(Map.of());
+        final var names = Names.from("some.test.Class");
 
-        assertThat(map.get(targetClassName).provideValueAsString(field)).isEqualTo(expectedDefaultValue);
+        assertThat(map.get(targetClassName).provideValueAsString(field, names)).isEqualTo(expectedDefaultValue);
     }
 
     @Test
     void get_whenCalledForCharacter_shouldReturnExpectedDefaultValue() {
         final var field = mock(VariableElement.class);
         final var map = new ValueProviderMap(Map.of());
+        final var names = Names.from("some.test.Class");
 
-        assertThat(map.get("java.lang.Character").provideValueAsString(field)).isEqualTo("' '");
+        assertThat(map.get("java.lang.Character").provideValueAsString(field, names)).isEqualTo("' '");
     }
 
     @Test
@@ -107,29 +110,33 @@ class ValueProviderMapTest {
         final var name = mock(Name.class);
         when(name.toString()).thenReturn("stringFieldName");
         when(field.getSimpleName()).thenReturn(name);
+        final var names = Names.from("some.test.Class");
 
         final var map = new ValueProviderMap(Map.of());
 
-        assertThat(map.get("java.lang.String").provideValueAsString(field)).isEqualTo("\"STRING_FIELD_NAME_VALUE\"");
+        assertThat(map.get("java.lang.String").provideValueAsString(field, names)).isEqualTo("\"STRING_FIELD_NAME_VALUE\"");
     }
 
     @Test
     void get_whenCalledForUUIDDefaultValue_shouldReturnFormattedStringValue() {
         final var field = mock(VariableElement.class);
         final var uuid = UUID.fromString(RANDOM_UUID);
+        final var names = Names.from("some.test.Class");
+
         try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
             final var map = new ValueProviderMap(Map.of());
 
-            assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID));
+            assertThat(map.get("java.util.UUID").provideValueAsString(field, names)).isEqualTo("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID));
         }
     }
 
     @Test
     void get_whenDefaultIsOverwritten_shouldReturnCustomValue() {
         final var field = mock(VariableElement.class);
-        final var map = new ValueProviderMap(Map.of("java.util.UUID", f -> "10"));
+        final var names = Names.from("some.test.Class");
+        final var map = new ValueProviderMap(Map.of("java.util.UUID", (f, n) -> "10"));
 
-        assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("10");
+        assertThat(map.get("java.util.UUID").provideValueAsString(field, names)).isEqualTo("10");
     }
 }
