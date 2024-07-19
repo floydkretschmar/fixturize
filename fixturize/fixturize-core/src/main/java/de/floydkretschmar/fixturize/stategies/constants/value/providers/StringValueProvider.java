@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.provider;
+package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import com.google.common.base.CaseFormat;
 

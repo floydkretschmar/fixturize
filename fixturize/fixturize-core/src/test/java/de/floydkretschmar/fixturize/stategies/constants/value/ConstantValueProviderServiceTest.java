@@ -3,8 +3,6 @@ package de.floydkretschmar.fixturize.stategies.constants.value;
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.ClassValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.TypeKindValueProviderMap;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -19,12 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static de.floydkretschmar.fixturize.TestFixtures.INT_FIELD_NAME;
 import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixtureForValueProviderServiceTest;
 import static de.floydkretschmar.fixturize.TestFixtures.createExecutableElementFixture;
@@ -43,9 +39,8 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
-import static javax.lang.model.type.TypeKind.BOOLEAN;
+import static javax.lang.model.type.TypeKind.ARRAY;
 import static javax.lang.model.type.TypeKind.DECLARED;
-import static javax.lang.model.type.TypeKind.INT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -53,7 +48,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -61,10 +55,7 @@ import static org.mockito.Mockito.when;
 class ConstantValueProviderServiceTest {
 
     @Mock
-    private TypeKindValueProviderMap typeKindMap;
-
-    @Mock
-    private ClassValueProviderMap classMap;
+    private ValueProviderMap valueProviderMap;
 
     @Mock
     private VariableElement field;
@@ -73,42 +64,24 @@ class ConstantValueProviderServiceTest {
 
     @BeforeEach
     void setup() {
-        service = new ConstantValueProviderService(typeKindMap, classMap);
+        service = new ConstantValueProviderService(valueProviderMap);
     }
 
     @Test
-    void getValueFor_whenCalledForDefinedTypeKind_returnCorrespondingValueString() {
-        final var type = createTypeMirrorFixture(INT);
-        when(field.asType()).thenReturn(type);
-        when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(true);
-        when(typeKindMap.get(any(TypeKind.class))). thenReturn(f -> "value");
-
-        final var result = service.getValueFor(field);
-
-        assertThat(result).isEqualTo("value");
-        verify(typeKindMap, times(1)).containsKey(INT);
-        verify(typeKindMap, times(1)).get(INT);
-        verifyNoMoreInteractions(typeKindMap);
-        verifyNoInteractions(classMap);
-    }
-
-    @Test
-    void getValueFor_whenCalledForDefinedClass_returnCorrespondingValueString() {
+    void getValueFor_whenCalledForDefinedType_returnCorrespondingValueString() {
         final var type = createTypeMirrorFixture(DECLARED, "ClassName");
 
         when(field.asType()).thenReturn(type);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(false);
-        when(classMap.containsKey(any(String.class))). thenReturn(true);
-        when(classMap.get(any(String.class))). thenReturn(f -> "value");
+        when(valueProviderMap.containsKey(any(String.class))).thenReturn(true);
+        when(valueProviderMap.get(any(String.class))).thenReturn(f -> "value");
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("value");
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("ClassName");
-        verify(classMap, times(1)).get("ClassName");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("ClassName");
+        verify(valueProviderMap, times(1)).get("ClassName");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -119,15 +92,13 @@ class ConstantValueProviderServiceTest {
         when(enumConstant.toString()).thenReturn("CONSTANT_VALUE");
         when(field.asType()).thenReturn(type);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))). thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("EnumType.CONSTANT_VALUE");
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("EnumType");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("EnumType");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -135,15 +106,27 @@ class ConstantValueProviderServiceTest {
         final var type = createDeclaredTypeFixture("EnumType", ENUM);
         when(field.asType()).thenReturn(type);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo(DEFAULT_VALUE);
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("EnumType");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("EnumType");
+        verifyNoMoreInteractions(valueProviderMap);
+    }
+
+    @Test
+    void getValueFor_whenCalledForArray_returnCorrespondingValueString() {
+        final var type = createTypeMirrorFixture(ARRAY, "ArrayType[]");
+        when(field.asType()).thenReturn(type);
+
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo("new ArrayType[] {}");
+        verify(valueProviderMap, times(1)).containsKey("ArrayType[]");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -156,15 +139,13 @@ class ConstantValueProviderServiceTest {
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
                 .thenReturn(new FixtureBuilder[]{fixtureBuilder, fixtureBuilder2});
         when(field.asType()).thenReturn(type);
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("FixtureBuilderClassFixture.methodName1().build()");
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("FixtureBuilderClass");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("FixtureBuilderClass");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -179,20 +160,18 @@ class ConstantValueProviderServiceTest {
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureConstructor.class))))
                 .thenReturn(new FixtureConstructor[]{fixtureConstructor, fixtureConstructor2});
         when(field.asType()).thenReturn(type);
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("FixtureConstructorClassFixture.methodName1()");
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("FixtureConstructorClass");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("FixtureConstructorClass");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
     void getValueFor_whenFallbackForLombokBuilder_returnBuilderValueWithAllFieldsAsSetters() {
-        final var field1 = createVariableElementFixtureForValueProviderServiceTest(INT_FIELD_NAME, INT, true, FIELD);
+        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, true, FIELD);
         final var field2 = createVariableElementFixtureForValueProviderServiceTest("classWithValueProviderField", DECLARED, true, FIELD);
         final var type = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass", CLASS, field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
@@ -206,28 +185,26 @@ class ConstantValueProviderServiceTest {
 
         when(field.asType()).thenReturn(type);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(typeKindMap.containsKey(eq(INT))).thenReturn(true);
-        when(typeKindMap.get(eq(INT))).thenReturn(f -> "intFieldValue");
-        when(classMap.containsKey(anyString())).thenReturn(false);
-        when(classMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
-        when(classMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
+        when(valueProviderMap.containsKey(eq("integerFieldType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn(f -> "10");
 
         final var result = service.getValueFor(field);
 
-        assertThat(result).isEqualTo("LombokClass.builder().intField(intFieldValue).classWithValueProviderField(classWithValueProviderFieldTypeValue).build()");
-        verify(typeKindMap, times(2)).containsKey(DECLARED);
-        verify(typeKindMap, times(1)).containsKey(INT);
-        verify(typeKindMap, times(1)).get(INT);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verify(classMap, times(1)).containsKey("classWithValueProviderFieldType");
-        verify(classMap, times(1)).get("classWithValueProviderFieldType");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        assertThat(result).isEqualTo("LombokClass.builder().integerField(10).classWithValueProviderField(classWithValueProviderFieldTypeValue).build()");
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verify(valueProviderMap, times(1)).containsKey("integerFieldType");
+        verify(valueProviderMap, times(1)).containsKey("classWithValueProviderFieldType");
+        verify(valueProviderMap, times(1)).get("classWithValueProviderFieldType");
+        verify(valueProviderMap, times(1)).get("integerFieldType");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
     void getValueFor_whenFallbackForLombokAllArgsConstructor_returnConstructorValueWithAllFieldsAsParameters() {
-        final var field1 = createVariableElementFixtureForValueProviderServiceTest(INT_FIELD_NAME, INT, false, FIELD);
+        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, false, FIELD);
         final var field2 = createVariableElementFixtureForValueProviderServiceTest("classWithValueProviderField", DECLARED, false, FIELD);
         final var type = createDeclaredTypeFixtureForValueProviderServiceTest("LombokClass", CLASS, field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
@@ -243,23 +220,21 @@ class ConstantValueProviderServiceTest {
 
         when(field.asType()).thenReturn(type);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(typeKindMap.containsKey(eq(INT))).thenReturn(true);
-        when(typeKindMap.get(eq(INT))).thenReturn(f -> "intFieldValue");
-        when(classMap.containsKey(anyString())).thenReturn(false);
-        when(classMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
-        when(classMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.containsKey(eq("integerFieldType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn(field -> "10");
 
         final var result = service.getValueFor(field);
 
-        assertThat(result).isEqualTo("new LombokClass(intFieldValue, classWithValueProviderFieldTypeValue)");
-        verify(typeKindMap, times(2)).containsKey(DECLARED);
-        verify(typeKindMap, times(1)).containsKey(INT);
-        verify(typeKindMap, times(1)).get(INT);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verify(classMap, times(1)).containsKey("classWithValueProviderFieldType");
-        verify(classMap, times(1)).get("classWithValueProviderFieldType");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        assertThat(result).isEqualTo("new LombokClass(10, classWithValueProviderFieldTypeValue)");
+        verify(valueProviderMap, times(1)).containsKey("integerFieldType");
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verify(valueProviderMap, times(1)).containsKey("classWithValueProviderFieldType");
+        verify(valueProviderMap, times(1)).get("classWithValueProviderFieldType");
+        verify(valueProviderMap, times(1)).get("integerFieldType");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
 
@@ -291,19 +266,17 @@ class ConstantValueProviderServiceTest {
 
         when(field.asType()).thenReturn(type);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
-        when(classMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
-        when(classMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(eq("classWithValueProviderFieldType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("classWithValueProviderFieldType"))).thenReturn(f -> "classWithValueProviderFieldTypeValue");
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("new LombokClass(classWithValueProviderFieldTypeValue)");
-        verify(typeKindMap, times(2)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verify(classMap, times(1)).containsKey("classWithValueProviderFieldType");
-        verify(classMap, times(1)).get("classWithValueProviderFieldType");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verify(valueProviderMap, times(1)).containsKey("classWithValueProviderFieldType");
+        verify(valueProviderMap, times(1)).get("classWithValueProviderFieldType");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -325,22 +298,19 @@ class ConstantValueProviderServiceTest {
                 .thenReturn(mock(NoArgsConstructor.class));
 
         when(field.asType()).thenReturn(type);
-
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("new LombokClass()");
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
     void getValueFor_whenFallbackDefinedConstructor_returnConstructorValueWithParameters() {
-        final var parameter1 = createVariableElementFixtureForValueProviderServiceTest("intParameter", INT, false, null);
-        final var parameter2 = createVariableElementFixtureForValueProviderServiceTest("booleanParameter", BOOLEAN, false, null);
+        final var parameter1 = createVariableElementFixtureForValueProviderServiceTest("integerParameter", DECLARED, false, null);
+        final var parameter2 = createVariableElementFixtureForValueProviderServiceTest("booleanParameter", DECLARED, false, null);
         final var constructor1 = createExecutableElementFixture(CONSTRUCTOR, PUBLIC);
         when(constructor1.getParameters()).thenReturn((List) List.of(parameter1, parameter2));
         final var constructor2 = createExecutableElementFixture(CONSTRUCTOR, PUBLIC);
@@ -364,23 +334,21 @@ class ConstantValueProviderServiceTest {
 
         when(field.asType()).thenReturn(type);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(typeKindMap.containsKey(eq(INT))).thenReturn(true);
-        when(typeKindMap.containsKey(eq(BOOLEAN))).thenReturn(true);
-        when(typeKindMap.get(eq(INT))).thenReturn(field -> "10");
-        when(typeKindMap.get(eq(BOOLEAN))).thenReturn(field -> "true");
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(eq("integerParameterType"))).thenReturn(true);
+        when(valueProviderMap.containsKey(eq("booleanParameterType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("integerParameterType"))).thenReturn(field -> "10");
+        when(valueProviderMap.get(eq("booleanParameterType"))).thenReturn(field -> "true");
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("new LombokClass(10, true)");
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(typeKindMap, times(1)).containsKey(INT);
-        verify(typeKindMap, times(1)).containsKey(BOOLEAN);
-        verify(typeKindMap, times(1)).get(INT);
-        verify(typeKindMap, times(1)).get(BOOLEAN);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("integerParameterType");
+        verify(valueProviderMap, times(1)).containsKey("booleanParameterType");
+        verify(valueProviderMap, times(1)).get("integerParameterType");
+        verify(valueProviderMap, times(1)).get("booleanParameterType");
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -390,9 +358,9 @@ class ConstantValueProviderServiceTest {
         final var setter2 = createExecutableElementFixture("setBooleanField", METHOD, classBuilderType, PUBLIC);
 
         final var builderMethod = createExecutableElementFixture("builder", METHOD, classBuilderType, PUBLIC, STATIC);
-        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", INT, false, FIELD);
+        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, false, FIELD);
         when(field1.toString()).thenReturn("integerField");
-        final var field2 = createVariableElementFixtureForValueProviderServiceTest("booleanField", BOOLEAN, false, FIELD);
+        final var field2 = createVariableElementFixtureForValueProviderServiceTest("booleanField", DECLARED, false, FIELD);
         when(field2.toString()).thenReturn("booleanField");
         final var field3 = mock(VariableElement.class);
         when(field3.toString()).thenReturn("fieldWithoutSetter");
@@ -418,23 +386,21 @@ class ConstantValueProviderServiceTest {
 
         when(field.asType()).thenReturn(classType);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(typeKindMap.containsKey(eq(INT))).thenReturn(true);
-        when(typeKindMap.containsKey(eq(BOOLEAN))).thenReturn(true);
-        when(typeKindMap.get(eq(INT))).thenReturn(field -> "10");
-        when(typeKindMap.get(eq(BOOLEAN))).thenReturn(field -> "true");
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(eq("integerFieldType"))).thenReturn(true);
+        when(valueProviderMap.containsKey(eq("booleanFieldType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("integerFieldType"))).thenReturn(field -> "10");
+        when(valueProviderMap.get(eq("booleanFieldType"))).thenReturn(field -> "true");
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("LombokClass.builder().setIntegerField(10).setBooleanField(true).build()");
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(typeKindMap, times(1)).containsKey(INT);
-        verify(typeKindMap, times(1)).containsKey(BOOLEAN);
-        verify(typeKindMap, times(1)).get(INT);
-        verify(typeKindMap, times(1)).get(BOOLEAN);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("integerFieldType");
+        verify(valueProviderMap, times(1)).containsKey("booleanFieldType");
+        verify(valueProviderMap, times(1)).get("integerFieldType");
+        verify(valueProviderMap, times(1)).get("booleanFieldType");
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -459,15 +425,13 @@ class ConstantValueProviderServiceTest {
 
         when(field.asType()).thenReturn(classType);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo(DEFAULT_VALUE);
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 
     @Test
@@ -496,14 +460,12 @@ class ConstantValueProviderServiceTest {
 
         when(field.asType()).thenReturn(classType);
 
-        when(typeKindMap.containsKey(any(TypeKind.class))).thenReturn(false);
-        when(classMap.containsKey(anyString())).thenReturn(false);
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
 
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo(DEFAULT_VALUE);
-        verify(typeKindMap, times(1)).containsKey(DECLARED);
-        verify(classMap, times(1)).containsKey("LombokClass");
-        verifyNoMoreInteractions(typeKindMap, classMap);
+        verify(valueProviderMap, times(1)).containsKey("LombokClass");
+        verifyNoMoreInteractions(valueProviderMap);
     }
 }

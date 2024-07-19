@@ -4,9 +4,7 @@ import de.floydkretschmar.fixturize.ReflectionUtils;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.Names;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.ClassValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.map.TypeKindValueProviderMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -34,6 +32,7 @@ import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.ENUM;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static javax.lang.model.type.TypeKind.ARRAY;
 
 /**
  * Decides which value during constant creation should be used for a given {@link VariableElement}. Also defines the default
@@ -61,22 +60,15 @@ public class ConstantValueProviderService implements ValueProviderService {
      * The default constant value if all other strategies for generation fail.
      */
     public static final String DEFAULT_VALUE = "null";
-
-    /**
-     * All default and custom value providers for {@link TypeKind}s.
-     */
-    private final TypeKindValueProviderMap typeKindValueProviders;
     /**
      * All default and custom value providers for classes.
      */
-    private final ClassValueProviderMap classValueProviders;
+    private final ValueProviderMap valueProviders;
 
 
     public ConstantValueProviderService(
-            Map<TypeKind, ValueProvider> customTypeKindValueProviders,
-            Map<String, ValueProvider> classValueProviders) {
-        this.typeKindValueProviders = new TypeKindValueProviderMap(customTypeKindValueProviders);
-        this.classValueProviders = new ClassValueProviderMap(classValueProviders);
+            Map<String, ValueProvider> valueProviders) {
+        this.valueProviders = new ValueProviderMap(valueProviders);
     }
 
     /**
@@ -89,14 +81,12 @@ public class ConstantValueProviderService implements ValueProviderService {
     public String getValueFor(VariableElement field) {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
-        if (typeKindValueProviders.containsKey(typeKind))
-            return typeKindValueProviders.get(typeKind).provideValueAsString(field);
 
         final var fullQualifiedTypeName = fieldType.toString();
         final var genericStartIndex = fullQualifiedTypeName.indexOf('<');
         final var classKey = genericStartIndex > 0 ? fullQualifiedTypeName.substring(0, genericStartIndex) : fullQualifiedTypeName;
-        if (classValueProviders.containsKey(classKey))
-            return classValueProviders.get(classKey).provideValueAsString(field);
+        if (valueProviders.containsKey(classKey))
+            return valueProviders.get(classKey).provideValueAsString(field);
 
         if (typeKind == TypeKind.DECLARED) {
             final var declaredElement = ((DeclaredType) fieldType).asElement();
@@ -106,6 +96,10 @@ public class ConstantValueProviderService implements ValueProviderService {
             } else if (elementKind == CLASS) {
                 return provideDefaultFallbackValue(declaredElement);
             }
+        }
+
+        if (typeKind == ARRAY) {
+            return "new %s {}".formatted(field.asType().toString());
         }
 
         return DEFAULT_VALUE;

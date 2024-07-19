@@ -6,7 +6,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
 import javax.lang.model.element.TypeElement;

@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
-import com.google.common.base.Enums;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.Names;
@@ -21,9 +20,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -99,20 +96,13 @@ public class FixtureProcessor extends AbstractProcessor {
     }
 
     private static ConstantValueProviderService initializeValueProviderService(FixtureValueProvider[] customFixtureProviders) {
-        final var customTypeKindValueProviders = Arrays.stream(customFixtureProviders)
-                .filter(provider -> Enums.getIfPresent(TypeKind.class, provider.targetType()).isPresent())
-                .collect(Collectors.toMap(
-                        provider -> TypeKind.valueOf(provider.targetType()),
-                        annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())));
-        final var customClassValueProviders = Arrays.stream(customFixtureProviders)
-                .filter(provider -> !Enums.getIfPresent(TypeKind.class, provider.targetType()).isPresent() &&
-                        !Enums.getIfPresent(ElementKind.class, provider.targetType()).isPresent())
+        final var customValueProviders = Arrays.stream(customFixtureProviders)
                 .collect(Collectors.toMap(
                         FixtureValueProvider::targetType,
                         annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())
                 ));
 
-        return new ConstantValueProviderService(customTypeKindValueProviders, customClassValueProviders);
+        return new ConstantValueProviderService(customValueProviders);
     }
 
     private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap) {

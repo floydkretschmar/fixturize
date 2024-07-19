@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.provider;
+package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import javax.lang.model.element.VariableElement;
 import java.util.UUID;

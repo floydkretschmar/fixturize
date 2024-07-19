@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.map;
+package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,10 +15,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ClassValueProviderMapTest {
+class ValueProviderMapTest {
 
     @ParameterizedTest
     @CsvSource({
+            "boolean",
+            "byte",
+            "double",
+            "float",
+            "int",
+            "long",
+            "short",
             "java.lang.String",
             "java.util.UUID",
             "java.lang.Boolean",
@@ -40,20 +47,27 @@ class ClassValueProviderMapTest {
             "java.util.Queue",
             "java.util.Date"})
     void containsKey_whenCalledForDefaultValue_shouldReturnTrue(String targetClassName) {
-        final var map = new ClassValueProviderMap(Map.of());
+        final var map = new ValueProviderMap(Map.of());
 
         assertThat(map.containsKey(targetClassName)).isTrue();
     }
 
     @Test
     void containsKey_whenCalledForUnregisteredValue_shouldReturnFalse() {
-        final var map = new ClassValueProviderMap(Map.of());
+        final var map = new ValueProviderMap(Map.of());
 
         assertThat(map.containsKey("unregisteredType")).isFalse();
     }
 
     @ParameterizedTest
     @CsvSource({
+            "boolean, false",
+            "byte, 0",
+            "double, 0.0",
+            "float, 0.0F",
+            "int, 0",
+            "long, 0L",
+            "short, Short.valueOf((short)0)",
             "java.lang.Boolean, false",
             "java.lang.Byte, 0",
             "java.lang.Double, 0.0",
@@ -74,7 +88,7 @@ class ClassValueProviderMapTest {
             "java.util.Date, new java.util.Date()" })
     void get_whenCalledForDefaultValue_shouldReturnExpectedDefaultValue(String targetClassName, String expectedDefaultValue) {
         final var field = mock(VariableElement.class);
-        final var map = new ClassValueProviderMap(Map.of());
+        final var map = new ValueProviderMap(Map.of());
 
         assertThat(map.get(targetClassName).provideValueAsString(field)).isEqualTo(expectedDefaultValue);
     }
@@ -82,7 +96,7 @@ class ClassValueProviderMapTest {
     @Test
     void get_whenCalledForCharacter_shouldReturnExpectedDefaultValue() {
         final var field = mock(VariableElement.class);
-        final var map = new ClassValueProviderMap(Map.of());
+        final var map = new ValueProviderMap(Map.of());
 
         assertThat(map.get("java.lang.Character").provideValueAsString(field)).isEqualTo("' '");
     }
@@ -94,7 +108,7 @@ class ClassValueProviderMapTest {
         when(name.toString()).thenReturn("stringFieldName");
         when(field.getSimpleName()).thenReturn(name);
 
-        final var map = new ClassValueProviderMap(Map.of());
+        final var map = new ValueProviderMap(Map.of());
 
         assertThat(map.get("java.lang.String").provideValueAsString(field)).isEqualTo("\"STRING_FIELD_NAME_VALUE\"");
     }
@@ -105,7 +119,7 @@ class ClassValueProviderMapTest {
         final var uuid = UUID.fromString(RANDOM_UUID);
         try (final var uuidStatic = Mockito.mockStatic(UUID.class)) {
             uuidStatic.when(UUID::randomUUID).thenReturn(uuid);
-            final var map = new ClassValueProviderMap(Map.of());
+            final var map = new ValueProviderMap(Map.of());
 
             assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("java.util.UUID.fromString(\"%s\")".formatted(RANDOM_UUID));
         }
@@ -114,7 +128,7 @@ class ClassValueProviderMapTest {
     @Test
     void get_whenDefaultIsOverwritten_shouldReturnCustomValue() {
         final var field = mock(VariableElement.class);
-        final var map = new ClassValueProviderMap(Map.of("java.util.UUID", f -> "10"));
+        final var map = new ValueProviderMap(Map.of("java.util.UUID", f -> "10"));
 
         assertThat(map.get("java.util.UUID").provideValueAsString(field)).isEqualTo("10");
     }

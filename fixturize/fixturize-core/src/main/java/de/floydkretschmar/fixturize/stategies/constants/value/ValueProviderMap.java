@@ -1,16 +1,16 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.map;
+package de.floydkretschmar.fixturize.stategies.constants.value;
 
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.BooleanValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.ByteValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.CharacterValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.DoubleValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.FloatValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.IntegerValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.LongValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.ShortValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.StringValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.UUIDValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.BooleanValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ByteValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.CharacterValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.DoubleValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.FloatValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.IntegerValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.LongValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ShortValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.StringValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.UUIDValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,16 +34,24 @@ import java.util.UUID;
  *
  * @author Floyd Kretschmar
  */
-public class ClassValueProviderMap extends HashMap<String, ValueProvider> {
+public class ValueProviderMap extends HashMap<String, ValueProvider> {
 
     /**
-     * Constructs a {@link ElementKindValueProviderMap } registering default {@link ValueProvider}s for a number of different
+     * Constructs a {@link ValueProviderMap } registering default {@link ValueProvider}s for a number of different
      * classes, given no custom {@link ValueProvider} has been provided for the specified class.
      *
      * @param customClassValueProviders - the list of custom {@link ValueProvider}s
      */
-    public ClassValueProviderMap(Map<? extends String, ? extends ValueProvider> customClassValueProviders) {
+    public ValueProviderMap(Map<? extends String, ? extends ValueProvider> customClassValueProviders) {
         super(customClassValueProviders);
+        this.putIfAbsent(boolean.class.getName(), new BooleanValueProvider());
+        this.putIfAbsent(byte.class.getName(), new ByteValueProvider());
+        this.putIfAbsent(char.class.getName(), new CharacterValueProvider());
+        this.putIfAbsent(double.class.getName(), new DoubleValueProvider());
+        this.putIfAbsent(float.class.getName(), new FloatValueProvider());
+        this.putIfAbsent(int.class.getName(), new IntegerValueProvider());
+        this.putIfAbsent(long.class.getName(), new LongValueProvider());
+        this.putIfAbsent(short.class.getName(), new ShortValueProvider());
         this.putIfAbsent(String.class.getName(), new StringValueProvider());
         this.putIfAbsent(UUID.class.getName(), new UUIDValueProvider());
         this.putIfAbsent(Boolean.class.getName(),  new BooleanValueProvider());

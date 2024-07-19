@@ -1,7 +1,7 @@
 package de.floydkretschmar.fixturize;
 
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
-import de.floydkretschmar.fixturize.stategies.constants.value.provider.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
