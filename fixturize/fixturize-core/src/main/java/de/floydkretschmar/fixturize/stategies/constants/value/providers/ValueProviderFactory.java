@@ -12,5 +12,5 @@ public interface ValueProviderFactory {
 
     ValueProvider createDeclaredTypeValueProvider(ValueProviderService valueProviderService);
 
-    ValueProvider createContainerValueProvider(Elements elementUtils, Types typeUtils);
+    ValueProvider createContainerValueProvider(Elements elementUtils, Types typeUtils, ValueProviderService valueProviderService);
 }

@@ -1,10 +1,12 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static javax.lang.model.type.TypeKind.ARRAY;
 
@@ -34,15 +37,17 @@ public class ContainerValueProvider implements ValueProvider {
      */
     private final ValueProvider arrayValueProvider;
 
+    private final ValueProviderService valueProviderService;
+
     private static final Map<Class<?>, String> SUPPORTED_CONTAINER_CLASSES = Map.of(
-            List.class, "java.util.List.of()",
-            Map.class, "java.util.Map.of()",
-            Set.class, "java.util.Set.of()",
-            Queue.class, "new java.util.PriorityQueue<>()",
-            Collection.class, "java.util.List.of()");
+            List.class, "java.util.List.of(%s)",
+            Map.class, "java.util.Map.of(%s)",
+            Set.class, "java.util.Set.of(%s)",
+            Queue.class, "new java.util.PriorityQueue<>(java.util.List.of(%s))",
+            Collection.class, "java.util.List.of(%s)");
 
     @Override
-    public String provideValueAsString(VariableElement field, Names names) {
+    public String provideValueAsString(Element field, Names names) {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
 
@@ -52,7 +57,12 @@ public class ContainerValueProvider implements ValueProvider {
 
         for (var entry : SUPPORTED_CONTAINER_CLASSES.entrySet()) {
             if (isEqualTo(fieldType, entry.getKey())) {
-                return entry.getValue();
+                final var declaredType = ((DeclaredType) fieldType);
+                final var valuesForGenerics = declaredType.getTypeArguments().stream()
+                        .map(typeUtils::asElement)
+                        .map(valueProviderService::getValueFor)
+                        .collect(Collectors.joining(", "));
+                return entry.getValue().formatted(valuesForGenerics);
             }
         }
 

@@ -4,7 +4,7 @@ import de.floydkretschmar.fixturize.domain.Names;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
@@ -18,7 +18,7 @@ public class DeclaredTypeValueProvider implements ValueProvider {
     private final ValueProvider classValueProvider;
 
     @Override
-    public String provideValueAsString(VariableElement field, Names names) {
+    public String provideValueAsString(Element field, Names names) {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
 

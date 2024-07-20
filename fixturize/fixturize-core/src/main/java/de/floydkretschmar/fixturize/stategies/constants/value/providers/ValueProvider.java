@@ -2,7 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import de.floydkretschmar.fixturize.domain.Names;
 
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Element;
 
 /**
  * Defines a function that provides a string representation of a value used to construct a constant using a provided field.
@@ -23,5 +23,5 @@ public interface ValueProvider {
      * @param names - used for creating the fixture
      * @return the string representation of the value
      */
-    String provideValueAsString(VariableElement field, Names names);
+    String provideValueAsString(Element field, Names names);
 }

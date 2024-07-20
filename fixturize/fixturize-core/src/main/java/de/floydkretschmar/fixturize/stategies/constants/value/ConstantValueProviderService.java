@@ -4,6 +4,7 @@ import de.floydkretschmar.fixturize.domain.Names;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -43,7 +44,7 @@ public class ConstantValueProviderService implements ValueProviderService {
             Types typeUtils) {
         this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders);
         this.declaredTypeValueProvider = valueProviderFactory.createDeclaredTypeValueProvider(this);
-        this.containerValueProvider = valueProviderFactory.createContainerValueProvider(elementUtils, typeUtils);
+        this.containerValueProvider = valueProviderFactory.createContainerValueProvider(elementUtils, typeUtils, this);
     }
 
     /**
@@ -53,7 +54,7 @@ public class ConstantValueProviderService implements ValueProviderService {
      * @return the value used for constant construction
      */
     @Override
-    public String getValueFor(VariableElement field) {
+    public String getValueFor(Element field) {
         final var fieldType = field.asType();
         final var names = Names.from(fieldType.toString());
 

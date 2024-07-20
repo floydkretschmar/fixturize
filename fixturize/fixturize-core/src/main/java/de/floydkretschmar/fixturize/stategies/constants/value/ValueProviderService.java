@@ -1,5 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
 /**
@@ -15,5 +16,5 @@ public interface ValueProviderService {
      * @param field - for which the value is being retrieved
      * @return the correct value representation
      */
-    String getValueFor(VariableElement field);
+    String getValueFor(Element field);
 }

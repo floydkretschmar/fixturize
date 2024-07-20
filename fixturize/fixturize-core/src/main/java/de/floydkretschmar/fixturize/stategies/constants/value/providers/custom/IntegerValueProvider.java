@@ -3,7 +3,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 import de.floydkretschmar.fixturize.domain.Names;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Element;
 
 /**
  * Default value provider for {@link Integer} and {@link int}.
@@ -12,7 +12,7 @@ import javax.lang.model.element.VariableElement;
  */
 public class IntegerValueProvider implements ValueProvider {
     @Override
-    public String provideValueAsString(VariableElement field, Names names) {
+    public String provideValueAsString(Element field, Names names) {
         return "0";
     }
 }

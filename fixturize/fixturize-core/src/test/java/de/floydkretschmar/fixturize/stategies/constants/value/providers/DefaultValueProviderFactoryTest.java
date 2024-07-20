@@ -37,9 +37,10 @@ class DefaultValueProviderFactoryTest {
     void createContainerValueProvider_whenCalled_shouldReturnContainerValueProvider() {
         final var elementUtils = mock(Elements.class);
         final var typeUtils = mock(Types.class);
+        final var service = mock(ValueProviderService.class);
         final var factory = new DefaultValueProviderFactory();
 
-        final var valueProvider = factory.createContainerValueProvider(elementUtils, typeUtils);
+        final var valueProvider = factory.createContainerValueProvider(elementUtils, typeUtils, service);
 
         assertThat(valueProvider).isInstanceOf(ContainerValueProvider.class);
     }

@@ -24,7 +24,7 @@ public class DefaultValueProviderFactory implements ValueProviderFactory {
     }
 
     @Override
-    public ValueProvider createContainerValueProvider(Elements elementUtils, Types typeUtils) {
-        return new ContainerValueProvider(elementUtils, typeUtils, new ArrayValueProvider());
+    public ValueProvider createContainerValueProvider(Elements elementUtils, Types typeUtils, ValueProviderService valueProviderService) {
+        return new ContainerValueProvider(elementUtils, typeUtils, new ArrayValueProvider(), valueProviderService);
     }
 }

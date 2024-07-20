@@ -3,13 +3,13 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallbac
 import de.floydkretschmar.fixturize.domain.Names;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 
 public class EnumValueProvider implements ValueProvider {
     @Override
-    public String provideValueAsString(VariableElement field, Names names) {
+    public String provideValueAsString(Element field, Names names) {
         final var fieldType = field.asType();
         final var declaredElement = ((DeclaredType) fieldType).asElement();
         final var firstEnumElement = declaredElement.getEnclosedElements().stream()

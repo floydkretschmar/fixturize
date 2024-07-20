@@ -52,7 +52,7 @@ public class ClassValueProvider implements ValueProvider {
     private final ValueProviderService valueProviderService;
 
     @Override
-    public String provideValueAsString(VariableElement field, Names names) {
+    public String provideValueAsString(Element field, Names names) {
         final var fieldType = field.asType();
         final var declaredElement = ((DeclaredType) fieldType).asElement();
 

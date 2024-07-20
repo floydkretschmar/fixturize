@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,9 +39,12 @@ class ContainerValueProviderTest {
     @Mock
     private ValueProvider arrayValueProvider;
 
+    @Mock
+    private ValueProviderService service;
+
     @BeforeEach
     void setup() {
-        valueProvider = new ContainerValueProvider(elementUtils, typeUtils, arrayValueProvider);
+        valueProvider = new ContainerValueProvider(elementUtils, typeUtils, arrayValueProvider, service);
     }
 
     @Test

@@ -57,7 +57,7 @@ class ConstantValueProviderServiceTest {
         final var valueProviderFactory = mock(ValueProviderFactory.class);
         when(valueProviderFactory.createValueProviders(anyMap())).thenReturn(valueProviderMap);
         when(valueProviderFactory.createDeclaredTypeValueProvider(any())).thenReturn(declaredTypeValueProvider);
-        when(valueProviderFactory.createContainerValueProvider(any(), any())).thenReturn(containerValueProvider);
+        when(valueProviderFactory.createContainerValueProvider(any(), any(), any())).thenReturn(containerValueProvider);
         service = new ConstantValueProviderService(Map.of(), valueProviderFactory, elementUtils, typeUtils);
     }
 
