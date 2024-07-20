@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.providers;
+package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixtureForFallbackTest;
+import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createExecutableElementFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureBuilderFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstructorFixture;
@@ -47,46 +47,46 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class FallbackValueProviderTest {
+class ClassValueProviderTest {
 
-    private FallbackValueProvider valueProvider;
+    private ClassValueProvider valueProvider;
 
     @Mock
     private ValueProviderService valueProviderService;
 
     private Names names;
 
-    @BeforeEach
-    void setup() {
-        valueProvider = new FallbackValueProvider();
-        names = Names.from("some.test.Class");
-    }
-
     @Mock
     private VariableElement field;
 
+    @BeforeEach
+    void setup() {
+        valueProvider = new ClassValueProvider(valueProviderService);
+        names = Names.from("some.test.Class");
+    }
+
     @Test
-    void getValueFor_whenFallbackForFixtureBuilder_returnValueStringForFixtureBuilderWithMostSetters() {
+    void provideValueAsString_whenFallbackForFixtureBuilder_returnValueStringForFixtureBuilderWithMostSetters() {
         final var fixtureBuilder = createFixtureBuilderFixture("methodName1", null, "param1", "param2");
         final var fixtureBuilder2 = createFixtureBuilderFixture(null, null, "param1");
-        final var type = TestFixtures.createDeclaredTypeFixtureForFallbackTest();
+        final var type = TestFixtures.createDeclaredTypeFixture();
         final var typeAsElement = type.asElement();
 
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
                 .thenReturn(new FixtureBuilder[]{fixtureBuilder, fixtureBuilder2});
         when(field.asType()).thenReturn(type);
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("some.test.ClassFixture.methodName1().build()");
         verifyNoInteractions(valueProviderService);
     }
 
     @Test
-    void getValueFor_whenFallbackForFixtureConstructor_returnValueStringForFixtureConstructorWithMostParameters() {
+    void provideValueAsString_whenFallbackForFixtureConstructor_returnValueStringForFixtureConstructorWithMostParameters() {
         final var fixtureConstructor = createFixtureConstructorFixture("methodName1", "param1", "param2");
         final var fixtureConstructor2 = createFixtureConstructorFixture(null, "param1", "param2");
-        final var type = TestFixtures.createDeclaredTypeFixtureForFallbackTest();
+        final var type = TestFixtures.createDeclaredTypeFixture();
         final var typeAsElement = type.asElement();
 
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -95,17 +95,17 @@ class FallbackValueProviderTest {
                 .thenReturn(new FixtureConstructor[]{fixtureConstructor, fixtureConstructor2});
         when(field.asType()).thenReturn(type);
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("some.test.ClassFixture.methodName1()");
         verifyNoInteractions(valueProviderService);
     }
 
     @Test
-    void getValueFor_whenFallbackForLombokBuilder_returnBuilderValueWithAllFieldsAsSetters() {
+    void provideValueAsString_whenFallbackForLombokBuilder_returnBuilderValueWithAllFieldsAsSetters() {
         final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, true, FIELD);
         final var field2 = createVariableElementFixtureForValueProviderServiceTest("classWithValueProviderField", DECLARED, true, FIELD);
-        final var type = createDeclaredTypeFixtureForFallbackTest(field1, field2);
+        final var type = TestFixtures.createDeclaredTypeFixture(field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
 
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -120,7 +120,7 @@ class FallbackValueProviderTest {
         when(valueProviderService.getValueFor(eq(field1))).thenReturn("10");
         when(valueProviderService.getValueFor(eq(field2))).thenReturn("classWithValueProviderFieldTypeValue");
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("some.test.Class.builder().integerField(10).classWithValueProviderField(classWithValueProviderFieldTypeValue).build()");
         verify(valueProviderService, times(1)).getValueFor(field1);
@@ -129,10 +129,10 @@ class FallbackValueProviderTest {
     }
 
     @Test
-    void getValueFor_whenFallbackForLombokAllArgsConstructor_returnConstructorValueWithAllFieldsAsParameters() {
+    void provideValueAsString_whenFallbackForLombokAllArgsConstructor_returnConstructorValueWithAllFieldsAsParameters() {
         final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, false, FIELD);
         final var field2 = createVariableElementFixtureForValueProviderServiceTest("classWithValueProviderField", DECLARED, false, FIELD);
-        final var type = createDeclaredTypeFixtureForFallbackTest(field1, field2);
+        final var type = TestFixtures.createDeclaredTypeFixture(field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
 
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -149,7 +149,7 @@ class FallbackValueProviderTest {
         when(valueProviderService.getValueFor(eq(field1))).thenReturn("10");
         when(valueProviderService.getValueFor(eq(field2))).thenReturn("classWithValueProviderFieldTypeValue");
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("new some.test.Class(10, classWithValueProviderFieldTypeValue)");
         verify(valueProviderService, times(1)).getValueFor(field1);
@@ -159,7 +159,7 @@ class FallbackValueProviderTest {
 
 
     @Test
-    void getValueFor_whenFallbackForLombokRequiredArgsConstructor_returnConstructorValueWithAllFinalFieldsWithoutConstantAsParameters() {
+    void provideValueAsString_whenFallbackForLombokRequiredArgsConstructor_returnConstructorValueWithAllFinalFieldsWithoutConstantAsParameters() {
         final var field1 = mock(VariableElement.class);
         when(field1.getKind()).thenReturn(FIELD);
         when(field1.getModifiers()).thenReturn(Set.of(PRIVATE));
@@ -170,7 +170,7 @@ class FallbackValueProviderTest {
         when(field3.getModifiers()).thenReturn(Set.of(PRIVATE, FINAL));
         when(field3.getConstantValue()).thenReturn(true);
 
-        final var type = createDeclaredTypeFixtureForFallbackTest(field1, field2, field3);
+        final var type = TestFixtures.createDeclaredTypeFixture(field1, field2, field3);
         final var typeAsElement = (TypeElement) type.asElement();
 
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -188,7 +188,7 @@ class FallbackValueProviderTest {
 
         when(valueProviderService.getValueFor(eq(field2))).thenReturn("classWithValueProviderFieldTypeValue");
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("new some.test.Class(classWithValueProviderFieldTypeValue)");
         verify(valueProviderService, times(1)).getValueFor(field2);
@@ -196,8 +196,8 @@ class FallbackValueProviderTest {
     }
 
     @Test
-    void getValueFor_whenFallbackForLombokNoArgsConstructor_returnConstructorValueWithNoParameters() {
-        final var type = TestFixtures.createDeclaredTypeFixtureForFallbackTest();
+    void provideValueAsString_whenFallbackForLombokNoArgsConstructor_returnConstructorValueWithNoParameters() {
+        final var type = TestFixtures.createDeclaredTypeFixture();
         final var typeAsElement = (TypeElement) type.asElement();
 
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -215,14 +215,14 @@ class FallbackValueProviderTest {
 
         when(field.asType()).thenReturn(type);
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("new some.test.Class()");
         verifyNoInteractions(valueProviderService);
     }
 
     @Test
-    void getValueFor_whenFallbackDefinedConstructor_returnConstructorValueWithParameters() {
+    void provideValueAsString_whenFallbackDefinedConstructor_returnConstructorValueWithParameters() {
         final var parameter1 = createVariableElementFixtureForValueProviderServiceTest("integerParameter", DECLARED, false, null);
         final var parameter2 = createVariableElementFixtureForValueProviderServiceTest("booleanParameter", DECLARED, false, null);
         final var constructor1 = createExecutableElementFixture(CONSTRUCTOR, PUBLIC);
@@ -230,7 +230,7 @@ class FallbackValueProviderTest {
         final var constructor2 = createExecutableElementFixture(CONSTRUCTOR, PUBLIC);
         when(constructor2.getParameters()).thenReturn((List) List.of(parameter1));
 
-        final var type = createDeclaredTypeFixtureForFallbackTest(constructor1, constructor2);
+        final var type = TestFixtures.createDeclaredTypeFixture(constructor1, constructor2);
         final var typeAsElement = (TypeElement) type.asElement();
 
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -251,7 +251,7 @@ class FallbackValueProviderTest {
         when(valueProviderService.getValueFor(eq(parameter1))).thenReturn("10");
         when(valueProviderService.getValueFor(eq(parameter2))).thenReturn("true");
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("new some.test.Class(10, true)");
         verify(valueProviderService, times(1)).getValueFor(parameter1);
@@ -260,8 +260,8 @@ class FallbackValueProviderTest {
     }
 
     @Test
-    void getValueFor_whenFallbackDefinedBuilderMethod_returnBuilderValueWithAllAvailableSetters() {
-        final var classBuilderType = TestFixtures.createDeclaredTypeFixtureForFallbackTest("%s.%sBuilder".formatted(names.getQualifiedClassName(), names.getSimpleClassName()));
+    void provideValueAsString_whenFallbackDefinedBuilderMethod_returnBuilderValueWithAllAvailableSetters() {
+        final var classBuilderType = TestFixtures.createDeclaredTypeFixture("%s.%sBuilder".formatted(names.getQualifiedClassName(), names.getSimpleClassName()));
         final var setter1 = createExecutableElementFixture("setIntegerField", METHOD, classBuilderType, PUBLIC);
         final var setter2 = createExecutableElementFixture("setBooleanField", METHOD, classBuilderType, PUBLIC);
 
@@ -273,7 +273,7 @@ class FallbackValueProviderTest {
         final var field3 = mock(VariableElement.class);
         when(field3.toString()).thenReturn("fieldWithoutSetter");
         when(field3.getKind()).thenReturn(FIELD);
-        final var classType = createDeclaredTypeFixtureForFallbackTest(names.getQualifiedClassName(), builderMethod, field1, field2, field3);
+        final var classType = createDeclaredTypeFixture(names.getQualifiedClassName(), builderMethod, field1, field2, field3);
 
         final var buildMethod = createExecutableElementFixture("build", METHOD, classType, PUBLIC);
         when(classBuilderType.asElement().getEnclosedElements()).thenReturn((List) List.of(setter1, setter2, buildMethod));
@@ -297,7 +297,7 @@ class FallbackValueProviderTest {
         when(valueProviderService.getValueFor(eq(field1))).thenReturn("10");
         when(valueProviderService.getValueFor(eq(field2))).thenReturn("true");
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo("some.test.Class.builder().setIntegerField(10).setBooleanField(true).build()");
         verify(valueProviderService, times(1)).getValueFor(field1);
@@ -306,10 +306,10 @@ class FallbackValueProviderTest {
     }
 
     @Test
-    void getValueFor_whenFallbackDefinedBuilderMethodButNoBuilderFound_returnDefaultValue() {
+    void provideValueAsString_whenFallbackDefinedBuilderMethodButNoBuilderFound_returnDefaultValue() {
         final var field1 = mock(VariableElement.class);
         final var field2 = mock(VariableElement.class);
-        final var classType = createDeclaredTypeFixtureForFallbackTest(field1, field2);
+        final var classType = TestFixtures.createDeclaredTypeFixture(field1, field2);
 
         final var typeAsElement = (TypeElement) classType.asElement();
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -327,21 +327,21 @@ class FallbackValueProviderTest {
 
         when(field.asType()).thenReturn(classType);
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo(DEFAULT_VALUE);
         verifyNoInteractions(valueProviderService);
     }
 
     @Test
-    void getValueFor_whenFallbackDefinedBuilderMethodButNoBuildMethodFound_returnDefaultValue() {
+    void provideValueAsString_whenFallbackDefinedBuilderMethodButNoBuildMethodFound_returnDefaultValue() {
         final var classBuilderType = mock(DeclaredType.class);
 
         final var builderMethod = createExecutableElementFixture(METHOD, PUBLIC, STATIC);
         when(builderMethod.getReturnType()).thenReturn(classBuilderType);
         final var field1 = mock(VariableElement.class);
         final var field2 = mock(VariableElement.class);
-        final var classType = createDeclaredTypeFixtureForFallbackTest(builderMethod, field1, field2);
+        final var classType = TestFixtures.createDeclaredTypeFixture(builderMethod, field1, field2);
 
         final var typeAsElement = (TypeElement) classType.asElement();
         when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
@@ -359,7 +359,7 @@ class FallbackValueProviderTest {
 
         when(field.asType()).thenReturn(classType);
 
-        final var result = valueProvider.recursivelyProvideValue(field, names, valueProviderService);
+        final var result = valueProvider.provideValueAsString(field, names);
 
         assertThat(result).isEqualTo(DEFAULT_VALUE);
         verifyNoInteractions(valueProviderService);

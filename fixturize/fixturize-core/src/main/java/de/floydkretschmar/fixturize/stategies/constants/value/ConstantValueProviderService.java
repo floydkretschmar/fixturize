@@ -1,14 +1,13 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import de.floydkretschmar.fixturize.domain.Names;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.RecursiveValueProvider;
-import lombok.RequiredArgsConstructor;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import java.util.Map;
 
 import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.ENUM;
@@ -19,7 +18,6 @@ import static javax.lang.model.type.TypeKind.ARRAY;
  *
  * @author Floyd Kretschmar
  */
-@RequiredArgsConstructor
 public class ConstantValueProviderService implements ValueProviderService {
     /**
      * The default constant value if all other strategies for generation fail.
@@ -31,9 +29,27 @@ public class ConstantValueProviderService implements ValueProviderService {
     private final ValueProviderMap valueProviders;
 
     /**
-     * The value provider that provides the fallback value if no other value provider has been registered.
+     * The value provider that provides the fallback value for classes if no other value provider has been registered.
      */
-    private final RecursiveValueProvider fallbackValueProvider;
+    private final ValueProvider classValueProvider;
+
+    /**
+     * The value provider that provides the fallback value for enums if no other value provider has been registered.
+     */
+    private final ValueProvider enumValueProvider;
+
+    /**
+     * The value provider that provides the fallback value for containers (arrays, collections) if no other value provider
+     * has been registered.
+     */
+    private final ValueProvider containerValueProvider;
+
+    public ConstantValueProviderService(Map<String, ValueProvider> customValueProviders, ValueProviderFactory valueProviderFactory) {
+        this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders);
+        this.classValueProvider = valueProviderFactory.createClassValueProvider(this);
+        this.enumValueProvider = valueProviderFactory.createEnumValueProvider();
+        this.containerValueProvider = valueProviderFactory.createContainerValueProvider();
+    }
 
     /**
      * Returns the correct value that should be used for constant generation for the specified field.
@@ -54,29 +70,16 @@ public class ConstantValueProviderService implements ValueProviderService {
             final var declaredElement = ((DeclaredType) fieldType).asElement();
             final var elementKind = declaredElement.getKind();
             if (elementKind == ENUM) {
-                return provideValueForEnum(declaredElement, names);
+                return this.enumValueProvider.provideValueAsString(field, names);
             } else if (elementKind == CLASS) {
-                return this.fallbackValueProvider.recursivelyProvideValue(field, names, this);
+                return this.classValueProvider.provideValueAsString(field, names);
             }
         }
 
         if (typeKind == ARRAY) {
-            return "new %s {}".formatted(field.asType().toString());
+            return this.containerValueProvider.provideValueAsString(field, names);
         }
 
         return DEFAULT_VALUE;
-    }
-
-
-    private String provideValueForEnum(Element declaredElement, Names names) {
-        final var firstEnumElement = declaredElement.getEnclosedElements().stream()
-                .filter(element -> element.getKind().equals(ElementKind.ENUM_CONSTANT))
-                .map(Object::toString)
-                .findFirst();
-
-        if (firstEnumElement.isEmpty())
-            return DEFAULT_VALUE;
-
-        return "%s.%s".formatted(names.getQualifiedClassName(), firstEnumElement.get());
     }
 }

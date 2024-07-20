@@ -150,19 +150,19 @@ public class TestFixtures {
         return createDeclaredTypeFixtureCore(name, elementKind, enclosedElements);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForFallbackTest() {
-        return createDeclaredTypeFixture(null, null, null);
+    public static DeclaredType createDeclaredTypeFixture() {
+        return createDeclaredTypeFixtureCore(null, null, null);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForFallbackTest(String name) {
-        return createDeclaredTypeFixture(name, null, null);
+    public static DeclaredType createDeclaredTypeFixture(String name) {
+        return createDeclaredTypeFixtureCore(name, null, null);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForFallbackTest(Element... enclosedElements) {
+    public static DeclaredType createDeclaredTypeFixture(Element... enclosedElements) {
         return createDeclaredTypeFixture(null, null, enclosedElements);
     }
 
-    public static DeclaredType createDeclaredTypeFixtureForFallbackTest(String name, Element... enclosedElements) {
+    public static DeclaredType createDeclaredTypeFixture(String name, Element... enclosedElements) {
         return createDeclaredTypeFixture(name, null, enclosedElements);
     }
 

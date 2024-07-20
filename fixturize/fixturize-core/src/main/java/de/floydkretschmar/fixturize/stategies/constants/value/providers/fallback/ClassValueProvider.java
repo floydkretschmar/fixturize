@@ -1,10 +1,11 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.providers;
+package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.ReflectionUtils;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.Names;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -47,14 +48,11 @@ import static javax.lang.model.element.Modifier.STATIC;
  * fields of the constant type. Matching in this case means that the setter method name must end on the name of the field.
  */
 @RequiredArgsConstructor
-public class FallbackValueProvider implements RecursiveValueProvider {
-    /**
-     * The default constant value if all other strategies for generation fail.
-     */
-    public static final String DEFAULT_VALUE = "null";
+public class ClassValueProvider implements ValueProvider {
+    private final ValueProviderService valueProviderService;
 
     @Override
-    public String recursivelyProvideValue(VariableElement field, Names names, ValueProviderService valueProviderService) {
+    public String provideValueAsString(VariableElement field, Names names) {
         final var fieldType = field.asType();
         final var declaredElement = ((DeclaredType) fieldType).asElement();
 

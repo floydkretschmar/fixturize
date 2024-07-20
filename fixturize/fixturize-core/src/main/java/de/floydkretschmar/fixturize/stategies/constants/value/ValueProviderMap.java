@@ -1,16 +1,16 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.BooleanValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ByteValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.CharacterValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.DoubleValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.FloatValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.IntegerValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.LongValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ShortValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.StringValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.UUIDValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.BooleanValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.ByteValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.CharacterValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.DoubleValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.FloatValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.IntegerValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.LongValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.ShortValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.StringValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.UUIDValueProvider;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
