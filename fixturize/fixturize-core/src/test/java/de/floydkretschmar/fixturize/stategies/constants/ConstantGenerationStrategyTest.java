@@ -18,7 +18,7 @@ import static de.floydkretschmar.fixturize.TestFixtures.createConstantFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstantFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createNamingStrategyMock;
 import static de.floydkretschmar.fixturize.TestFixtures.createValueProviderServiceMock;
-import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixtureForConstantGenerationStrategyTest;
+import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -44,8 +44,8 @@ class ConstantGenerationStrategyTest {
     @Test
     void generateConstants_whenCalledWithValidClass_shouldGenerateConstants() {
         final var fields = List.of(
-                TestFixtures.<FixtureConstant>createVariableElementFixtureForConstantGenerationStrategyTest(BOOLEAN_FIELD_NAME),
-                TestFixtures.<FixtureConstant>createVariableElementFixtureForConstantGenerationStrategyTest(INT_FIELD_NAME)
+                TestFixtures.<FixtureConstant>createVariableElementFixture(BOOLEAN_FIELD_NAME),
+                TestFixtures.<FixtureConstant>createVariableElementFixture(INT_FIELD_NAME)
         );
 
         final var element = mock(TypeElement.class);
@@ -70,8 +70,8 @@ class ConstantGenerationStrategyTest {
         final var annotation2 = createFixtureConstantFixture("CUSTOM_NAME_2", "");
 
         final var fields = List.of(
-                createVariableElementFixtureForConstantGenerationStrategyTest(BOOLEAN_FIELD_NAME, annotation),
-                createVariableElementFixtureForConstantGenerationStrategyTest("booleanField2", annotation2)
+                createVariableElementFixture(BOOLEAN_FIELD_NAME, annotation),
+                createVariableElementFixture("booleanField2", annotation2)
         );
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List) fields);
@@ -94,7 +94,7 @@ class ConstantGenerationStrategyTest {
         final var annotation2 = createFixtureConstantFixture("CUSTOM_NAME_2", "");
 
         final var fields = List.of(
-                createVariableElementFixtureForConstantGenerationStrategyTest(BOOLEAN_FIELD_NAME, annotation, annotation2)
+                createVariableElementFixture(BOOLEAN_FIELD_NAME, annotation, annotation2)
         );
         final var element = mock(TypeElement.class);
         when(element.getEnclosedElements()).thenReturn((List) fields);

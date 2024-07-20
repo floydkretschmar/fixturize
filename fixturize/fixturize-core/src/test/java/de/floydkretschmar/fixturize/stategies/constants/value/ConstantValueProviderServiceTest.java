@@ -80,7 +80,7 @@ class ConstantValueProviderServiceTest {
 
     @Test
     void getValueFor_whenCalledForEnum_returnEnumValueProviderValueString() {
-        final var type = createDeclaredTypeFixture("EnumType", ENUM, null);
+        final var type = createDeclaredTypeFixture("EnumType", ENUM);
         when(field.asType()).thenReturn(type);
 
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
@@ -114,7 +114,7 @@ class ConstantValueProviderServiceTest {
 
     @Test
     void getValueFor_whenCalledForAnyOtherDeclaredClass_returnClassValueProviderValueString() {
-        final var type = createDeclaredTypeFixture("OtherClass", CLASS, null);
+        final var type = createDeclaredTypeFixture("OtherClass", CLASS);
         when(field.asType()).thenReturn(type);
 
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);

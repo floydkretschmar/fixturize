@@ -30,10 +30,7 @@ public class CustomValueProviderParser {
                     var ValueProvider = Java.type('de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider');
                     new ValueProvider(%s);""".formatted(valueProviderAsJs));
 
-            final var function = (ValueProvider) evaluationResult;
-
-//            return (field, names) -> function.apply(field, names).toString();
-            return function;
+            return (ValueProvider) evaluationResult;
         } catch (ScriptException e) {
             throw new FixtureCreationException("The provided custom value provider %s could not be parsed as a valid value provider".formatted(valueProviderDefinition));
         }

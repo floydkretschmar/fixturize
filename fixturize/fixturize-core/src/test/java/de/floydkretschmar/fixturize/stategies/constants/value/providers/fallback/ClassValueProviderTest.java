@@ -27,7 +27,7 @@ import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixtur
 import static de.floydkretschmar.fixturize.TestFixtures.createExecutableElementFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureBuilderFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstructorFixture;
-import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixtureForValueProviderServiceTest;
+import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixture;
 import static de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService.DEFAULT_VALUE;
 import static javax.lang.model.element.ElementKind.CONSTRUCTOR;
 import static javax.lang.model.element.ElementKind.FIELD;
@@ -36,7 +36,6 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
-import static javax.lang.model.type.TypeKind.DECLARED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -103,8 +102,8 @@ class ClassValueProviderTest {
 
     @Test
     void provideValueAsString_whenFallbackForLombokBuilder_returnBuilderValueWithAllFieldsAsSetters() {
-        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, true, FIELD);
-        final var field2 = createVariableElementFixtureForValueProviderServiceTest("classWithValueProviderField", DECLARED, true, FIELD);
+        final var field1 = createVariableElementFixture("integerField", true, FIELD);
+        final var field2 = createVariableElementFixture("classWithValueProviderField", true, FIELD);
         final var type = TestFixtures.createDeclaredTypeFixture(field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
 
@@ -130,8 +129,8 @@ class ClassValueProviderTest {
 
     @Test
     void provideValueAsString_whenFallbackForLombokAllArgsConstructor_returnConstructorValueWithAllFieldsAsParameters() {
-        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, false, FIELD);
-        final var field2 = createVariableElementFixtureForValueProviderServiceTest("classWithValueProviderField", DECLARED, false, FIELD);
+        final var field1 = createVariableElementFixture("integerField", false, FIELD);
+        final var field2 = createVariableElementFixture("classWithValueProviderField", false, FIELD);
         final var type = TestFixtures.createDeclaredTypeFixture(field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
 
@@ -163,7 +162,7 @@ class ClassValueProviderTest {
         final var field1 = mock(VariableElement.class);
         when(field1.getKind()).thenReturn(FIELD);
         when(field1.getModifiers()).thenReturn(Set.of(PRIVATE));
-        final var field2 = createVariableElementFixtureForValueProviderServiceTest("classWithValueProviderField", DECLARED, false, FIELD);
+        final var field2 = createVariableElementFixture("classWithValueProviderField", false, FIELD);
         when(field2.getModifiers()).thenReturn(Set.of(PRIVATE, FINAL));
         final var field3 = mock(VariableElement.class);
         when(field3.getKind()).thenReturn(FIELD);
@@ -223,8 +222,8 @@ class ClassValueProviderTest {
 
     @Test
     void provideValueAsString_whenFallbackDefinedConstructor_returnConstructorValueWithParameters() {
-        final var parameter1 = createVariableElementFixtureForValueProviderServiceTest("integerParameter", DECLARED, false, null);
-        final var parameter2 = createVariableElementFixtureForValueProviderServiceTest("booleanParameter", DECLARED, false, null);
+        final var parameter1 = createVariableElementFixture("integerParameter", false, null);
+        final var parameter2 = createVariableElementFixture("booleanParameter", false, null);
         final var constructor1 = createExecutableElementFixture(CONSTRUCTOR, PUBLIC);
         when(constructor1.getParameters()).thenReturn((List) List.of(parameter1, parameter2));
         final var constructor2 = createExecutableElementFixture(CONSTRUCTOR, PUBLIC);
@@ -266,9 +265,9 @@ class ClassValueProviderTest {
         final var setter2 = createExecutableElementFixture("setBooleanField", METHOD, classBuilderType, PUBLIC);
 
         final var builderMethod = createExecutableElementFixture("builder", METHOD, classBuilderType, PUBLIC, STATIC);
-        final var field1 = createVariableElementFixtureForValueProviderServiceTest("integerField", DECLARED, false, FIELD);
+        final var field1 = createVariableElementFixture("integerField", false, FIELD);
         when(field1.toString()).thenReturn("integerField");
-        final var field2 = createVariableElementFixtureForValueProviderServiceTest("booleanField", DECLARED, false, FIELD);
+        final var field2 = createVariableElementFixture("booleanField", false, FIELD);
         when(field2.toString()).thenReturn("booleanField");
         final var field3 = mock(VariableElement.class);
         when(field3.toString()).thenReturn("fieldWithoutSetter");

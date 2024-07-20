@@ -103,12 +103,11 @@ public class TestFixtures {
         return typeMirror;
     }
 
-    public static VariableElement createVariableElementFixtureForValueProviderServiceTest(String name, TypeKind typeKind, boolean mockVariableName, ElementKind elementKind) {
-//        final var type = typeKind == DECLARED ? createTypeMirrorFixture(DECLARED, "%sType".formatted(name)) : createTypeMirrorFixture(typeKind);
+    public static VariableElement createVariableElementFixture(String name, boolean mockVariableName, ElementKind elementKind) {
         return createVariableElementFixture(name, null, mockVariableName, elementKind, null);
     }
 
-    public static <T extends Annotation> VariableElement createVariableElementFixtureForConstantGenerationStrategyTest(String name, T... annotations) {
+    public static <T extends Annotation> VariableElement createVariableElementFixture(String name, T... annotations) {
         return createVariableElementFixture(name, createTypeMirrorFixture(DECLARED, "%sType".formatted(name)), true, FIELD, annotations);
     }
 
@@ -148,6 +147,10 @@ public class TestFixtures {
 
     public static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind, Element... enclosedElements) {
         return createDeclaredTypeFixtureCore(name, elementKind, enclosedElements);
+    }
+
+    public static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind) {
+        return createDeclaredTypeFixtureCore(name, elementKind, null);
     }
 
     public static DeclaredType createDeclaredTypeFixture() {
@@ -193,7 +196,7 @@ public class TestFixtures {
     }
 
     public static ExecutableElement createExecutableElementFixture(String name, ElementKind elementKind, DeclaredType returnType) {
-        final var executableElement = createExecutableElementFixture(elementKind, null);
+        final var executableElement = createExecutableElementFixtureCore(elementKind, null);
         final var executableElementName = mock(Name.class);
         when(executableElementName.toString()).thenReturn(name);
         when(executableElement.getReturnType()).thenReturn(returnType);
@@ -202,6 +205,10 @@ public class TestFixtures {
     }
 
     public static ExecutableElement createExecutableElementFixture(ElementKind elementKind, Modifier... modifiers) {
+        return createExecutableElementFixtureCore(elementKind, modifiers);
+    }
+
+    private static ExecutableElement createExecutableElementFixtureCore(ElementKind elementKind, Modifier[] modifiers) {
         final var executableElement = mock(ExecutableElement.class);
         when(executableElement.getKind()).thenReturn(elementKind);
         if (Objects.nonNull(modifiers))
