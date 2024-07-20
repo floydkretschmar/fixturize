@@ -15,6 +15,7 @@ import de.floydkretschmar.fixturize.stategies.creation.ConstructorCreationMethod
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -22,6 +23,8 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -55,6 +58,18 @@ import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_8;
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
 public class FixtureProcessor extends AbstractProcessor {
+
+    private Types typeUtils;
+
+    private Elements elementUtils;
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        this.typeUtils = processingEnv.getTypeUtils();
+        this.elementUtils = processingEnv.getElementUtils();
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         boolean hasErrors = false;
@@ -96,13 +111,13 @@ public class FixtureProcessor extends AbstractProcessor {
         }
     }
 
-    private static ConstantValueProviderService initializeValueProviderService(FixtureValueProvider[] customFixtureProviders) {
+    private ConstantValueProviderService initializeValueProviderService(FixtureValueProvider[] customFixtureProviders) {
         final var customValueProviders = Arrays.stream(customFixtureProviders)
                 .collect(Collectors.toMap(
                         FixtureValueProvider::targetType,
                         annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())
                 ));
-        return new ConstantValueProviderService(customValueProviders, new DefaultValueProviderFactory());
+        return new ConstantValueProviderService(customValueProviders, new DefaultValueProviderFactory(), elementUtils, typeUtils);
     }
 
     private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap) {

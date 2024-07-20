@@ -14,7 +14,6 @@ class NamesTest {
         assertThat(result.getPackageName()).isEqualTo("de.test.package");
         assertThat(result.getSimpleClassName()).isEqualTo("Class");
         assertThat(result.getQualifiedClassName()).isEqualTo("de.test.package.Class");
-        assertThat(result.getQualifiedClassNameWithoutGeneric()).isEqualTo("de.test.package.Class");
         assertThat(result.getQualifiedFixtureClassName()).isEqualTo("de.test.package.ClassFixture");
     }
 
@@ -35,7 +34,6 @@ class NamesTest {
         assertThat(result.getPackageName()).isEqualTo("de.test.package");
         assertThat(result.getSimpleClassName()).isEqualTo("Class<some.package.GenericType>");
         assertThat(result.getQualifiedClassName()).isEqualTo("de.test.package.Class<some.package.GenericType>");
-        assertThat(result.getQualifiedClassNameWithoutGeneric()).isEqualTo("de.test.package.Class");
         assertThat(result.getQualifiedFixtureClassName()).isEqualTo("de.test.package.ClassFixture");
     }
 

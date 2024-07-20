@@ -97,6 +97,12 @@ public class TestFixtures {
         return typeMirror;
     }
 
+    public static TypeMirror createTypeMirrorFixture(String name) {
+        final var typeMirror = mock(TypeMirror.class);
+        when(typeMirror.toString()).thenReturn(name);
+        return typeMirror;
+    }
+
     public static TypeMirror createTypeMirrorFixture(TypeKind typeKind) {
         final var typeMirror = mock(TypeMirror.class);
         when(typeMirror.getKind()).thenReturn(typeKind);
@@ -151,6 +157,10 @@ public class TestFixtures {
 
     public static DeclaredType createDeclaredTypeFixture(String name, ElementKind elementKind) {
         return createDeclaredTypeFixtureCore(name, elementKind, null);
+    }
+
+    public static DeclaredType createDeclaredTypeFixture(ElementKind elementKind) {
+        return createDeclaredTypeFixtureCore(null, elementKind, null);
     }
 
     public static DeclaredType createDeclaredTypeFixture() {

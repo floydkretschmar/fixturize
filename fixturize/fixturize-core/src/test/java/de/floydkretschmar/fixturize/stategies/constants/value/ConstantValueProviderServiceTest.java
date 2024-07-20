@@ -10,14 +10,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.util.Map;
 
-import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createTypeMirrorFixture;
-import static javax.lang.model.element.ElementKind.CLASS;
-import static javax.lang.model.element.ElementKind.ENUM;
-import static javax.lang.model.type.TypeKind.ARRAY;
-import static javax.lang.model.type.TypeKind.DECLARED;
+import static de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider.DEFAULT_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -40,13 +39,16 @@ class ConstantValueProviderServiceTest {
     private VariableElement field;
 
     @Mock
-    private ValueProvider classValueProvider;
-
-    @Mock
-    private ValueProvider enumValueProvider;
+    private ValueProvider declaredTypeValueProvider;
 
     @Mock
     private ValueProvider containerValueProvider;
+
+    @Mock
+    private Elements elementUtils;
+
+    @Mock
+    private Types typeUtils;
 
     private ConstantValueProviderService service;
 
@@ -54,15 +56,14 @@ class ConstantValueProviderServiceTest {
     void setup() {
         final var valueProviderFactory = mock(ValueProviderFactory.class);
         when(valueProviderFactory.createValueProviders(anyMap())).thenReturn(valueProviderMap);
-        when(valueProviderFactory.createClassValueProvider(any())).thenReturn(classValueProvider);
-        when(valueProviderFactory.createEnumValueProvider()).thenReturn(enumValueProvider);
-        when(valueProviderFactory.createContainerValueProvider()).thenReturn(containerValueProvider);
-        service = new ConstantValueProviderService(Map.of(), valueProviderFactory);
+        when(valueProviderFactory.createDeclaredTypeValueProvider(any())).thenReturn(declaredTypeValueProvider);
+        when(valueProviderFactory.createContainerValueProvider(any(), any())).thenReturn(containerValueProvider);
+        service = new ConstantValueProviderService(Map.of(), valueProviderFactory, elementUtils, typeUtils);
     }
 
     @Test
     void getValueFor_whenCalledForDefinedType_returnCorrespondingValueString() {
-        final var type = createTypeMirrorFixture(DECLARED, "ClassName");
+        final var type = createTypeMirrorFixture("ClassName");
 
         when(field.asType()).thenReturn(type);
 
@@ -75,29 +76,32 @@ class ConstantValueProviderServiceTest {
         verify(valueProviderMap, times(1)).containsKey("ClassName");
         verify(valueProviderMap, times(1)).get("ClassName");
         verifyNoMoreInteractions(valueProviderMap);
-        verifyNoInteractions(classValueProvider, enumValueProvider, containerValueProvider);
+        verifyNoInteractions(declaredTypeValueProvider, containerValueProvider);
     }
 
     @Test
-    void getValueFor_whenCalledForEnum_returnEnumValueProviderValueString() {
-        final var type = createDeclaredTypeFixture("EnumType", ENUM);
+    void getValueFor_whenCalledForDeclaredType_returnDeclaredTypeValueString() {
+        final var type = mock(DeclaredType.class);
+        when(type.toString()).thenReturn("EnumType");
+
         when(field.asType()).thenReturn(type);
 
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
-        when(enumValueProvider.provideValueAsString(any(), any())).thenReturn("enumValueProviderValue");
+        when(containerValueProvider.provideValueAsString(any(), any())).thenReturn(DEFAULT_VALUE);
+        when(declaredTypeValueProvider.provideValueAsString(any(), any())).thenReturn("declaredTypeProviderValue");
 
         final var result = service.getValueFor(field);
 
-        assertThat(result).isEqualTo("enumValueProviderValue");
+        assertThat(result).isEqualTo("declaredTypeProviderValue");
         verify(valueProviderMap, times(1)).containsKey("EnumType");
-        verify(enumValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
-        verifyNoMoreInteractions(valueProviderMap, enumValueProvider);
-        verifyNoInteractions(classValueProvider, containerValueProvider);
+        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
+        verify(declaredTypeValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
+        verifyNoMoreInteractions(valueProviderMap, declaredTypeValueProvider, containerValueProvider);
     }
 
     @Test
-    void getValueFor_whenCalledForArray_returnCorrespondingValueString() {
-        final var type = createTypeMirrorFixture(ARRAY, "ArrayType[]");
+    void getValueFor_whenCalledForContainerType_returnContainerValueProviderValueString() {
+        final var type = createTypeMirrorFixture("ContainerType");
         when(field.asType()).thenReturn(type);
 
         when(valueProviderMap.containsKey(anyString())).thenReturn(false);
@@ -106,26 +110,9 @@ class ConstantValueProviderServiceTest {
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("containerValueProviderValue");
-        verify(valueProviderMap, times(1)).containsKey("ArrayType[]");
+        verify(valueProviderMap, times(1)).containsKey("ContainerType");
         verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
         verifyNoMoreInteractions(valueProviderMap, containerValueProvider);
-        verifyNoInteractions(classValueProvider, enumValueProvider);
-    }
-
-    @Test
-    void getValueFor_whenCalledForAnyOtherDeclaredClass_returnClassValueProviderValueString() {
-        final var type = createDeclaredTypeFixture("OtherClass", CLASS);
-        when(field.asType()).thenReturn(type);
-
-        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
-        when(classValueProvider.provideValueAsString(any(), any())).thenReturn("FallbackValue");
-
-        final var result = service.getValueFor(field);
-
-        assertThat(result).isEqualTo("FallbackValue");
-        verify(valueProviderMap, times(1)).containsKey("OtherClass");
-        verify(classValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
-        verifyNoMoreInteractions(valueProviderMap, classValueProvider);
-        verifyNoInteractions(enumValueProvider, containerValueProvider);
+        verifyNoInteractions(declaredTypeValueProvider);
     }
 }

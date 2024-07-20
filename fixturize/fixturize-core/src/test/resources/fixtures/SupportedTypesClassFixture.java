@@ -32,6 +32,7 @@ public class SupportedTypesClassFixture {
     public static java.util.Map<java.lang.String,java.lang.String> MAP_FIELD = java.util.Map.of();
     public static java.util.Set<java.lang.String> SET_FIELD = java.util.Set.of();
     public static java.util.Queue<java.lang.String> QUEUE_FIELD = new java.util.PriorityQueue<>();
+    public static java.lang.String[] ARRAY_FIELD = new java.lang.String[] {};
 
 
 }

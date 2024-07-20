@@ -19,13 +19,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -70,10 +66,5 @@ public class ValueProviderMap extends HashMap<String, ValueProvider> {
         this.putIfAbsent(LocalDateTime.class.getName(), (field, names) -> "java.time.LocalDateTime.now()");
         this.putIfAbsent(LocalTime.class.getName(), (field, names) -> "java.time.LocalTime.now()");
         this.putIfAbsent(Date.class.getName(), (field, names) -> "new java.util.Date()");
-        this.putIfAbsent(Collection.class.getName(), (field, names) -> "java.util.List.of()");
-        this.putIfAbsent(List.class.getName(), (field, names) -> "java.util.List.of()");
-        this.putIfAbsent(Map.class.getName(), (field, names) -> "java.util.Map.of()");
-        this.putIfAbsent(Set.class.getName(), (field, names) -> "java.util.Set.of()");
-        this.putIfAbsent(Queue.class.getName(), (field, names) -> "new java.util.PriorityQueue<>()");
     }
 }

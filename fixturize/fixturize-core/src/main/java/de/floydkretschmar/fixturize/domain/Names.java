@@ -30,12 +30,6 @@ public class Names {
     String qualifiedFixtureClassName;
 
     /**
-     * The fully qualified name of the class for which the fixture is being generated without the generics part if
-     * it exists.
-     */
-    String qualifiedClassNameWithoutGeneric;
-
-    /**
      * Returns a boolean indicating if a package name exists, or if it is empty.
      *
      * @return true if the package name exists, false if it is an empty string
@@ -61,7 +55,6 @@ public class Names {
                 .qualifiedClassName(qualifiedClassName)
                 .simpleClassName(simpleClassName)
                 .packageName(packageName)
-                .qualifiedClassNameWithoutGeneric(qualifiedClassNameWithoutGeneric)
                 .qualifiedFixtureClassName(qualifiedFixtureClassName).build();
     }
 }

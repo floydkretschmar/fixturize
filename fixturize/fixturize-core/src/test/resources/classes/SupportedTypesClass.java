@@ -60,4 +60,5 @@ public class SupportedTypesClass {
     private Map<String, String> mapField;
     private Set<String> setField;
     private Queue<String> queueField;
+    private String[] arrayField;
 }

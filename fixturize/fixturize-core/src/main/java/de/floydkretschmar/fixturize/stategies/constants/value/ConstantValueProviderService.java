@@ -5,13 +5,9 @@ import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValuePro
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
 
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.util.Map;
-
-import static javax.lang.model.element.ElementKind.CLASS;
-import static javax.lang.model.element.ElementKind.ENUM;
-import static javax.lang.model.type.TypeKind.ARRAY;
 
 /**
  * Decides which value during constant creation should be used for a given {@link VariableElement}.
@@ -29,26 +25,25 @@ public class ConstantValueProviderService implements ValueProviderService {
     private final ValueProviderMap valueProviders;
 
     /**
-     * The value provider that provides the fallback value for classes if no other value provider has been registered.
+     * The value provider that provides the fallback value for declared types (classes and enums) if no other value
+     * provider has been registered.
      */
-    private final ValueProvider classValueProvider;
+    private final ValueProvider declaredTypeValueProvider;
 
     /**
-     * The value provider that provides the fallback value for enums if no other value provider has been registered.
-     */
-    private final ValueProvider enumValueProvider;
-
-    /**
-     * The value provider that provides the fallback value for containers (arrays, collections) if no other value provider
-     * has been registered.
+     * The value provider that provides the fallback value for container types (arrays, Maps and Collections) if no other value
+     * provider has been registered.
      */
     private final ValueProvider containerValueProvider;
 
-    public ConstantValueProviderService(Map<String, ValueProvider> customValueProviders, ValueProviderFactory valueProviderFactory) {
+    public ConstantValueProviderService(
+            Map<String, ValueProvider> customValueProviders,
+            ValueProviderFactory valueProviderFactory,
+            Elements elementUtils,
+            Types typeUtils) {
         this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders);
-        this.classValueProvider = valueProviderFactory.createClassValueProvider(this);
-        this.enumValueProvider = valueProviderFactory.createEnumValueProvider();
-        this.containerValueProvider = valueProviderFactory.createContainerValueProvider();
+        this.declaredTypeValueProvider = valueProviderFactory.createDeclaredTypeValueProvider(this);
+        this.containerValueProvider = valueProviderFactory.createContainerValueProvider(elementUtils, typeUtils);
     }
 
     /**
@@ -60,26 +55,13 @@ public class ConstantValueProviderService implements ValueProviderService {
     @Override
     public String getValueFor(VariableElement field) {
         final var fieldType = field.asType();
-        final var typeKind = fieldType.getKind();
-
         final var names = Names.from(fieldType.toString());
-        if (valueProviders.containsKey(names.getQualifiedClassNameWithoutGeneric()))
-            return valueProviders.get(names.getQualifiedClassNameWithoutGeneric()).provideValueAsString(field, names);
 
-        if (typeKind == TypeKind.DECLARED) {
-            final var declaredElement = ((DeclaredType) fieldType).asElement();
-            final var elementKind = declaredElement.getKind();
-            if (elementKind == ENUM) {
-                return this.enumValueProvider.provideValueAsString(field, names);
-            } else if (elementKind == CLASS) {
-                return this.classValueProvider.provideValueAsString(field, names);
-            }
-        }
+        if (valueProviders.containsKey(names.getQualifiedClassName()))
+            return valueProviders.get(names.getQualifiedClassName()).provideValueAsString(field, names);
 
-        if (typeKind == ARRAY) {
-            return this.containerValueProvider.provideValueAsString(field, names);
-        }
+        final var value = this.containerValueProvider.provideValueAsString(field, names);
 
-        return DEFAULT_VALUE;
+        return value.equals(DEFAULT_VALUE) ? this.declaredTypeValueProvider.provideValueAsString(field, names) : value;
     }
 }

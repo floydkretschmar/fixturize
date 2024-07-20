@@ -41,11 +41,6 @@ class ValueProviderMapTest {
             "java.time.LocalDate",
             "java.time.LocalDateTime",
             "java.time.LocalTime",
-            "java.util.Collection",
-            "java.util.List",
-            "java.util.Map",
-            "java.util.Set",
-            "java.util.Queue",
             "java.util.Date"})
     void containsKey_whenCalledForDefaultValue_shouldReturnTrue(String targetClassName) {
         final var map = new ValueProviderMap(Map.of());
@@ -81,11 +76,6 @@ class ValueProviderMapTest {
             "java.time.LocalDate, java.time.LocalDate.now()",
             "java.time.LocalDateTime, java.time.LocalDateTime.now()",
             "java.time.LocalTime, java.time.LocalTime.now()",
-            "java.util.Collection, java.util.List.of()",
-            "java.util.List, java.util.List.of()",
-            "java.util.Map, java.util.Map.of()",
-            "java.util.Set, java.util.Set.of()",
-            "java.util.Queue, new java.util.PriorityQueue<>()",
             "java.util.Date, new java.util.Date()" })
     void get_whenCalledForDefaultValue_shouldReturnExpectedDefaultValue(String targetClassName, String expectedDefaultValue) {
         final var field = mock(VariableElement.class);
