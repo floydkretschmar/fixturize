@@ -3,26 +3,18 @@ plugins {
     id "io.freefair.lombok" version "8.6"
 }
 
-group = "de.floydkretschmar.fixturize"
-version = "0.1"
-
-repositories {
-    mavenCentral()
-}
-
 ext {
-    junitVersion = "5.10.0"
-    autoServiceVersion = "1.1.1"
-    assertJVersion = "3.25.1"
+    nashornVersion = "15.4"
     guavaVersion = "33.2.1-jre"
+
+    junitVersion = "5.10.0"
+    assertJVersion = "3.25.1"
     mockitoVersion = "5.12.0"
     compileTestingVersion = "0.21.0"
     lombokVersion = "1.18.34"
-    nashornVersion = "15.4"
 }
 
 dependencies {
-    implementation "com.google.auto.service:auto-service:$autoServiceVersion"
     implementation "com.google.guava:guava:$guavaVersion"
     implementation "org.openjdk.nashorn:nashorn-core:$nashornVersion"
 

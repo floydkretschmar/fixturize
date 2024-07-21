@@ -1,0 +1,26 @@
+plugins {
+    id "java"
+    id "io.freefair.lombok" version "8.6"
+}
+
+tasks.withType(JavaCompile) {
+    doFirst {
+        println "AnnotationProcessorPath for $name is ${options.getAnnotationProcessorPath().getFiles()}"
+    }
+}
+
+compileJava {
+    options.annotationProcessorPath = configurations.annotationProcessor
+}
+
+dependencies {
+    implementation project(":fixturize-core")
+    annotationProcessor project(":fixturize-core")
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}

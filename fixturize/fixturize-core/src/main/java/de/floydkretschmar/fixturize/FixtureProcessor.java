@@ -1,6 +1,5 @@
 package de.floydkretschmar.fixturize;
 
-import com.google.auto.service.AutoService;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.Names;
@@ -16,7 +15,6 @@ import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationS
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -56,7 +54,6 @@ import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_8;
  */
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
-@AutoService(Processor.class)
 public class FixtureProcessor extends AbstractProcessor {
 
     private Types typeUtils;

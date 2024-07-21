@@ -1,0 +1,2 @@
+rootProject.name = 'fixturize'
+include 'fixturize-core', 'fixturize-playground'

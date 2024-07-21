@@ -1,0 +1,27 @@
+plugins {
+    id "java"
+    id "application"
+}
+
+def javaProjects = [
+        project(":fixturize-core"),
+        project(":fixturize-playground")
+]
+
+configure(javaProjects) {
+    println "${project.name}"
+
+    version = "0.1"
+    group = "de.floydkretschmar.fixturize"
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}
