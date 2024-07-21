@@ -6,6 +6,7 @@ plugins {
 ext {
     nashornVersion = "15.4"
     guavaVersion = "33.2.1-jre"
+    autoServiceVersion = "1.1.1"
 
     junitVersion = "5.10.0"
     assertJVersion = "3.25.1"
@@ -15,6 +16,9 @@ ext {
 }
 
 dependencies {
+    implementation "com.google.auto.service:auto-service:$autoServiceVersion"
+    annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
+
     implementation "com.google.guava:guava:$guavaVersion"
     implementation "org.openjdk.nashorn:nashorn-core:$nashornVersion"
 

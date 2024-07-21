@@ -1,6 +1,5 @@
 plugins {
     id "java"
-    id "application"
 }
 
 def javaProjects = [
@@ -12,7 +11,7 @@ configure(javaProjects) {
     println "${project.name}"
 
     version = "0.1"
-    group = "de.floydkretschmar.fixturize"
+    group = "de.floydkretschmar"
 
     repositories {
         mavenCentral()
