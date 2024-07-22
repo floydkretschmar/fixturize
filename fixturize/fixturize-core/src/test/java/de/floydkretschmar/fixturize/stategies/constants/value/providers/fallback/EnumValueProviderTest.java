@@ -1,7 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.TestFixtures;
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ class EnumValueProviderTest {
 
     private EnumValueProvider valueProvider;
 
-    private Names names;
+    private Metadata metadata;
 
     @Mock
     private VariableElement field;
@@ -30,9 +30,8 @@ class EnumValueProviderTest {
     @BeforeEach
     void setup() {
         valueProvider = new EnumValueProvider();
-        names = Names.from("some.test.Class");
+        metadata = TestFixtures.createMetadataFixture();
     }
-
 
     @Test
     void provideValueAsString_whenCalledForEnum_returnCorrespondingValueString() {
@@ -42,7 +41,7 @@ class EnumValueProviderTest {
         when(enumConstant.toString()).thenReturn("CONSTANT_VALUE");
         when(field.asType()).thenReturn(type);
 
-        final var result = valueProvider.provideValueAsString(field, names);
+        final var result = valueProvider.provideValueAsString(field, metadata);
 
         assertThat(result).isEqualTo("some.test.Class.CONSTANT_VALUE");
     }
@@ -52,7 +51,7 @@ class EnumValueProviderTest {
         final var type = TestFixtures.createDeclaredTypeFixture();
         when(field.asType()).thenReturn(type);
 
-        final var result = valueProvider.provideValueAsString(field, names);
+        final var result = valueProvider.provideValueAsString(field, metadata);
 
         assertThat(result).isEqualTo(DEFAULT_VALUE);
     }

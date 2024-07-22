@@ -1,13 +1,16 @@
 package de.floydkretschmar.fixturize;
 
 import com.google.auto.service.AutoService;
+import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
+import de.floydkretschmar.fixturize.stategies.constants.metadata.ConstantMetadataFactory;
+import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.DefaultValueProviderFactory;
 import de.floydkretschmar.fixturize.stategies.creation.BuilderCreationMethodStrategy;
@@ -72,23 +75,17 @@ public class FixtureProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        boolean hasErrors = false;
         for (TypeElement annotation : annotations) {
             for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
-                try {
-                    this.processAnnotatedElement((TypeElement) element);
-                } catch (Exception e) {
-                    hasErrors = true;
-                    if (!roundEnv.processingOver())
-                        break;
-                }
+                this.processAnnotatedElement((TypeElement) element);
             }
         }
-        return !hasErrors;
+        return true;
     }
 
     private void processAnnotatedElement(TypeElement element) {
-        final var valueProviderService = initializeValueProviderService(element.getAnnotationsByType(FixtureValueProvider.class));
+        final var metadataFactory = new ConstantMetadataFactory(elementUtils);
+        final var valueProviderService = initializeValueProviderService(element.getAnnotationsByType(FixtureValueProvider.class), metadataFactory);
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
         final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService);
 
@@ -96,33 +93,34 @@ public class FixtureProcessor extends AbstractProcessor {
         creationMethodStrategies.add(new ConstructorCreationMethodStrategy());
         creationMethodStrategies.add(new BuilderCreationMethodStrategy());
 
-        final var names = Names.from(element.getQualifiedName().toString());
+        final var fixtureAnnotation = element.getAnnotation(Fixture.class);
+        final var metadata = metadataFactory.createMetadataFrom(element, Arrays.stream(fixtureAnnotation.genericImplementations()).toList());
 
         try {
             final var fixtureFile = processingEnv.getFiler()
-                    .createSourceFile(names.getQualifiedFixtureClassName());
+                    .createSourceFile(metadata.getQualifiedFixtureClassName());
 
             try (final var out = new PrintWriter(fixtureFile.openWriter())) {
-                final var fixtureClassString = getFixtureClassAsString(element, names, constantsGenerationStrategy, creationMethodStrategies);
+                final var fixtureClassString = getFixtureClassAsString(element, metadata, constantsGenerationStrategy, creationMethodStrategies);
                 out.print(fixtureClassString);
             }
         } catch (IOException e) {
-            throw new FixtureCreationException("Failed to create source file %s for fixture.".formatted(names.getQualifiedClassName()));
+            throw new FixtureCreationException("Failed to create source file %s for fixture.".formatted(metadata.getQualifiedClassName()));
         }
     }
 
-    private ConstantValueProviderService initializeValueProviderService(FixtureValueProvider[] customFixtureProviders) {
+    private ConstantValueProviderService initializeValueProviderService(FixtureValueProvider[] customFixtureProviders, MetadataFactory metadataFactory) {
         final var customValueProviders = Arrays.stream(customFixtureProviders)
                 .collect(Collectors.toMap(
                         FixtureValueProvider::targetType,
                         annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())
                 ));
-        return new ConstantValueProviderService(customValueProviders, new DefaultValueProviderFactory(), elementUtils, typeUtils);
+        return new ConstantValueProviderService(customValueProviders, new DefaultValueProviderFactory(), elementUtils, typeUtils, metadataFactory);
     }
 
-    private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap) {
+    private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap, Metadata metadata) {
         return creationMethodStrategies.stream()
-                .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap).stream())
+                .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap, metadata).stream())
                 .map(method -> "%spublic static %s %s() {\n%sreturn %s;\n%s}".formatted(WHITESPACE_4, method.getReturnType(), method.getName(), WHITESPACE_8, method.getReturnValue(), WHITESPACE_4))
                 .collect(Collectors.joining("\n\n"));
     }
@@ -133,7 +131,7 @@ public class FixtureProcessor extends AbstractProcessor {
                 .collect(Collectors.joining("\n"));
     }
 
-    private static String getFixtureClassAsString(TypeElement element, Names names, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
+    private static String getFixtureClassAsString(TypeElement element, Metadata metadata, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
         final var fixtureClassTemplate = """
         %spublic class %sFixture {
         %s
@@ -142,12 +140,12 @@ public class FixtureProcessor extends AbstractProcessor {
         }
         """;
 
-        final var packageString = names.hasPackageName() ? "package %s;\n\n".formatted(names.getPackageName()) : "";
+        final var packageString = metadata.hasPackageName() ? "package %s;\n\n".formatted(metadata.getPackageName()) : "";
 
-        final var constantMap = constantsGenerationStrategy.generateConstants(element);
+        final var constantMap = constantsGenerationStrategy.generateConstants(element, metadata);
         final var constantsString = getConstantsString(constantMap.values().stream());
-        final var creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap);
+        final var creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap, metadata);
 
-        return String.format(fixtureClassTemplate, packageString, names.getSimpleClassName(), constantsString, creationMethodsString);
+        return String.format(fixtureClassTemplate, packageString, metadata.getSimpleClassNameWithoutGeneric(), constantsString, creationMethodsString);
     }
 }

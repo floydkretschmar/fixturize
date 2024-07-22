@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -61,7 +61,7 @@ class ValueProviderMapTest {
     void get_whenCalledForDefaultProvidersDefinedAsLambda_shouldReturnExpectedDefaultValue(String targetClassName, String expectedDefaultValue) {
         final var field = mock(VariableElement.class);
         final var map = new ValueProviderMap(Map.of());
-        final var names = Names.from("some.test.Class");
+        final var names = TestFixtures.createMetadataFixture();
 
         assertThat(map.get(targetClassName).provideValueAsString(field, names)).isEqualTo(expectedDefaultValue);
     }
@@ -69,7 +69,7 @@ class ValueProviderMapTest {
     @Test
     void get_whenDefaultIsOverwritten_shouldReturnCustomValue() {
         final var field = mock(VariableElement.class);
-        final var names = Names.from("some.test.Class");
+        final var names = TestFixtures.createMetadataFixture();
         final var map = new ValueProviderMap(Map.of("java.util.UUID", (f, n) -> "10"));
 
         assertThat(map.get("java.util.UUID").provideValueAsString(field, names)).isEqualTo("10");

@@ -4,9 +4,8 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.Constant;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantsNamingStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -23,6 +22,7 @@ import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -30,7 +30,6 @@ import static javax.lang.model.element.ElementKind.FIELD;
 import static javax.lang.model.type.TypeKind.DECLARED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,6 +46,26 @@ public class TestFixtures {
     public static final Constant INT_FIELD_DEFINITION = createConstantFixture(INT_FIELD_NAME);
     public static final Constant BOOLEAN_FIELD_DEFINITION = createConstantFixture(BOOLEAN_FIELD_NAME);
     public static final Constant UUID_FIELD_DEFINITION = createConstantFixture(UUID_FIELD_NAME);
+
+    public static Metadata createMetadataFixture() {
+        return createMetadataFixture("Class");
+    }
+
+    public static Metadata createMetadataFixture(String className) {
+        return createMetadataFixtureBuilder(className, "").build();
+    }
+
+    public static Metadata.MetadataBuilder createMetadataFixtureBuilder(String className, String genericPart) {
+        return Metadata.builder()
+                .packageName("some.test")
+                .qualifiedClassName("some.test.%s%s".formatted(className, genericPart))
+                .simpleClassName("%s%s".formatted(className, genericPart))
+                .genericPart(genericPart)
+                .genericTypeMap(Map.of())
+                .qualifiedFixtureClassName("some.test.%sFixture".formatted(className))
+                .simpleClassNameWithoutGeneric(className)
+                .qualifiedClassNameWithoutGeneric("some.test.%s".formatted(className));
+    }
 
     public static Constant createConstantFixture(String fieldName) {
         return createConstantFixture(fieldName, "%sName".formatted(fieldName));
@@ -109,8 +128,12 @@ public class TestFixtures {
         return typeMirror;
     }
 
-    public static VariableElement createVariableElementFixture(String name, boolean mockVariableName, ElementKind elementKind) {
-        return createVariableElementFixture(name, null, mockVariableName, elementKind, null);
+    public static <T extends Annotation> VariableElement createVariableElementFixture(String name, TypeMirror type, ElementKind elementKind, T... annotations) {
+        return createVariableElementFixture(name, type, true, elementKind, annotations);
+    }
+
+    public static VariableElement createVariableElementFixture(String name, boolean mockVariableName, boolean mockVariableType, ElementKind elementKind) {
+        return createVariableElementFixture(name, mockVariableType ? mock(TypeMirror.class) : null, mockVariableName, elementKind, null);
     }
 
     public static <T extends Annotation> VariableElement createVariableElementFixture(String name, T... annotations) {
@@ -224,21 +247,6 @@ public class TestFixtures {
         if (Objects.nonNull(modifiers))
             when(executableElement.getModifiers()).thenReturn(Set.of(modifiers));
         return executableElement;
-    }
-
-    public static ConstantsNamingStrategy createNamingStrategyMock() {
-        final var namingStrategy = mock(ConstantsNamingStrategy.class);
-        when(namingStrategy.createConstantName(anyString())).thenAnswer(param -> "%sName".formatted(param.getArguments()[0]));
-        return namingStrategy;
-    }
-
-    public static ValueProviderService createValueProviderServiceMock() {
-        final var valueService = mock(ValueProviderService.class);
-        when(valueService.getValueFor(any())).thenAnswer(param -> {
-            final var field = (VariableElement) param.getArguments()[0];
-            return "%sValue".formatted(field.getSimpleName().toString());
-        });
-        return valueService;
     }
 
     public static ConstantDefinitionMap createConstantDefinitionMapMock() {

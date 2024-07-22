@@ -5,6 +5,7 @@ import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 
@@ -36,7 +37,7 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
      * @return a {@link Collection} of generated {@link CreationMethod}s
      */
     @Override
-    public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap) {
+    public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap, Metadata metadata) {
         return Arrays.stream(element.getAnnotationsByType(FixtureBuilder.class))
                 .map(annotation -> {
                     Collection<Constant> correspondingConstants;
@@ -45,11 +46,15 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
                     else
                         correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.usedSetters()));
 
-                    final var className = element.getSimpleName().toString();
+                    final var returnType = "%s.%sBuilder%s".formatted(
+                            metadata.getSimpleClassNameWithoutGeneric(),
+                            metadata.getSimpleClassNameWithoutGeneric(),
+                            metadata.getGenericPart());
+                    final var buildMethod = "%s%s".formatted(metadata.getGenericPart(), annotation.builderMethod());
 
                     return CreationMethod.builder()
-                            .returnType("%s.%sBuilder".formatted(className, className))
-                            .returnValue(createReturnValueString(element, className, annotation.builderMethod(), correspondingConstants))
+                            .returnType(returnType)
+                            .returnValue(createReturnValueString(element, metadata.getSimpleClassNameWithoutGeneric(), buildMethod, correspondingConstants))
                             .name(annotation.methodName())
                             .build();
                 }).toList();

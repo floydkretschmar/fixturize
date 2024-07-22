@@ -1,7 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import de.floydkretschmar.fixturize.CustomValueProviderParser;
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class CustomValueProviderParserTest {
     @Test
     void parseValueProvider_whenCalledWithValidJS_createValueProvider() {
         final var element = mock(VariableElement.class);
-        final var names = Names.from("some.test.CLass");
+        final var names = TestFixtures.createMetadataFixture();
 
         final var valueProvider = CustomValueProviderParser.parseValueProvider("\"test\"");
         final var result = valueProvider.provideValueAsString(element, names);
@@ -31,7 +31,7 @@ class CustomValueProviderParserTest {
         final var name = mock(Name.class);
         when(element.getSimpleName()).thenReturn(name);
         when(name.toString()).thenReturn("simpleName");
-        final var names = Names.from("some.test.CLass");
+        final var names = TestFixtures.createMetadataFixture();
 
         final var valueProvider = CustomValueProviderParser.parseValueProvider("field.getSimpleName().toString()");
         final var result = valueProvider.provideValueAsString(element, names);
@@ -42,12 +42,12 @@ class CustomValueProviderParserTest {
     @Test
     void parseValueProvider_whenUsingNames_createValueProvider() {
         final var element = mock(VariableElement.class);
-        final var names = Names.from("some.test.CLass");
+        final var names = TestFixtures.createMetadataFixture();
 
         final var valueProvider = CustomValueProviderParser.parseValueProvider("names.getQualifiedClassName()");
         final var result = valueProvider.provideValueAsString(element, names);
 
-        assertThat(result).isEqualTo("some.test.CLass");
+        assertThat(result).isEqualTo("some.test.Class");
     }
 
     @Test

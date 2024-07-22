@@ -1,7 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 
 import com.google.common.base.CaseFormat;
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 
 import javax.lang.model.element.Element;
@@ -21,7 +21,7 @@ public class StringValueProvider implements ValueProvider {
      * @return the text representation of the constant value
      */
     @Override
-    public String provideValueAsString(Element field, Names names) {
+    public String provideValueAsString(Element field, Metadata metadata) {
         return "\"%s_VALUE\"".formatted(CaseFormat.LOWER_CAMEL.to(
                 CaseFormat.UPPER_UNDERSCORE, field.getSimpleName().toString()));
     }

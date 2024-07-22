@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 
 import javax.lang.model.element.Element;
@@ -9,7 +9,7 @@ import javax.lang.model.type.DeclaredType;
 
 public class EnumValueProvider implements ValueProvider {
     @Override
-    public String provideValueAsString(Element field, Names names) {
+    public String provideValueAsString(Element field, Metadata metadata) {
         final var fieldType = field.asType();
         final var declaredElement = ((DeclaredType) fieldType).asElement();
         final var firstEnumElement = declaredElement.getEnclosedElements().stream()
@@ -20,6 +20,6 @@ public class EnumValueProvider implements ValueProvider {
         if (firstEnumElement.isEmpty())
             return DEFAULT_VALUE;
 
-        return "%s.%s".formatted(names.getQualifiedClassName(), firstEnumElement.get());
+        return "%s.%s".formatted(metadata.getQualifiedClassName(), firstEnumElement.get());
     }
 }

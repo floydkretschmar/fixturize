@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,12 +37,12 @@ class DeclaredTypeValueProviderTest {
 
     private DeclaredTypeValueProvider valueProvider;
 
-    private Names names;
+    private Metadata metadata;
 
     @BeforeEach
     void setup() {
         valueProvider = new DeclaredTypeValueProvider(enumValueProvider, classValueProvider);
-        names = Names.from("some.test.Class");
+        metadata = TestFixtures.createMetadataFixture();
     }
 
     @Test
@@ -51,10 +52,10 @@ class DeclaredTypeValueProviderTest {
 
         when(enumValueProvider.provideValueAsString(any(), any())).thenReturn("enumValueProviderValue");
 
-        final var result = valueProvider.provideValueAsString(field, names);
+        final var result = valueProvider.provideValueAsString(field, metadata);
 
         assertThat(result).isEqualTo("enumValueProviderValue");
-        verify(enumValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
+        verify(enumValueProvider, times(1)).provideValueAsString(eq(field), eq(metadata));
         verifyNoInteractions(classValueProvider);
     }
 
@@ -65,10 +66,10 @@ class DeclaredTypeValueProviderTest {
 
         when(classValueProvider.provideValueAsString(any(), any())).thenReturn("FallbackValue");
 
-        final var result = valueProvider.provideValueAsString(field, names);
+        final var result = valueProvider.provideValueAsString(field, metadata);
 
         assertThat(result).isEqualTo("FallbackValue");
-        verify(classValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
+        verify(classValueProvider, times(1)).provideValueAsString(eq(field), eq(metadata));
         verifyNoMoreInteractions(classValueProvider);
         verifyNoInteractions(enumValueProvider);
     }

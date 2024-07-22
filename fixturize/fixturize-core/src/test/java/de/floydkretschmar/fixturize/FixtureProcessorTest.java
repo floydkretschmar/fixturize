@@ -47,7 +47,11 @@ class FixtureProcessorTest {
                 Arguments.of(
                         "classes/CustomValueProviderClass.java",
                         "de.floydkretschmar.fixturize.mocks.CustomValueProviderClassFixture",
-                        "fixtures/CustomValueProviderClassFixture.java")
+                        "fixtures/CustomValueProviderClassFixture.java"),
+                Arguments.of(
+                        "classes/GenericClass.java",
+                        "de.floydkretschmar.fixturize.mocks.GenericClassFixture",
+                        "fixtures/GenericClassFixture.java")
         );
     }
 
@@ -77,6 +81,7 @@ class FixtureProcessorTest {
                             "classes/SingleConstructorClass.java",
                             "classes/cross-referencing/CrossReferencedBuilderClass.java",
                             "classes/cross-referencing/CrossReferencedLombokClass.java",
+                            "classes/cross-referencing/CrossReferencedGenericClass.java",
                             "classes/cross-referencing/CrossReferencedConstructorClass.java"),
                     Map.of(
                             "de.floydkretschmar.fixturize.mocks.CrossReferencingClassFixture", expectedFixture

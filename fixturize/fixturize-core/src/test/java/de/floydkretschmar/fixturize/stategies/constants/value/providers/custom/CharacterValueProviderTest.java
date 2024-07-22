@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -16,7 +16,7 @@ class CharacterValueProviderTest {
     void provideValueAsString_whenCalled_returnsValue(String className) {
         final var provider = new CharacterValueProvider();
 
-        assertThat(provider.provideValueAsString(mock(VariableElement.class), Names.from(className)))
+        assertThat(provider.provideValueAsString(mock(VariableElement.class), TestFixtures.createMetadataFixture(className)))
                 .isEqualTo("' '");
     }
 }

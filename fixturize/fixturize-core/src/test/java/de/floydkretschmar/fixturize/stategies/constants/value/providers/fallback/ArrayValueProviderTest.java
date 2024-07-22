@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,11 +26,10 @@ class ArrayValueProviderTest {
 
     @Test
     void getValueFor_whenCalledForArray_returnCorrespondingValueString() {
-        final var names = Names.from("some.test.Class[]");
+        final var metadata = TestFixtures.createMetadataFixture("Class[]");
+        final var result = valueProvider.provideValueAsString(field, metadata);
 
-        final var result = valueProvider.provideValueAsString(field, names);
-
-        assertThat(result).isEqualTo("new some.test.Class[] {}");
+        assertThat(result).isEqualTo("new %s {}".formatted(metadata.getQualifiedClassNameWithoutGeneric()));
     }
 
 }

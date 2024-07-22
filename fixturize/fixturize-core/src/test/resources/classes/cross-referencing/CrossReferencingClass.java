@@ -16,4 +16,5 @@ public class CrossReferencingClass {
     CrossReferencedConstructorClass constructorClassInstance;
     CrossReferencedBuilderClass builderClassInstance;
     CrossReferencedLombokClass lombokClassInstance;
+    CrossReferencedGenericClass<Integer> genericClassInstance;
 }

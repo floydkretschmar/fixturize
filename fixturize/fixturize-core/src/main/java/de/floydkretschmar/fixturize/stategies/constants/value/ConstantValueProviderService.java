@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
 
@@ -37,32 +37,38 @@ public class ConstantValueProviderService implements ValueProviderService {
      */
     private final ValueProvider containerValueProvider;
 
+    /**
+     * The factory used to create metadata for a given element.
+     */
+    private final MetadataFactory metadataFactory;
+
     public ConstantValueProviderService(
             Map<String, ValueProvider> customValueProviders,
             ValueProviderFactory valueProviderFactory,
             Elements elementUtils,
-            Types typeUtils) {
+            Types typeUtils,
+            MetadataFactory metadataFactory) {
         this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders);
         this.declaredTypeValueProvider = valueProviderFactory.createDeclaredTypeValueProvider(this);
         this.containerValueProvider = valueProviderFactory.createContainerValueProvider(elementUtils, typeUtils, this);
+        this.metadataFactory = metadataFactory;
     }
 
     /**
-     * Returns the correct value that should be used for constant generation for the specified field.
+     * Returns the correct value that should be used for constant generation for the specified element.
      *
-     * @param field - for which the value is being retrieved
+     * @param element - for which the value is being retrieved
      * @return the value used for constant construction
      */
     @Override
-    public String getValueFor(Element field) {
-        final var fieldType = field.asType();
-        final var names = Names.from(fieldType.toString());
+    public String getValueFor(Element element) {
+        final var metadata = metadataFactory.createMetadataFrom(element);
 
-        if (valueProviders.containsKey(names.getQualifiedClassName()))
-            return valueProviders.get(names.getQualifiedClassName()).provideValueAsString(field, names);
+        if (valueProviders.containsKey(metadata.getQualifiedClassName()))
+            return valueProviders.get(metadata.getQualifiedClassName()).provideValueAsString(element, metadata);
 
-        final var value = this.containerValueProvider.provideValueAsString(field, names);
+        final var value = this.containerValueProvider.provideValueAsString(element, metadata);
 
-        return value.equals(DEFAULT_VALUE) ? this.declaredTypeValueProvider.provideValueAsString(field, names) : value;
+        return value.equals(DEFAULT_VALUE) ? this.declaredTypeValueProvider.provideValueAsString(element, metadata) : value;
     }
 }

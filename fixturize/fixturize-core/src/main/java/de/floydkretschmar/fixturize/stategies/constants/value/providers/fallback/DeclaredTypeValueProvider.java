@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +18,7 @@ public class DeclaredTypeValueProvider implements ValueProvider {
     private final ValueProvider classValueProvider;
 
     @Override
-    public String provideValueAsString(Element field, Names names) {
+    public String provideValueAsString(Element field, Metadata metadata) {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
 
@@ -26,9 +26,9 @@ public class DeclaredTypeValueProvider implements ValueProvider {
             final var declaredElement = ((DeclaredType) fieldType).asElement();
             final var elementKind = declaredElement.getKind();
             if (elementKind == ENUM) {
-                return this.enumValueProvider.provideValueAsString(field, names);
+                return this.enumValueProvider.provideValueAsString(field, metadata);
             } else if (elementKind == CLASS) {
-                return this.classValueProvider.provideValueAsString(field, names);
+                return this.classValueProvider.provideValueAsString(field, metadata);
             }
         }
 

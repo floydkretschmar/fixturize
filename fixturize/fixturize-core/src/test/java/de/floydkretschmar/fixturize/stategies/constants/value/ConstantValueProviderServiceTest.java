@@ -1,6 +1,8 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
+import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +52,9 @@ class ConstantValueProviderServiceTest {
     @Mock
     private Types typeUtils;
 
+    @Mock
+    private MetadataFactory metadataFactory;
+
     private ConstantValueProviderService service;
 
     @BeforeEach
@@ -58,7 +63,9 @@ class ConstantValueProviderServiceTest {
         when(valueProviderFactory.createValueProviders(anyMap())).thenReturn(valueProviderMap);
         when(valueProviderFactory.createDeclaredTypeValueProvider(any())).thenReturn(declaredTypeValueProvider);
         when(valueProviderFactory.createContainerValueProvider(any(), any(), any())).thenReturn(containerValueProvider);
-        service = new ConstantValueProviderService(Map.of(), valueProviderFactory, elementUtils, typeUtils);
+        service = new ConstantValueProviderService(Map.of(), valueProviderFactory, elementUtils, typeUtils, metadataFactory);
+
+        when(metadataFactory.createMetadataFrom(any())).thenAnswer(params -> TestFixtures.createMetadataFixture(field.asType().toString()));
     }
 
     @Test
@@ -73,8 +80,8 @@ class ConstantValueProviderServiceTest {
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("value");
-        verify(valueProviderMap, times(1)).containsKey("ClassName");
-        verify(valueProviderMap, times(1)).get("ClassName");
+        verify(valueProviderMap, times(1)).containsKey("some.test.ClassName");
+        verify(valueProviderMap, times(1)).get("some.test.ClassName");
         verifyNoMoreInteractions(valueProviderMap);
         verifyNoInteractions(declaredTypeValueProvider, containerValueProvider);
     }
@@ -93,9 +100,9 @@ class ConstantValueProviderServiceTest {
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("declaredTypeProviderValue");
-        verify(valueProviderMap, times(1)).containsKey("EnumType");
-        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
-        verify(declaredTypeValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
+        verify(valueProviderMap, times(1)).containsKey("some.test.EnumType");
+        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
+        verify(declaredTypeValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
         verifyNoMoreInteractions(valueProviderMap, declaredTypeValueProvider, containerValueProvider);
     }
 
@@ -110,8 +117,8 @@ class ConstantValueProviderServiceTest {
         final var result = service.getValueFor(field);
 
         assertThat(result).isEqualTo("containerValueProviderValue");
-        verify(valueProviderMap, times(1)).containsKey("ContainerType");
-        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
+        verify(valueProviderMap, times(1)).containsKey("some.test.ContainerType");
+        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
         verifyNoMoreInteractions(valueProviderMap, containerValueProvider);
         verifyNoInteractions(declaredTypeValueProvider);
     }

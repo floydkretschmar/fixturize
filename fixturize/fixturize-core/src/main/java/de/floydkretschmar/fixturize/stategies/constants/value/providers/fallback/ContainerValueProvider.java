@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
@@ -47,12 +47,12 @@ public class ContainerValueProvider implements ValueProvider {
             Collection.class, "java.util.List.of(%s)");
 
     @Override
-    public String provideValueAsString(Element field, Names names) {
+    public String provideValueAsString(Element field, Metadata metadata) {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
 
         if (typeKind == ARRAY) {
-            return this.arrayValueProvider.provideValueAsString(field, names);
+            return this.arrayValueProvider.provideValueAsString(field, metadata);
         }
 
         for (var entry : SUPPORTED_CONTAINER_CLASSES.entrySet()) {

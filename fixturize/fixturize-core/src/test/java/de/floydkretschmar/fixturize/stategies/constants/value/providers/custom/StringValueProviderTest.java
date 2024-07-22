@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
 import org.junit.jupiter.api.Test;
 
 import javax.lang.model.element.Name;
@@ -21,7 +21,7 @@ class StringValueProviderTest {
         when(name.toString()).thenReturn("stringFieldName");
         when(field.getSimpleName()).thenReturn(name);
 
-        assertThat(provider.provideValueAsString(field, Names.from("java.lang.String")))
+        assertThat(provider.provideValueAsString(field, TestFixtures.createMetadataFixture("java.lang.String")))
                 .isEqualTo("\"STRING_FIELD_NAME_VALUE\"");
     }
 

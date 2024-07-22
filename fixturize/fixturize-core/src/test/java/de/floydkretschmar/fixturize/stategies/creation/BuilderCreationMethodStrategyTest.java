@@ -49,7 +49,7 @@ class BuilderCreationMethodStrategyTest {
                 createFixtureBuilderFixture("methodName", "builder", "stringField", "intField"),
                 createFixtureBuilderFixture("methodName2", "builder2", "uuidField"));
 
-        final var result = strategy.generateCreationMethods(element, constantMap);
+        final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
         assertThat(result).hasSize(2);
         assertThat(result.stream()).contains(
@@ -69,7 +69,6 @@ class BuilderCreationMethodStrategyTest {
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(constantMap, times(1)).getMatchingConstants(List.of("uuidField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
-        verify(element, times(2)).getSimpleName();
         verify(element, times(2)).getEnclosedElements();
         verifyNoMoreInteractions(constantMap, element);
     }
@@ -85,7 +84,7 @@ class BuilderCreationMethodStrategyTest {
                 createFixtureBuilderFixture("methodName", "builder", "stringField", "intField"));
         when(element.getEnclosedElements()).thenReturn((List) List.of(builderMethod));
 
-        final var result = strategy.generateCreationMethods(element, constantMap);
+        final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
@@ -97,7 +96,6 @@ class BuilderCreationMethodStrategyTest {
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
-        verify(element, times(1)).getSimpleName();
         verify(element, times(1)).getEnclosedElements();
         verifyNoMoreInteractions(constantMap, element);
     }
@@ -109,7 +107,7 @@ class BuilderCreationMethodStrategyTest {
                 "TestObject",
                 createFixtureBuilderFixture("methodName", "builder", "stringField", "intField"));
 
-        final var result = strategy.generateCreationMethods(element, constantMap);
+        final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
@@ -121,7 +119,28 @@ class BuilderCreationMethodStrategyTest {
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
-        verify(element, times(1)).getSimpleName();
+        verify(element, times(1)).getEnclosedElements();
+        verifyNoMoreInteractions(constantMap, element);
+    }
+
+    @Test
+    void createCreationMethods_whenGenericDefined_shouldCreateCreationMethodForDefinedBuilder() {
+        final var element = createTypeElementFixture(
+                "TestObject",
+                createFixtureBuilderFixture("methodName", "builder", "stringField", "intField"));
+
+        final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixtureBuilder("TestObject", "<String>").build());
+
+        assertThat(result).hasSize(1);
+        assertThat(result.stream()).contains(
+                CreationMethod.builder()
+                        .returnType("TestObject.TestObjectBuilder<String>")
+                        .returnValue("TestObject.<String>builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
+                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .name("methodName")
+                        .build());
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verify(element, times(1)).getEnclosedElements();
         verifyNoMoreInteractions(constantMap, element);
     }
@@ -130,7 +149,7 @@ class BuilderCreationMethodStrategyTest {
     void createCreationMethods_whenNoBuilderDefined_shouldReturnEmptyList() {
         final var element = TestFixtures.<FixtureBuilder>createTypeElementFixture("TestObject");
 
-        final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap);
+        final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
         assertThat(result).hasSize(0);
 
@@ -148,7 +167,7 @@ class BuilderCreationMethodStrategyTest {
         constantMap = mock(ConstantDefinitionMap.class);
         when(constantMap.values()).thenReturn(List.of(STRING_FIELD_DEFINITION, INT_FIELD_DEFINITION));
 
-        final var result = strategy.generateCreationMethods(element, constantMap);
+        final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
@@ -161,7 +180,6 @@ class BuilderCreationMethodStrategyTest {
 
         verify(constantMap, times(1)).values();
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
-        verify(element, times(1)).getSimpleName();
         verify(element, times(1)).getEnclosedElements();
         verifyNoMoreInteractions(constantMap, element);
     }
@@ -175,7 +193,7 @@ class BuilderCreationMethodStrategyTest {
         constantMap = mock(ConstantDefinitionMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenThrow(new FixtureCreationException("error"));
 
-        assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap));
+        assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject")));
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verifyNoMoreInteractions(constantMap, element);

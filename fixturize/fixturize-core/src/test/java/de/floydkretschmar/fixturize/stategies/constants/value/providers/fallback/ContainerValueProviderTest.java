@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Names;
+import de.floydkretschmar.fixturize.TestFixtures;
+import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,14 +51,14 @@ class ContainerValueProviderTest {
     @Test
     void getValueFor_whenCalledForArray_returnContainerValueProviderValueString() {
         final var type = createTypeMirrorFixture(ARRAY);
-        final var names = Names.from("some.test.ArrayClass[]");
+        final var metadata = TestFixtures.createMetadataFixture();
         when(field.asType()).thenReturn(type);
         when(arrayValueProvider.provideValueAsString(any(), any())).thenReturn("arrayValueProviderValue");
 
-        final var result = valueProvider.provideValueAsString(field, names);
+        final var result = valueProvider.provideValueAsString(field, metadata);
 
         assertThat(result).isEqualTo("arrayValueProviderValue");
-        verify(arrayValueProvider, times(1)).provideValueAsString(eq(field), any(Names.class));
+        verify(arrayValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
         verifyNoMoreInteractions(arrayValueProvider);
     }
 }
