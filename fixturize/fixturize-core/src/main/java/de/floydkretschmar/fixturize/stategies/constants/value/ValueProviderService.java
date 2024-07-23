@@ -1,10 +1,9 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
 
 /**
- * Defines methods to retrieve the corresponding value representation for a given {@link VariableElement}.
+ * Defines methods to retrieve the corresponding value representation for a given {@link Element}.
  *
  * @author Floyd Kretschmar
  */

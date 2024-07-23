@@ -1,11 +1,11 @@
 package de.floydkretschmar.fixturize.stategies.creation;
 
-import de.floydkretschmar.fixturize.ReflectionUtils;
+import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 
@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
-import static de.floydkretschmar.fixturize.ReflectionUtils.findSetterForFields;
+import static de.floydkretschmar.fixturize.ElementUtils.findSetterForFields;
+import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_16;
 import static javax.lang.model.element.Modifier.PUBLIC;
 
 /**
@@ -37,7 +37,7 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
      * @return a {@link Collection} of generated {@link CreationMethod}s
      */
     @Override
-    public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap, Metadata metadata) {
+    public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap, TypeMetadata metadata) {
         return Arrays.stream(element.getAnnotationsByType(FixtureBuilder.class))
                 .map(annotation -> {
                     Collection<Constant> correspondingConstants;
@@ -69,9 +69,10 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
 
         if (Objects.isNull(buildMethod)) return Map.of();
 
-        final var builderType = ((DeclaredType) buildMethod.getReturnType()).asElement();
-        return findSetterForFields(builderType, fieldNames, PUBLIC)
-                .collect(ReflectionUtils.toLinkedMap(
+        final var buildMethodType = (DeclaredType) buildMethod.getReturnType();
+        final var builderType = buildMethodType.asElement();
+        return findSetterForFields(builderType, fieldNames, buildMethodType, PUBLIC)
+                .collect(ElementUtils.toLinkedMap(
                         Map.Entry::getKey,
                         entry -> entry
                                 .getValue()

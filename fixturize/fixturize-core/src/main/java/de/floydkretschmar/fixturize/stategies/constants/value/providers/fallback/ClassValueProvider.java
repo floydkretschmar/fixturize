@@ -1,10 +1,10 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.ReflectionUtils;
+import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.ElementMetadata;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
+import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.AllArgsConstructor;
@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static de.floydkretschmar.fixturize.ReflectionUtils.findMethodWithModifiersByReturnType;
-import static de.floydkretschmar.fixturize.ReflectionUtils.findSetterForFields;
+import static de.floydkretschmar.fixturize.ElementUtils.findMethodWithModifiersByReturnType;
+import static de.floydkretschmar.fixturize.ElementUtils.findSetterForFields;
 import static java.util.Comparator.comparing;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
@@ -52,12 +52,12 @@ public class ClassValueProvider implements ValueProvider {
     private final ValueProviderService valueProviderService;
 
     @Override
-    public String provideValueAsString(Element field, Metadata metadata) {
+    public String provideValueAsString(Element field, TypeMetadata metadata) {
         final var fieldType = ((DeclaredType) field.asType());
         return provideDefaultFallbackValue(fieldType.asElement(), metadata, valueProviderService);
     }
 
-    private String provideDefaultFallbackValue(Element declaredElement, Metadata metadata, ValueProviderService valueProviderService) {
+    private String provideDefaultFallbackValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
         var returnValue = provideBuilderCreationMethodAsValue(declaredElement, metadata);
         if (!returnValue.equals(DEFAULT_VALUE)) return returnValue;
 
@@ -76,25 +76,25 @@ public class ClassValueProvider implements ValueProvider {
         return returnValue;
     }
 
-    private String provideLombokCreationMethodAsValue(Element declaredElement, Metadata metadata, ValueProviderService valueProviderService) {
-        final var fields = metadata.createElementMetadata(ElementFilter.fieldsIn(declaredElement.getEnclosedElements()));
+    private String provideLombokCreationMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
+        final var fields = metadata.createVariableElementMetadata(ElementFilter.fieldsIn(declaredElement.getEnclosedElements()));
         final var constructorName = getConstructorName(metadata);
 
         if (Objects.nonNull(declaredElement.getAnnotation(Builder.class))) {
             return createBuilderValue(
-                    fields.stream().collect(ReflectionUtils.toLinkedMap(ElementMetadata::getName, data -> valueProviderService.getValueFor(data.getElement()))),
+                    fields.stream().collect(ElementUtils.toLinkedMap(VariableElementMetadata::getName, data -> valueProviderService.getValueFor(data.getTypedElement()))),
                     metadata.getQualifiedClassNameWithoutGeneric(),
                     getBuilderMethodName("builder", metadata),
                     "build");
         } else if (Objects.nonNull(declaredElement.getAnnotation(AllArgsConstructor.class))) {
             return createConstructorValue(
                     constructorName,
-                    fields.stream().map(ElementMetadata::getElement).toList(),
+                    fields.stream().map(VariableElementMetadata::getTypedElement).toList(),
                     valueProviderService);
         } else if (Objects.nonNull(declaredElement.getAnnotation(RequiredArgsConstructor.class))) {
             final var requiredFields = fields.stream()
                     .filter(field -> field.getModifiers().contains(Modifier.FINAL) && Objects.isNull(field.getConstantValue()))
-                    .map(ElementMetadata::getElement)
+                    .map(VariableElementMetadata::getTypedElement)
                     .toList();
             return createConstructorValue(
                     constructorName,
@@ -110,23 +110,24 @@ public class ClassValueProvider implements ValueProvider {
         return DEFAULT_VALUE;
     }
 
-    private String provideBuildMethodAsValue(Element declaredElement, Metadata metadata, ValueProviderService valueProviderService) {
+    private String provideBuildMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
         final var builderName = "%s.%sBuilder".formatted(metadata.getQualifiedClassNameWithoutGeneric(), metadata.getSimpleClassNameWithoutGeneric());
         final var builderMethod = findMethodWithModifiersByReturnType(declaredElement, builderName, PUBLIC, STATIC);
 
         if (Objects.isNull(builderMethod)) return DEFAULT_VALUE;
 
-        final var builderType = ((DeclaredType) builderMethod.getReturnType()).asElement();
-        final var buildMethod = findMethodWithModifiersByReturnType(builderType, metadata.getQualifiedClassName(), PUBLIC);
+        final var builderType = (DeclaredType) builderMethod.getReturnType();
+        final var builderTypeElement = builderType.asElement();
+        final var buildMethod = findMethodWithModifiersByReturnType(builderTypeElement, metadata.getQualifiedClassName(), PUBLIC);
 
         if (Objects.isNull(buildMethod)) return DEFAULT_VALUE;
 
-        final var fields = metadata.createElementMetadata(ElementFilter.fieldsIn(declaredElement.getEnclosedElements()));
-        final var builderSetter = findSetterForFields(builderType, fields, PUBLIC)
+        final var fields = metadata.createVariableElementMetadata(ElementFilter.fieldsIn(declaredElement.getEnclosedElements()));
+        final var builderSetter = findSetterForFields(builderTypeElement, fields, builderType, PUBLIC)
                 .filter(entry -> entry.getValue().isPresent())
-                .collect(ReflectionUtils.toLinkedMap(
+                .collect(ElementUtils.toLinkedMap(
                         entry -> entry.getValue().orElseThrow().getSimpleName().toString(),
-                        entry -> valueProviderService.getValueFor(entry.getKey().getElement())));
+                        entry -> valueProviderService.getValueFor(entry.getKey().getTypedElement())));
 
         return createBuilderValue(
                 builderSetter,
@@ -135,28 +136,28 @@ public class ClassValueProvider implements ValueProvider {
                 buildMethod.getSimpleName().toString());
     }
 
-    private String providePublicConstructorAsValue(Element declaredElement, Metadata metadata, ValueProviderService valueProviderService) {
+    private String providePublicConstructorAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
         final var mostParametersConstructor = ElementFilter.constructorsIn(declaredElement.getEnclosedElements()).stream()
                 .filter(constructor -> constructor.getModifiers().contains(PUBLIC))
                 .max(comparing(constructor -> constructor.getParameters().size()))
                 .orElse(null);
         if (Objects.isNull(mostParametersConstructor)) return DEFAULT_VALUE;
 
-        final var parameters = metadata.createElementMetadata(mostParametersConstructor.getParameters()).stream()
-                .map(ElementMetadata::getElement)
+        final var parameters = metadata.createVariableElementMetadata(mostParametersConstructor.getParameters()).stream()
+                .map(VariableElementMetadata::getTypedElement)
                 .toList();
 
         return createConstructorValue(getConstructorName(metadata), parameters, valueProviderService);
     }
 
-    private String provideBuilderCreationMethodAsValue(Element declaredElement, Metadata metadata) {
+    private String provideBuilderCreationMethodAsValue(Element declaredElement, TypeMetadata metadata) {
         return Arrays.stream(declaredElement.getAnnotationsByType(FixtureBuilder.class))
                 .max(comparing(annotation -> annotation.usedSetters().length))
                 .map(firstBuilder -> "%sFixture.%s().build()".formatted(metadata.getQualifiedClassNameWithoutGeneric(), firstBuilder.methodName()))
                 .orElse(DEFAULT_VALUE);
     }
 
-    private String provideConstructorCreationMethodAsValue(Element declaredElement, Metadata metadata) {
+    private String provideConstructorCreationMethodAsValue(Element declaredElement, TypeMetadata metadata) {
         return Arrays.stream(declaredElement.getAnnotationsByType(FixtureConstructor.class))
                 .max(comparing(annotation -> annotation.constructorParameters().length))
                 .map(firstBuilder -> "%sFixture.%s()".formatted(metadata.getQualifiedClassNameWithoutGeneric(), firstBuilder.methodName()))
@@ -177,11 +178,11 @@ public class ClassValueProvider implements ValueProvider {
         return "new %s(%s)".formatted(className, recursiveParameterString);
     }
 
-    private static String getConstructorName(Metadata metadata) {
+    private static String getConstructorName(TypeMetadata metadata) {
         return "%s%s".formatted(metadata.getQualifiedClassNameWithoutGeneric(), metadata.isGeneric() ? "<>" : "");
     }
 
-    private static String getBuilderMethodName(String builderMethodName, Metadata metadata) {
+    private static String getBuilderMethodName(String builderMethodName, TypeMetadata metadata) {
         return "%s%s".formatted(metadata.getGenericPart(), builderMethodName);
     }
 }

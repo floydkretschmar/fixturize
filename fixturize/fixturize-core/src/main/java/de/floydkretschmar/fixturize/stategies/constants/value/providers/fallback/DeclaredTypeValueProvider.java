@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
@@ -11,6 +11,9 @@ import javax.lang.model.type.TypeKind;
 import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.ENUM;
 
+/**
+ * Default value provider for all {@link TypeKind#DECLARED}.
+ */
 @RequiredArgsConstructor
 public class DeclaredTypeValueProvider implements ValueProvider {
     private final ValueProvider enumValueProvider;
@@ -18,7 +21,7 @@ public class DeclaredTypeValueProvider implements ValueProvider {
     private final ValueProvider classValueProvider;
 
     @Override
-    public String provideValueAsString(Element field, Metadata metadata) {
+    public String provideValueAsString(Element field, TypeMetadata metadata) {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
 

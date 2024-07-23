@@ -1,11 +1,10 @@
 package de.floydkretschmar.fixturize.stategies.constants.metadata;
 
-import de.floydkretschmar.fixturize.ReflectionUtils;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.ElementUtils;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import lombok.RequiredArgsConstructor;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -17,14 +16,18 @@ import java.util.stream.Collectors;
 
 import static javax.lang.model.type.TypeKind.DECLARED;
 
+/**
+ * Creates metadata for {@link TypeMirror}s.
+ *
+ * @author Floyd Kretschmar
+ */
 @RequiredArgsConstructor
-public class ConstantMetadataFactory implements MetadataFactory {
+public class TypeMetadataFactory implements MetadataFactory {
 
     private final Elements elementUtils;
 
     @Override
-    public Metadata createMetadataFrom(Element element) {
-        final var type = element.asType();
+    public TypeMetadata createMetadataFrom(TypeMirror type) {
         List<? extends TypeMirror> concreteTypesSetForGenerics = List.of();
         if (type.getKind() == DECLARED && !((DeclaredType) type).getTypeArguments().isEmpty()) {
             concreteTypesSetForGenerics = ((DeclaredType) type).getTypeArguments();
@@ -33,15 +36,14 @@ public class ConstantMetadataFactory implements MetadataFactory {
     }
 
     @Override
-    public Metadata createMetadataFrom(Element element, List<String> genericTypeImplementations) {
-        final var elementType = element.asType();
+    public TypeMetadata createMetadataFrom(TypeMirror type, List<String> genericTypeImplementations) {
         final var concreteTypesSetForGenerics = genericTypeImplementations.stream().map(typeString -> {
-            var type = elementUtils.getTypeElement(typeString);
-            if (Objects.isNull(type))
-                throw new FixtureCreationException("The type %s defined for class %s does not exist".formatted(typeString, elementType.toString()));
-            return type.asType();
+            var typeElement = elementUtils.getTypeElement(typeString);
+            if (Objects.isNull(typeElement))
+                throw new FixtureCreationException("The type %s defined for class %s does not exist".formatted(typeString, type.toString()));
+            return typeElement.asType();
         }).toList();
-        return createMetadata(elementType.toString(), concreteTypesSetForGenerics, elementUtils);
+        return createMetadata(type.toString(), concreteTypesSetForGenerics, elementUtils);
     }
 
     private static Map<? extends TypeMirror, ? extends DeclaredType> createGenericMap(
@@ -53,12 +55,12 @@ public class ConstantMetadataFactory implements MetadataFactory {
             throw new FixtureCreationException(("There is a mismatch in the number of defined generics and actual concrete types " +
                     "defined for these generics for class %s").formatted(qualifiedClassNameWithoutGeneric));
 
-        return genericsDefinedOnType.stream().collect(ReflectionUtils.toLinkedMap(
+        return genericsDefinedOnType.stream().collect(ElementUtils.toLinkedMap(
                 Function.identity(),
                 value -> (DeclaredType) concreteTypesSetForGenerics.get(genericsDefinedOnType.indexOf(value))));
     }
 
-    private static Metadata createMetadata(String qualifiedClassName, List<? extends TypeMirror> concreteTypesForGenerics, Elements elementUtils) {
+    private static TypeMetadata createMetadata(String qualifiedClassName, List<? extends TypeMirror> concreteTypesForGenerics, Elements elementUtils) {
         final var genericStartIndex = qualifiedClassName.indexOf('<');
         final var qualifiedClassNameWithoutGeneric = genericStartIndex > 0 ?
                 qualifiedClassName.substring(0, genericStartIndex) : qualifiedClassName;
@@ -71,12 +73,30 @@ public class ConstantMetadataFactory implements MetadataFactory {
         final var simpleClassNameWithoutGeneric = qualifiedClassNameWithoutGeneric.substring(lastDot + 1);
         final var qualifiedFixtureClassName = qualifiedClassNameWithoutGeneric + "Fixture";
 
-        final var builder = Metadata.builder()
+        var builder = TypeMetadata.builder()
                 .packageName(packageName)
                 .qualifiedClassNameWithoutGeneric(qualifiedClassNameWithoutGeneric)
                 .simpleClassNameWithoutGeneric(simpleClassNameWithoutGeneric)
                 .qualifiedFixtureClassName(qualifiedFixtureClassName);
 
+        setGenericPart(
+                builder,
+                concreteTypesForGenerics,
+                elementUtils,
+                genericStartIndex,
+                simpleClassNameWithoutGeneric,
+                qualifiedClassNameWithoutGeneric);
+
+        return builder.build();
+    }
+
+    private static void setGenericPart(
+            TypeMetadata.TypeMetadataBuilder builder,
+            List<? extends TypeMirror> concreteTypesForGenerics,
+            Elements elementUtils,
+            int genericStartIndex,
+            String simpleClassNameWithoutGeneric,
+            String qualifiedClassNameWithoutGeneric) {
         if (genericStartIndex > 0) {
             final var genericPart = "<%s>".formatted(concreteTypesForGenerics.stream()
                     .map(TypeMirror::toString)
@@ -94,6 +114,5 @@ public class ConstantMetadataFactory implements MetadataFactory {
                     .qualifiedClassName(qualifiedClassNameWithoutGeneric)
                     .genericTypeMap(Map.of());
         }
-        return builder.build();
     }
 }

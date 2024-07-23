@@ -1,9 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.TestFixtures;
-import de.floydkretschmar.fixturize.domain.Metadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,11 +28,7 @@ import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFix
 import static javax.lang.model.type.TypeKind.ARRAY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,28 +45,22 @@ class ContainerValueProviderTest {
     private Types typeUtils;
 
     @Mock
-    private ValueProvider arrayValueProvider;
-
-    @Mock
     private ValueProviderService service;
 
     @BeforeEach
     void setup() {
-        valueProvider = new ContainerValueProvider(elementUtils, typeUtils, arrayValueProvider, service);
+        valueProvider = new ContainerValueProvider(elementUtils, typeUtils, service);
     }
 
     @Test
     void provideValueAsString_whenCalledForArray_returnContainerValue() {
         final var type = createTypeMirrorFixture(ARRAY);
-        final var metadata = TestFixtures.createMetadataFixture();
+        final var metadata = TestFixtures.createMetadataFixture("Class[]");
         when(field.asType()).thenReturn(type);
-        when(arrayValueProvider.provideValueAsString(any(), any())).thenReturn("arrayValueProviderValue");
 
         final var result = valueProvider.provideValueAsString(field, metadata);
 
-        assertThat(result).isEqualTo("arrayValueProviderValue");
-        verify(arrayValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
-        verifyNoMoreInteractions(arrayValueProvider);
+        assertThat(result).isEqualTo("new some.test.Class[] {}");
     }
 
     public static Stream<Arguments> getParametersForCollectionTypeTest() {

@@ -62,7 +62,7 @@ public class ConstantValueProviderService implements ValueProviderService {
      */
     @Override
     public String getValueFor(Element element) {
-        final var metadata = metadataFactory.createMetadataFrom(element);
+        final var metadata = metadataFactory.createMetadataFrom(element.asType());
 
         if (valueProviders.containsKey(metadata.getQualifiedClassName()))
             return valueProviders.get(metadata.getQualifiedClassName()).provideValueAsString(element, metadata);

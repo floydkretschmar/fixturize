@@ -1,7 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.TestFixtures;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ class EnumValueProviderTest {
 
     private EnumValueProvider valueProvider;
 
-    private Metadata metadata;
+    private TypeMetadata metadata;
 
     @Mock
     private VariableElement field;

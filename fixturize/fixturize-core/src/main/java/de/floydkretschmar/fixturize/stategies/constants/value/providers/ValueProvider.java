@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 
 import javax.lang.model.element.Element;
 
@@ -23,5 +23,5 @@ public interface ValueProvider {
      * @param metadata - used for creating the fixture
      * @return the string representation of the value
      */
-    String provideValueAsString(Element field, Metadata metadata);
+    String provideValueAsString(Element field, TypeMetadata metadata);
 }

@@ -4,7 +4,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.Constant;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -47,16 +47,16 @@ public class TestFixtures {
     public static final Constant BOOLEAN_FIELD_DEFINITION = createConstantFixture(BOOLEAN_FIELD_NAME);
     public static final Constant UUID_FIELD_DEFINITION = createConstantFixture(UUID_FIELD_NAME);
 
-    public static Metadata createMetadataFixture() {
+    public static TypeMetadata createMetadataFixture() {
         return createMetadataFixture("Class");
     }
 
-    public static Metadata createMetadataFixture(String className) {
+    public static TypeMetadata createMetadataFixture(String className) {
         return createMetadataFixtureBuilder(className, "").build();
     }
 
-    public static Metadata.MetadataBuilder createMetadataFixtureBuilder(String className, String genericPart) {
-        return Metadata.builder()
+    public static TypeMetadata.TypeMetadataBuilder createMetadataFixtureBuilder(String className, String genericPart) {
+        return TypeMetadata.builder()
                 .packageName("some.test")
                 .qualifiedClassName("some.test.%s%s".formatted(className, genericPart))
                 .simpleClassName("%s%s".formatted(className, genericPart))

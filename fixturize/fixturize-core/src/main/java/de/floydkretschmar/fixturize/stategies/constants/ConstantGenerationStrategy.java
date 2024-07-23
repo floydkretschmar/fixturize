@@ -1,12 +1,12 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
-import de.floydkretschmar.fixturize.ReflectionUtils;
+import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
-import de.floydkretschmar.fixturize.domain.ElementMetadata;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
+import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
@@ -66,16 +66,16 @@ public class ConstantGenerationStrategy {
      * @param element - for which the constants will be generated
      * @return the {@link ConstantDefinitionMap} containing all constant definitions
      */
-    public ConstantDefinitionMap generateConstants(TypeElement element, Metadata metadata) {
-        final var fields = metadata.createElementMetadata(ElementFilter.fieldsIn(element.getEnclosedElements()));
+    public ConstantDefinitionMap generateConstants(TypeElement element, TypeMetadata metadata) {
+        final var fields = metadata.createVariableElementMetadata(ElementFilter.fieldsIn(element.getEnclosedElements()));
         final var linkedHashMap = createConstantsForFields(fields.stream())
-                .collect(ReflectionUtils.toLinkedMap(
+                .collect(ElementUtils.toLinkedMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue));
         return new FixtureConstantDefinitionMap(linkedHashMap);
     }
 
-    private Stream<Map.Entry<String, Constant>> createConstantsForFields(Stream<ElementMetadata> fields) {
+    private Stream<Map.Entry<String, Constant>> createConstantsForFields(Stream<VariableElementMetadata> fields) {
         return fields.flatMap(field -> {
             final var constantsAnnotations = field.getAnnotationsByType(FixtureConstant.class);
 
@@ -93,21 +93,21 @@ public class ConstantGenerationStrategy {
         });
     }
 
-    private Constant createConstant(FixtureConstant constantAnnotation, ElementMetadata field) {
+    private Constant createConstant(FixtureConstant constantAnnotation, VariableElementMetadata field) {
         return Constant.builder()
-                .type(field.getElement().asType().toString())
+                .type(field.getTypedElement().asType().toString())
                 .name(constantAnnotation.name())
-                .value(!constantAnnotation.value().isEmpty() ? constantAnnotation.value() : this.valueProviderService.getValueFor(field.getElement()))
+                .value(!constantAnnotation.value().isEmpty() ? constantAnnotation.value() : this.valueProviderService.getValueFor(field.getTypedElement()))
                 .originalFieldName(field.getName())
                 .build();
     }
 
-    private Constant createConstant(ElementMetadata field) {
+    private Constant createConstant(VariableElementMetadata field) {
         final var originalFieldName = field.getName();
         return Constant.builder()
-                .type(field.getElement().asType().toString())
+                .type(field.getTypedElement().asType().toString())
                 .name(constantsNamingStrategy.createConstantName(originalFieldName))
-                .value(this.valueProviderService.getValueFor(field.getElement()))
+                .value(this.valueProviderService.getValueFor(field.getTypedElement()))
                 .originalFieldName(originalFieldName)
                 .build();
     }

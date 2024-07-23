@@ -1,7 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import de.floydkretschmar.fixturize.TestFixtures;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
@@ -82,7 +82,8 @@ class ConstantValueProviderServiceTest {
         assertThat(result).isEqualTo("value");
         verify(valueProviderMap, times(1)).containsKey("some.test.ClassName");
         verify(valueProviderMap, times(1)).get("some.test.ClassName");
-        verifyNoMoreInteractions(valueProviderMap);
+        verify(metadataFactory, times(1)).createMetadataFrom(type);
+        verifyNoMoreInteractions(valueProviderMap, metadataFactory);
         verifyNoInteractions(declaredTypeValueProvider, containerValueProvider);
     }
 
@@ -101,9 +102,10 @@ class ConstantValueProviderServiceTest {
 
         assertThat(result).isEqualTo("declaredTypeProviderValue");
         verify(valueProviderMap, times(1)).containsKey("some.test.EnumType");
-        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
-        verify(declaredTypeValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
-        verifyNoMoreInteractions(valueProviderMap, declaredTypeValueProvider, containerValueProvider);
+        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
+        verify(declaredTypeValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
+        verify(metadataFactory, times(1)).createMetadataFrom(type);
+        verifyNoMoreInteractions(valueProviderMap, declaredTypeValueProvider, containerValueProvider, metadataFactory);
     }
 
     @Test
@@ -118,8 +120,9 @@ class ConstantValueProviderServiceTest {
 
         assertThat(result).isEqualTo("containerValueProviderValue");
         verify(valueProviderMap, times(1)).containsKey("some.test.ContainerType");
-        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(Metadata.class));
-        verifyNoMoreInteractions(valueProviderMap, containerValueProvider);
+        verify(containerValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
+        verify(metadataFactory, times(1)).createMetadataFrom(type);
+        verifyNoMoreInteractions(valueProviderMap, containerValueProvider, metadataFactory);
         verifyNoInteractions(declaredTypeValueProvider);
     }
 }

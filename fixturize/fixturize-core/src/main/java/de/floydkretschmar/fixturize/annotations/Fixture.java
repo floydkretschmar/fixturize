@@ -15,7 +15,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Fixture {
     /**
-     *
+     * Returns the list of class names that should be used for implementation of a fixture for a generic class. For non-generic
+     * classes this will be ignored/empty.
      */
     String[] genericImplementations() default {};
 }

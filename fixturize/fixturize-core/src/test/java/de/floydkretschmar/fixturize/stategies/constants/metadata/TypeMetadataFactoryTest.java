@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -23,27 +22,25 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConstantMetadataFactoryTest {
+class TypeMetadataFactoryTest {
     @Mock
     private Elements elementUtils;
 
-    private ConstantMetadataFactory factory;
+    private TypeMetadataFactory factory;
 
     @BeforeEach
     void setup() {
-        factory = new ConstantMetadataFactory(elementUtils);
+        factory = new TypeMetadataFactory(elementUtils);
     }
 
     @Test
     void createMetadataFrom_whenCalledForNonGenericField_shouldCreateMetadata() {
-        final var element = mock(VariableElement.class);
         final var type = mock(DeclaredType.class);
-        when(element.asType()).thenReturn(type);
         when(type.getKind()).thenReturn(TypeKind.DECLARED);
         when(type.getTypeArguments()).thenReturn(List.of());
         when(type.toString()).thenReturn("some.test.Class");
 
-        final var result = factory.createMetadataFrom(element);
+        final var result = factory.createMetadataFrom(type);
 
         assertThat(result.getQualifiedClassName()).isEqualTo("some.test.Class");
         assertThat(result.getSimpleClassName()).isEqualTo("Class");
@@ -57,7 +54,6 @@ class ConstantMetadataFactoryTest {
 
     @Test
     void createMetadataFrom_whenCalledForGenericField_shouldCreateMetadata() {
-        final var field = mock(VariableElement.class);
         final var fieldType = mock(DeclaredType.class);
         final var concreteGenericType = mock(DeclaredType.class);
         final var fieldTypeWithoutConcreteGenericsElement = mock(TypeElement.class);
@@ -68,13 +64,12 @@ class ConstantMetadataFactoryTest {
         when(fieldTypeWithoutConcreteGenerics.getTypeArguments()).thenReturn((List) List.of(genericType));
         when(elementUtils.getTypeElement(any())).thenReturn(fieldTypeWithoutConcreteGenericsElement);
 
-        when(field.asType()).thenReturn(fieldType);
         when(fieldType.getKind()).thenReturn(TypeKind.DECLARED);
         when(fieldType.getTypeArguments()).thenReturn((List) List.of(concreteGenericType));
         when(fieldType.toString()).thenReturn("some.test.Class<java.lang.String>");
         when(concreteGenericType.toString()).thenReturn("java.lang.String");
 
-        final var result = factory.createMetadataFrom(field);
+        final var result = factory.createMetadataFrom(fieldType);
 
         assertThat(result.getQualifiedClassName()).isEqualTo("some.test.Class<java.lang.String>");
         assertThat(result.getSimpleClassName()).isEqualTo("Class<java.lang.String>");
@@ -88,7 +83,6 @@ class ConstantMetadataFactoryTest {
 
     @Test
     void createMetadataFrom_whenCalledForGenericTypeWithListOfConcreteImplementations_shouldCreateMetadata() {
-        final var field = mock(VariableElement.class);
         final var fieldType = mock(DeclaredType.class);
         final var concreteGenericTypeElement = mock(TypeElement.class);
         final var concreteGenericType = mock(DeclaredType.class);
@@ -110,10 +104,9 @@ class ConstantMetadataFactoryTest {
         when(fieldTypeWithoutConcreteGenericsElement.asType()).thenReturn(fieldTypeWithoutConcreteGenerics);
         when(fieldTypeWithoutConcreteGenerics.getTypeArguments()).thenReturn((List) List.of(genericType));
 
-        when(field.asType()).thenReturn(fieldType);
         when(fieldType.toString()).thenReturn("some.test.Class<T>");
 
-        final var result = factory.createMetadataFrom(field, List.of("java.lang.String"));
+        final var result = factory.createMetadataFrom(fieldType, List.of("java.lang.String"));
 
         assertThat(result.getQualifiedClassName()).isEqualTo("some.test.Class<java.lang.String>");
         assertThat(result.getSimpleClassName()).isEqualTo("Class<java.lang.String>");
@@ -127,7 +120,6 @@ class ConstantMetadataFactoryTest {
 
     @Test
     void createMetadataFrom_whenCalledForGenericTypeWithListOfWrongLength_shouldThrowFixtureCreationException() {
-        final var field = mock(VariableElement.class);
         final var fieldType = mock(DeclaredType.class);
         final var concreteGenericTypeElement = mock(TypeElement.class);
         final var concreteGenericType = mock(DeclaredType.class);
@@ -149,24 +141,21 @@ class ConstantMetadataFactoryTest {
         when(fieldTypeWithoutConcreteGenericsElement.asType()).thenReturn(fieldTypeWithoutConcreteGenerics);
         when(fieldTypeWithoutConcreteGenerics.getTypeArguments()).thenReturn((List) List.of(genericType));
 
-        when(field.asType()).thenReturn(fieldType);
         when(fieldType.toString()).thenReturn("some.test.Class<T>");
 
         assertThrows(
                 FixtureCreationException.class,
-                () -> factory.createMetadataFrom(field, List.of("java.lang.String", "java.lang.String")));
+                () -> factory.createMetadataFrom(fieldType, List.of("java.lang.String", "java.lang.String")));
     }
 
     @Test
     void createMetadataFrom_whenCalledForGenericTypeWithListThatContainsInvalidType_shouldThrowFixtureCreationException() {
-        final var field = mock(VariableElement.class);
         final var fieldType = mock(DeclaredType.class);
         when(elementUtils.getTypeElement(any())).thenReturn(null);
-        when(field.asType()).thenReturn(fieldType);
         when(fieldType.toString()).thenReturn("some.test.Class<T>");
 
         assertThrows(
                 FixtureCreationException.class,
-                () -> factory.createMetadataFrom(field, List.of("invalid.Type")));
+                () -> factory.createMetadataFrom(fieldType, List.of("invalid.Type")));
     }
 }

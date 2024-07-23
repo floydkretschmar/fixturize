@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 
 import javax.lang.model.element.Element;
@@ -21,7 +21,7 @@ public class UUIDValueProvider implements ValueProvider {
      * @return the text representation of the constant value
      */
     @Override
-    public String provideValueAsString(Element field, Metadata metadata) {
+    public String provideValueAsString(Element field, TypeMetadata metadata) {
         return "java.util.UUID.fromString(\"%s\")".formatted(UUID.randomUUID().toString());
     }
 }

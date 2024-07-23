@@ -5,7 +5,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 
 import javax.lang.model.element.TypeElement;
@@ -29,7 +29,7 @@ public class ConstructorCreationMethodStrategy implements CreationMethodGenerati
      * @return a {@link Collection} of generated {@link CreationMethod}s
      */
     @Override
-    public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap, Metadata metadata) {
+    public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap, TypeMetadata metadata) {
         return Arrays.stream(element.getAnnotationsByType(FixtureConstructor.class))
                 .map(annotation -> {
                     final var correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.constructorParameters()));

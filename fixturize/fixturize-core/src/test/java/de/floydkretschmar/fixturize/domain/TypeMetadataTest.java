@@ -15,19 +15,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class MetadataTest {
+class TypeMetadataTest {
 
     @ParameterizedTest
     @CsvSource(value = {
             "de.test.package, true",
             "'', false"})
     void hasPackage_whenCalled_returnsExpectedResult(String packageName, boolean expectedResult) {
-        final var result = Metadata.builder().packageName(packageName).build();
+        final var result = TypeMetadata.builder().packageName(packageName).build();
         assertThat(result.hasPackageName()).isEqualTo(expectedResult);
     }
 
     @Test
-    void createElementMetadata_whenCalled_createElementMetadata() {
+    void createElementMetadata_whenCalled_createVariableElementMetadata() {
         final var field1Type = mock(TypeMirror.class);
         final var field2Type = mock(TypeMirror.class);
 
@@ -41,14 +41,14 @@ class MetadataTest {
         when(field2.asType()).thenReturn(field2Type);
         when(field2DeclaredType.asElement()).thenReturn(field2DeclaredTypeElement);
 
-        final var metadata = Metadata.builder()
+        final var metadata = TypeMetadata.builder()
                 .genericTypeMap(Map.of(field2Type, field2DeclaredType))
                 .build();
 
-        final var elementMetadata = metadata.createElementMetadata(List.of(field1, field2));
+        final var elementMetadata = metadata.createVariableElementMetadata(List.of(field1, field2));
 
         assertThat(elementMetadata).hasSize(2);
-        assertThat(elementMetadata.get(0).getElement()).isEqualTo(field1);
-        assertThat(elementMetadata.get(1).getElement()).isEqualTo(field2DeclaredTypeElement);
+        assertThat(elementMetadata.get(0).getTypedElement()).isEqualTo(field1);
+        assertThat(elementMetadata.get(1).getTypedElement()).isEqualTo(field2DeclaredTypeElement);
     }
 }

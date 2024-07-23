@@ -1,6 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
 
 import static javax.lang.model.type.TypeKind.ARRAY;
 
+/**
+ * Default value provider for container classes containing other classes.
+ *
+ * @author Floyd Kretschmar
+ */
 @RequiredArgsConstructor
 public class ContainerValueProvider implements ValueProvider {
     /**
@@ -32,11 +37,8 @@ public class ContainerValueProvider implements ValueProvider {
     private final Types typeUtils;
 
     /**
-     * The value provider that provides the fallback value for containers (arrays, collections) if no other value provider
-     * has been registered.
+     * The service providing values for {@link Element} instances.
      */
-    private final ValueProvider arrayValueProvider;
-
     private final ValueProviderService valueProviderService;
 
     private static final Map<Class<?>, String> SUPPORTED_CONTAINER_CLASSES = Map.of(
@@ -47,12 +49,12 @@ public class ContainerValueProvider implements ValueProvider {
             Collection.class, "java.util.List.of(%s)");
 
     @Override
-    public String provideValueAsString(Element field, Metadata metadata) {
+    public String provideValueAsString(Element field, TypeMetadata metadata) {
         final var fieldType = field.asType();
         final var typeKind = fieldType.getKind();
 
         if (typeKind == ARRAY) {
-            return this.arrayValueProvider.provideValueAsString(field, metadata);
+            return "new %s {}".formatted(metadata.getQualifiedClassName());
         }
 
         for (var entry : SUPPORTED_CONTAINER_CLASSES.entrySet()) {

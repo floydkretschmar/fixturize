@@ -3,7 +3,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallbac
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -109,7 +109,7 @@ class ClassValueProviderTest {
 
     @ParameterizedTest
     @MethodSource("getMetadataParameters")
-    void provideValueAsString_whenFallbackForFixtureBuilder_returnValueStringForFixtureBuilderWithMostSetters(Metadata metadata) {
+    void provideValueAsString_whenFallbackForFixtureBuilder_returnValueStringForFixtureBuilderWithMostSetters(TypeMetadata metadata) {
         final var fixtureBuilder = createFixtureBuilderFixture("methodName1", null, "param1", "param2");
         final var fixtureBuilder2 = createFixtureBuilderFixture(null, null, "param1");
         final var type = TestFixtures.createDeclaredTypeFixture();
@@ -127,7 +127,7 @@ class ClassValueProviderTest {
 
     @ParameterizedTest
     @MethodSource("getMetadataParameters")
-    void provideValueAsString_whenFallbackForFixtureConstructor_returnValueStringForFixtureConstructorWithMostParameters(Metadata metadata) {
+    void provideValueAsString_whenFallbackForFixtureConstructor_returnValueStringForFixtureConstructorWithMostParameters(TypeMetadata metadata) {
         final var fixtureConstructor = createFixtureConstructorFixture("methodName1", "param1", "param2");
         final var fixtureConstructor2 = createFixtureConstructorFixture(null, "param1", "param2");
         final var type = TestFixtures.createDeclaredTypeFixture();
@@ -154,7 +154,7 @@ class ClassValueProviderTest {
     @ParameterizedTest
     @MethodSource("getParametersForLombokBuilderTest")
     void provideValueAsString_whenFallbackForLombokBuilder_returnBuilderValueWithAllFieldsAsSetters(
-            Metadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
+            TypeMetadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
         final var field1 = createVariableElementFixture("integerField", true, true, FIELD);
         final var type = TestFixtures.createDeclaredTypeFixture(field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
@@ -188,7 +188,7 @@ class ClassValueProviderTest {
     @ParameterizedTest
     @MethodSource("getParametersForLombokAllArgsConstructorTest")
     void provideValueAsString_whenFallbackForLombokAllArgsConstructor_returnConstructorValueWithAllFieldsAsParameters(
-            Metadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
+            TypeMetadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
         final var field1 = createVariableElementFixture("integerField", false, true, FIELD);
         final var type = TestFixtures.createDeclaredTypeFixture(field1, field2);
         final var typeAsElement = (TypeElement) type.asElement();
@@ -224,7 +224,7 @@ class ClassValueProviderTest {
     @ParameterizedTest
     @MethodSource("getParametersForLombokRequiredArgsConstructorTest")
     void provideValueAsString_whenFallbackForLombokRequiredArgsConstructor_returnConstructorValueWithAllFinalFieldsWithoutConstantAsParameters(
-            Metadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
+            TypeMetadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
         final var field1 = createVariableElementFixture(null, false, true, FIELD);
         when(field1.getModifiers()).thenReturn(Set.of(PRIVATE));
         when(field2.getModifiers()).thenReturn(Set.of(PRIVATE, FINAL));
@@ -263,7 +263,7 @@ class ClassValueProviderTest {
 
     @ParameterizedTest
     @MethodSource("getParametersForLombokNoArgsConstructorTest")
-    void provideValueAsString_whenFallbackForLombokNoArgsConstructor_returnConstructorValueWithNoParameters(Metadata metadata, String expectedOutcome) {
+    void provideValueAsString_whenFallbackForLombokNoArgsConstructor_returnConstructorValueWithNoParameters(TypeMetadata metadata, String expectedOutcome) {
         final var type = TestFixtures.createDeclaredTypeFixture();
         final var typeAsElement = (TypeElement) type.asElement();
 
@@ -297,7 +297,7 @@ class ClassValueProviderTest {
     @ParameterizedTest
     @MethodSource("getParametersForConstructorTest")
     void provideValueAsString_whenFallbackDefinedConstructor_returnConstructorValueWithParameters(
-            Metadata metadata, VariableElement parameter2, Element expectedElementForValueService, String expectedOutcome) {
+            TypeMetadata metadata, VariableElement parameter2, Element expectedElementForValueService, String expectedOutcome) {
         final var parameter1 = createVariableElementFixture("integerParameter", false, true, null);
         final var constructor1 = createExecutableElementFixture(CONSTRUCTOR, PUBLIC);
         when(constructor1.getParameters()).thenReturn((List) List.of(parameter1, parameter2));
@@ -343,10 +343,12 @@ class ClassValueProviderTest {
     @ParameterizedTest
     @MethodSource("getParametersForBuilderTest")
     void provideValueAsString_whenFallbackDefinedBuilderMethod_returnBuilderValueWithAllAvailableSetters(
-            Metadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
+            TypeMetadata metadata, VariableElement field2, Element expectedElementForValueService, String expectedOutcome) {
         final var classBuilderType = TestFixtures.createDeclaredTypeFixture("%s.%sBuilder".formatted(metadata.getQualifiedClassNameWithoutGeneric(), metadata.getSimpleClassNameWithoutGeneric()));
         final var setter1 = createExecutableElementFixture("setIntegerField", METHOD, classBuilderType, PUBLIC);
+        when(setter1.getParameters()).thenReturn((List) List.of(mock(VariableElement.class)));
         final var setter2 = createExecutableElementFixture("setSecondField", METHOD, classBuilderType, PUBLIC);
+        when(setter2.getParameters()).thenReturn((List) List.of(mock(VariableElement.class)));
 
         final var builderMethod = createExecutableElementFixture("builder", METHOD, classBuilderType, PUBLIC, STATIC);
         final var field1 = createVariableElementFixture("integerField", false, true, FIELD);
@@ -390,7 +392,7 @@ class ClassValueProviderTest {
 
     @ParameterizedTest
     @MethodSource("getMetadataParameters")
-    void provideValueAsString_whenFallbackDefinedBuilderMethodButNoBuilderFound_returnDefaultValue(Metadata metadata) {
+    void provideValueAsString_whenFallbackDefinedBuilderMethodButNoBuilderFound_returnDefaultValue(TypeMetadata metadata) {
         final var field1 = mock(VariableElement.class);
         final var field2 = mock(VariableElement.class);
         final var classType = TestFixtures.createDeclaredTypeFixture(field1, field2);
@@ -420,7 +422,7 @@ class ClassValueProviderTest {
 
     @ParameterizedTest
     @MethodSource("getMetadataParameters")
-    void provideValueAsString_whenFallbackDefinedBuilderMethodButNoBuildMethodFound_returnDefaultValue(Metadata metadata) {
+    void provideValueAsString_whenFallbackDefinedBuilderMethodButNoBuildMethodFound_returnDefaultValue(TypeMetadata metadata) {
         final var classBuilderType = mock(DeclaredType.class);
 
         final var builderMethod = createExecutableElementFixture(METHOD, PUBLIC, STATIC);

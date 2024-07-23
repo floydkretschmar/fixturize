@@ -4,13 +4,13 @@ import com.google.auto.service.AutoService;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.metadata.ConstantMetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
+import de.floydkretschmar.fixturize.stategies.constants.metadata.TypeMetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.DefaultValueProviderFactory;
 import de.floydkretschmar.fixturize.stategies.creation.BuilderCreationMethodStrategy;
@@ -37,8 +37,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_4;
-import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_8;
+import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_4;
+import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_8;
 
 /**
  * Processes all classes annotated with {@link de.floydkretschmar.fixturize.annotations.Fixture} and tries to generate
@@ -84,7 +84,7 @@ public class FixtureProcessor extends AbstractProcessor {
     }
 
     private void processAnnotatedElement(TypeElement element) {
-        final var metadataFactory = new ConstantMetadataFactory(elementUtils);
+        final var metadataFactory = new TypeMetadataFactory(elementUtils);
         final var valueProviderService = initializeValueProviderService(element.getAnnotationsByType(FixtureValueProvider.class), metadataFactory);
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
         final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService);
@@ -94,7 +94,7 @@ public class FixtureProcessor extends AbstractProcessor {
         creationMethodStrategies.add(new BuilderCreationMethodStrategy());
 
         final var fixtureAnnotation = element.getAnnotation(Fixture.class);
-        final var metadata = metadataFactory.createMetadataFrom(element, Arrays.stream(fixtureAnnotation.genericImplementations()).toList());
+        final var metadata = metadataFactory.createMetadataFrom(element.asType(), Arrays.stream(fixtureAnnotation.genericImplementations()).toList());
 
         try {
             final var fixtureFile = processingEnv.getFiler()
@@ -118,7 +118,7 @@ public class FixtureProcessor extends AbstractProcessor {
         return new ConstantValueProviderService(customValueProviders, new DefaultValueProviderFactory(), elementUtils, typeUtils, metadataFactory);
     }
 
-    private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap, Metadata metadata) {
+    private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap, TypeMetadata metadata) {
         return creationMethodStrategies.stream()
                 .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap, metadata).stream())
                 .map(method -> "%spublic static %s %s() {\n%sreturn %s;\n%s}".formatted(WHITESPACE_4, method.getReturnType(), method.getName(), WHITESPACE_8, method.getReturnValue(), WHITESPACE_4))
@@ -131,7 +131,7 @@ public class FixtureProcessor extends AbstractProcessor {
                 .collect(Collectors.joining("\n"));
     }
 
-    private static String getFixtureClassAsString(TypeElement element, Metadata metadata, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
+    private static String getFixtureClassAsString(TypeElement element, TypeMetadata metadata, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
         final var fixtureClassTemplate = """
         %spublic class %sFixture {
         %s

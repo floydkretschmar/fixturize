@@ -1,7 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.TestFixtures;
-import de.floydkretschmar.fixturize.domain.Metadata;
+import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class DeclaredTypeValueProviderTest {
 
     private DeclaredTypeValueProvider valueProvider;
 
-    private Metadata metadata;
+    private TypeMetadata metadata;
 
     @BeforeEach
     void setup() {

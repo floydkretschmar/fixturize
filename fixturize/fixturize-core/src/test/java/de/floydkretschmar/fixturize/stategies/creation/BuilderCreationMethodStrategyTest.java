@@ -8,10 +8,11 @@ import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.lang.model.element.VariableElement;
 import java.util.Collection;
 import java.util.List;
 
-import static de.floydkretschmar.fixturize.FormattingUtils.WHITESPACE_16;
+import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_16;
 import static de.floydkretschmar.fixturize.TestFixtures.INT_FIELD_DEFINITION;
 import static de.floydkretschmar.fixturize.TestFixtures.STRING_FIELD_DEFINITION;
 import static de.floydkretschmar.fixturize.TestFixtures.createConstantDefinitionMapMock;
@@ -75,9 +76,13 @@ class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenBuildMethodIsFound_shouldCreateCreationMethodUsingBuilderClass() {
-        final var stringSetter = createExecutableElementFixture("setStringField", METHOD, null, PUBLIC);
-        final var intSetter = createExecutableElementFixture("setIntField", METHOD, null, PUBLIC);
-        final var builderClassType = createDeclaredTypeFixture("TestObject.TestObjectBuilder", CLASS, stringSetter, intSetter);
+        final var builderClassType = createDeclaredTypeFixture("TestObject.TestObjectBuilder", CLASS);
+        final var stringSetter = createExecutableElementFixture("setStringField", METHOD, builderClassType, PUBLIC);
+        when(stringSetter.getParameters()).thenReturn((List) List.of(mock(VariableElement.class)));
+        final var intSetter = createExecutableElementFixture("setIntField", METHOD, builderClassType, PUBLIC);
+        when(intSetter.getParameters()).thenReturn((List) List.of(mock(VariableElement.class)));
+        when(builderClassType.asElement().getEnclosedElements()).thenReturn((List) List.of(stringSetter, intSetter));
+
         final var builderMethod = createExecutableElementFixture("builder", METHOD, builderClassType);
         final var element = createTypeElementFixture(
                 "TestObject",
