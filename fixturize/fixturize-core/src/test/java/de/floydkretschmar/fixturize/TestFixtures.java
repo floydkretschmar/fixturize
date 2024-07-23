@@ -128,6 +128,10 @@ public class TestFixtures {
         return typeMirror;
     }
 
+    public static VariableElement createVariableElementFixture(String name, TypeMirror type) {
+        return createVariableElementFixture(name, type, false, null, null);
+    }
+
     public static <T extends Annotation> VariableElement createVariableElementFixture(String name, TypeMirror type, ElementKind elementKind, T... annotations) {
         return createVariableElementFixture(name, type, true, elementKind, annotations);
     }

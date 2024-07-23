@@ -40,8 +40,8 @@ public class ContainerValueProvider implements ValueProvider {
     private final ValueProviderService valueProviderService;
 
     private static final Map<Class<?>, String> SUPPORTED_CONTAINER_CLASSES = Map.of(
-            List.class, "java.util.List.of(%s)",
             Map.class, "java.util.Map.of(%s)",
+            List.class, "java.util.List.of(%s)",
             Set.class, "java.util.Set.of(%s)",
             Queue.class, "new java.util.PriorityQueue<>(java.util.List.of(%s))",
             Collection.class, "java.util.List.of(%s)");
