@@ -118,14 +118,12 @@ static class OrderFixture {
 The value assigned to each constant is decided by a set of factors:
 
 - For many common types such as the primitive types and also common java types default value providers are being
-  provided
-  (see next section).
+  provided (see next section).
 - You can annotate each field in your original domain class with `@FixtureConstant` which allows you to define
   both `name`
   and `value` of the corresponding constant
 - You can annotate the entire domain class with `@FixtureValueProvider` which allows you to define a custom value
-  provider
-  for all fields of the same type
+  provider for all fields of the same type
 
 ### `@FixtureConstructor` and `@FixtureBuilder`
 
@@ -172,38 +170,76 @@ static class OrderFixture {
 
 ## Default value providers
 
-| Type                                  | Default value                                                                                                           |
-|---------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `boolean` and `java.lang.Boolean`     | `false`                                                                                                                 |
-| `byte` and `java.lang.Byte`           | 0                                                                                                                       |
-| `char` and `java.lang.Character`      | ' '                                                                                                                     |
-| `double` and `java.lang.Double`       | 0.0                                                                                                                     |
-| `float` and `java.lang.Float`         | 0.0F                                                                                                                    |
-| `int` and `java.lang.Integer`         | 0                                                                                                                       |
-| `long` and `java.lang.Long`           | 0L                                                                                                                      |
-| `short` and `java.lang.Short`         | `Short.valueOf((short)0)`                                                                                               |
-| `java.math.BigDecimal`                | `java.math.BigDecimal.ZERO`                                                                                             |
-| `java.math.BigInteger`                | `java.math.BigInteger.ZERO`                                                                                             |
-| `java.time.Instant`                   | `java.time.Instant.now()`                                                                                               |
-| `java.time.Duration`                  | `java.time.Duration.ZERO`                                                                                               |
-| `java.time.LocalDate`                 | `java.time.LocalDate.now()`                                                                                             |
-| `java.time.LocalDateTime`             | `java.time.LocalDateTime.now()`                                                                                         |
-| `java.time.LocalTime`                 | `java.time.LocalTime.now()`                                                                                             |
-| `java.util.Date`                      | `new new java.util.Date()`                                                                                              |
-| `java.util.Collection`                | `java.util.List.of()`                                                                                                   |
-| `java.util.List`                      | `java.util.List.of()`                                                                                                   |
-| `java.util.Map`                       | `java.util.Map.of()`                                                                                                    |
-| `java.util.Set`                       | `java.util.Set.of()`                                                                                                    |
-| `java.util.Queue`                     | `new java.util.PriorityQueue<>()`                                                                                       |
-| `java.util.UUID`                      | `java.util.UUID.fromString(randomUUID)` where `randomUUID` will be an actual UUID string                                |
-| all arrays                            | `mew <ArrayType>[] {}` where `<ArrayType>` is the type of the field                                                     |
-| all enums                             | the first defined enum constant                                                                                         |
-| other classes annotated with @Fixture | the creation method defined by the first @FixtureConstructor of @FixtureBuilder that is present on the referenced class |
-| default fallback                      | `null`                                                                                                                  |
+| Type                              | Default value                                                                            |
+|-----------------------------------|------------------------------------------------------------------------------------------|
+| `boolean` and `java.lang.Boolean` | `false`                                                                                  |
+| `byte` and `java.lang.Byte`       | 0                                                                                        |
+| `char` and `java.lang.Character`  | ' '                                                                                      |
+| `double` and `java.lang.Double`   | 0.0                                                                                      |
+| `float` and `java.lang.Float`     | 0.0F                                                                                     |
+| `int` and `java.lang.Integer`     | 0                                                                                        |
+| `long` and `java.lang.Long`       | 0L                                                                                       |
+| `short` and `java.lang.Short`     | `Short.valueOf((short)0)`                                                                |
+| `java.math.BigDecimal`            | `java.math.BigDecimal.ZERO`                                                              |
+| `java.math.BigInteger`            | `java.math.BigInteger.ZERO`                                                              |
+| `java.time.Instant`               | `java.time.Instant.now()`                                                                |
+| `java.time.Duration`              | `java.time.Duration.ZERO`                                                                |
+| `java.time.LocalDate`             | `java.time.LocalDate.now()`                                                              |
+| `java.time.LocalDateTime`         | `java.time.LocalDateTime.now()`                                                          |
+| `java.time.LocalTime`             | `java.time.LocalTime.now()`                                                              |
+| `java.util.Date`                  | `new new java.util.Date()`                                                               |
+| `java.util.Collection`            | `java.util.List.of()` filled with one default value                                      |
+| `java.util.List`                  | `java.util.List.of()` filled with one default value                                      |
+| `java.util.Map`                   | `java.util.Map.of()` filled with one default value                                       |
+| `java.util.Set`                   | `java.util.Set.of()` filled with one default value                                       |
+| `java.util.Queue`                 | `new java.util.PriorityQueue<>()` filled with one default value                          |
+| `java.util.UUID`                  | `java.util.UUID.fromString(randomUUID)` where `randomUUID` will be an actual UUID string |
+| all arrays                        | `mew <ArrayType>[] {}` where `<ArrayType>` is the type of the field                      |
+| all enums                         | the first defined enum constant                                                          |
 
-## Requirements
+If none of these pre-registered value providers provide a valid value for the constants, then the library tries to
+generate
+valid fallback values based to the declared type of the field. Fixturize uses the following order of fallbacks as
+strategies
+to create an instance of any declared type for constant generation
 
-Fixturize requires Java 17.
+1. If the type of a constant without registered provider is itself annotated with `@FixtureConstructor`
+   or `@FixtureBuilder`
+   it will try to use the creation method that uses the most `usedSetters` or `constructorParameters` respectively.
+2. If the type of the constant is annotated with any lombok annotations, it will try to use (in order)
+    - `@Builder`
+    - `@AllArgsConstructor`
+    - `@RequiredArgsConstructor`
+    - `@NoArgsConstructor`
+3. If the type has public constructors defined, it will try to use the one with the most parameters.
+4. If the type has a public `builder` method define, it will try to use the corresponding buider class.
+
+For the values needed to parameterize each of these methods, values are generated recursively. If still none of these
+strategies
+lead to the generation of a valid value, then the default value returned is `null`.
+
+If you want to use the default value generation logic when defining values using `@FixtureConstant`, you can do so by
+using
+the wildcard string `${<Qualified classname>}` in your `@FixtureConstant` annotation. For example:
+
+```java
+
+@Builder
+@Value
+@Fixture
+static class Order {
+    @FixtureConstant(name = "COMMENTS", value = "java.util.List.of(\"Test\", \"${java.lang.String}\")")
+    List<String> comments;
+}
+```
+
+will create the following fixture
+
+```java
+static class OrderFixture {
+    public static java.util.List<java.lang.String> COMMENTS = java.util.List.of("Test", "STRING_VALUE");
+}
+```
 
 ## Licensing
 

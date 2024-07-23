@@ -15,6 +15,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import java.util.List;
 import java.util.Map;
 
@@ -47,11 +48,14 @@ class ConstantGenerationStrategyTest {
     @Mock
     private ValueProviderService valueProviderService;
 
+    @Mock
+    private Elements elementUtils;
+
     private ConstantGenerationStrategy strategy;
 
     @BeforeEach
     void setup() {
-        strategy = new ConstantGenerationStrategy(namingStrategy, valueProviderService);
+        strategy = new ConstantGenerationStrategy(namingStrategy, valueProviderService, elementUtils);
         when(valueProviderService.getValueFor(any())).thenAnswer(param -> {
             final var element = (Element) param.getArguments()[0];
 
@@ -157,6 +161,28 @@ class ConstantGenerationStrategyTest {
         ));
         verify(field1, times(1)).getAnnotationsByType(FixtureConstant.class);
         verify(valueProviderService, times(1)).getValueFor(argThat(arg -> arg.getSimpleName().toString().equals(BOOLEAN_FIELD_NAME)));
+        verifyNoMoreInteractions(valueProviderService);
+        verifyNoInteractions(namingStrategy);
+    }
+
+    @Test
+    void generateConstants_whenCalledWithFixtureConstantAnnotationWithDefaultValueWildcard_shouldResolveWildcard() {
+        final var annotation = createFixtureConstantFixture("CUSTOM_NAME", "${java.lang.Boolean}");
+        final var field1 = createVariableElementFixture(BOOLEAN_FIELD_NAME, createTypeMirrorFixture(BOOLEAN_FIELD_DEFINITION.getType()), ElementKind.FIELD, annotation);
+        final var element = mock(TypeElement.class);
+
+        final var resolvedElement = mock(TypeElement.class);
+
+        when(element.getEnclosedElements()).thenReturn((List) List.of(field1));
+        when(elementUtils.getTypeElement(any())).thenReturn(resolvedElement);
+
+        final var result = strategy.generateConstants(element, TestFixtures.createMetadataFixture());
+
+        assertThat(result).containsAllEntriesOf(Map.of(
+                "CUSTOM_NAME", createConstantFixture(BOOLEAN_FIELD_NAME, "CUSTOM_NAME", "value")
+        ));
+        verify(field1, times(1)).getAnnotationsByType(FixtureConstant.class);
+        verify(valueProviderService, times(1)).getValueFor(resolvedElement);
         verifyNoMoreInteractions(valueProviderService);
         verifyNoInteractions(namingStrategy);
     }

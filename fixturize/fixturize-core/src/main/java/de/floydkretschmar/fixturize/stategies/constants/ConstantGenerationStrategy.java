@@ -7,14 +7,19 @@ import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
+import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -59,6 +64,8 @@ public class ConstantGenerationStrategy {
      */
     private final ValueProviderService valueProviderService;
 
+    private final Elements elementUtils;
+
     /**
      * Returns a {@link ConstantDefinitionMap} containing all {@link Constant}s that have been generated
      * for the provided element according to all specified strategies.
@@ -97,9 +104,33 @@ public class ConstantGenerationStrategy {
         return Constant.builder()
                 .type(field.getTypedElement().asType().toString())
                 .name(constantAnnotation.name())
-                .value(!constantAnnotation.value().isEmpty() ? constantAnnotation.value() : this.valueProviderService.getValueFor(field.getTypedElement()))
+                .value(getValue(constantAnnotation, field))
                 .originalFieldName(field.getName())
                 .build();
+    }
+
+    private String getValue(FixtureConstant constantAnnotation, VariableElementMetadata field) {
+        if (!constantAnnotation.value().isEmpty()) {
+            final var valueFromAnnotation = constantAnnotation.value();
+            final var valuePattern = Pattern.compile("(?<defaultValueType>\\$\\{[^\\{\\}\\$]*\\})");
+            final var regex = valuePattern.matcher(valueFromAnnotation);
+            final var values = new ArrayList<String>();
+
+            var value = valueFromAnnotation;
+            while (regex.find()) {
+                final var defaultValueTypeNameWildcard = regex.group("defaultValueType");
+                final var defaultValueTypeName = defaultValueTypeNameWildcard.substring(2, defaultValueTypeNameWildcard.length() - 1);
+                final var element = elementUtils.getTypeElement(defaultValueTypeName);
+                if (Objects.isNull(element))
+                    throw new FixtureCreationException("%s is not a valid type that can be used for default value generation".formatted(defaultValueTypeName));
+                values.add(this.valueProviderService.getValueFor(element));
+                value = value.replace(defaultValueTypeNameWildcard, "%s");
+            }
+
+            return value.formatted(values.toArray());
+        }
+
+        return this.valueProviderService.getValueFor(field.getTypedElement());
     }
 
     private Constant createConstant(VariableElementMetadata field) {
