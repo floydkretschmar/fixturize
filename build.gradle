@@ -8,6 +8,11 @@ subprojects {
     project.group = "de.floydkretschmar"
 
     println "${project.group}.${project.name}:${project.version}"
+    afterEvaluate {
+        project.version = scmVersion.version
+
+        println "${project.group}.${project.name}:${project.version}"
+    }
 }
 
 allprojects {
@@ -26,15 +31,6 @@ scmVersion {
     }
     tag {
         prefix = ''
-        initialVersion({ tag, position -> {
-            return "0.1.0"
-        } })
     }
     versionIncrementer 'incrementPatch'
-    versionCreator { version, position ->
-        if (position == 'SNAPSHOT') {
-            return "${version}-SNAPSHOT"
-        }
-        return version
-    }
 }
