@@ -4,17 +4,10 @@ plugins {
 }
 
 subprojects {
-    version = scmVersion.version
-    group = "de.floydkretschmar"
-}
+    project.version = scmVersion.version
+    project.group = "de.floydkretschmar"
 
-configure(subprojects.findAll {
-    it.name == 'fixturize-core' ||
-    it.name == 'fixturize-playground'
-}) {
     println "${project.group}.${project.name}:${project.version}"
-    dependencies {
-    }
 }
 
 allprojects {
@@ -25,6 +18,10 @@ allprojects {
     test {
         useJUnitPlatform()
     }
+}
+
+release {
+    version = scmVersion.version
 }
 
 scmVersion {
