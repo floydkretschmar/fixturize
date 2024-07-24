@@ -37,11 +37,11 @@ import static javax.lang.model.element.Modifier.STATIC;
  * defined by that annotation
  * 2. If any lombok annotations are present, try to generate to correct value according to the annotation:
  * <ul>
- *     <li>{@link Builder}: create an inline builder for all fields</li>
- *     <li>{@link AllArgsConstructor}: create an inline new call to the constructor using all fields</li>
- *     <li>{@link RequiredArgsConstructor}: create an inline new call to the constructor using all fields that are final
+ *     <li>{@link lombok.Builder}: create an inline builder for all fields</li>
+ *     <li>{@link lombok.AllArgsConstructor}: create an inline new call to the constructor using all fields</li>
+ *     <li>{@link lombok.RequiredArgsConstructor}: create an inline new call to the constructor using all fields that are final
  *     and don't have a constant value</li>
- *     <li>{@link AllArgsConstructor}: create an inline new call to the constructor without arguments</li>
+ *     <li>{@link lombok.AllArgsConstructor}: create an inline new call to the constructor without arguments</li>
  * </ul>
  * 3. If any manually generated constructors are present, use the one with the most arguments as the value
  * 4. If any manually written builder methods are present, create an inline builder call for all setter that match the
