@@ -26,9 +26,9 @@ jobs:
         id: extract_version
         run: |
           COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          if [[ $COMMIT_MESSAGE =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-            VERSION=$(echo $COMMIT_MESSAGE | awk '{print $1}')
-            MESSAGE_BODY=$(echo $COMMIT_MESSAGE | sed -e "s/$VERSION //")
+          if [[ $COMMIT_MESSAGE =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            VERSION=$(echo $COMMIT_MESSAGE | awk '{print $1}' | sed 's/^v//')
+            MESSAGE_BODY=$(echo $COMMIT_MESSAGE | sed -e "s/^v[0-9]\+\.[0-9]\+\.[0-9]\+ //")
             echo "::set-output name=VERSION::$VERSION"
             echo "::set-output name=MESSAGE_BODY::$MESSAGE_BODY"
           else
@@ -47,13 +47,31 @@ jobs:
           git tag ${{ steps.extract_version.outputs.VERSION }}
           git push origin ${{ steps.extract_version.outputs.VERSION }}
 
+      - name: Get previous tag
+        if: steps.extract_version.outputs.VERSION != ''
+        id: get_previous_tag
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "none")
+          echo "::set-output name=PREVIOUS_TAG::$PREVIOUS_TAG"
+
+      - name: Set release body
+        if: steps.extract_version.outputs.VERSION != ''
+        id: set_release_body
+        run: |
+          if [ "${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}" != "none" ]; then
+          RELEASE_BODY="${{ steps.extract_version.outputs.MESSAGE_BODY }}\n\nCommits since previous release: [link](https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}...v${{ steps.extract_version.outputs.VERSION }})"
+          else
+          RELEASE_BODY="${{ steps.extract_version.outputs.MESSAGE_BODY }}\n\nAll commits associated with this release: [link](https://github.com/${{ github.repository }}/commits/v${{ steps.extract_version.outputs.VERSION }})"
+          fi
+          echo "::set-output name=RELEASE_BODY::$RELEASE_BODY"
+
       - name: Create GitHub Release
         if: steps.extract_version.outputs.VERSION != ''
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ steps.extract_version.outputs.VERSION }}
+          tag_name: v${{ steps.extract_version.outputs.VERSION }}
           release_name: ${{ steps.extract_version.outputs.VERSION }}
-          body: ${{ steps.extract_version.outputs.MESSAGE_BODY }}
+          body: ${{ steps.set_release_body.outputs.RELEASE_BODY }}
           draft: false
           prerelease: false
 
