@@ -1,6 +1,8 @@
 plugins {
     id "java"
     id "io.freefair.lombok" version "8.6"
+    id 'maven-publish'
+    id 'signing'
 }
 
 ext {
@@ -32,4 +34,34 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = project.group
+            artifactId = 'fixturize-core'
+            version = project.version
+        }
+    }
+    repositories {
+        maven {
+            name = "MavenCentral"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    useInMemoryPgpKeys(
+            System.getenv("SIGNING_KEY_ID"),
+            System.getenv("SIGNING_SECRET_KEY"),
+            System.getenv("SIGNING_PASSWORD")
+    )
+    sign publishing.publications.mavenJava
 }
