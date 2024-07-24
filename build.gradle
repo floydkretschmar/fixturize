@@ -3,22 +3,23 @@ plugins {
     id 'pl.allegro.tech.build.axion-release' version '1.18.2'
 }
 
-def javaProjects = [
-        project(":fixturize-core"),
-        project(":fixturize-playground")
-]
-
-configure(javaProjects) {
-    println "${project.name}"
-
+subprojects {
     version = scmVersion.version
     group = "de.floydkretschmar"
+}
 
+configure(subprojects.findAll {
+    it.name == 'fixturize-core' ||
+    it.name == 'fixturize-playground'
+}) {
+    println "${project.group}.${project.name}:${project.version}"
+    dependencies {
+    }
+}
+
+allprojects {
     repositories {
         mavenCentral()
-    }
-
-    dependencies {
     }
 
     test {
