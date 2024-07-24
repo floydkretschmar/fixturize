@@ -20,16 +20,21 @@ allprojects {
     }
 }
 
-release {
-    version = scmVersion.version
-}
-
 scmVersion {
     repository {
         type = 'git'
     }
     tag {
         prefix = ''
+        initialVersion({ tag, position -> {
+            return "0.1.0"
+        } })
     }
     versionIncrementer 'incrementPatch'
+    versionCreator { version, position ->
+        if (position == 'SNAPSHOT') {
+            return "${version}-SNAPSHOT"
+        }
+        return version
+    }
 }
