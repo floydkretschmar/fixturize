@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id 'pl.allegro.tech.build.axion-release' version '1.18.2'
 }
 
 def javaProjects = [
@@ -10,7 +11,7 @@ def javaProjects = [
 configure(javaProjects) {
     println "${project.name}"
 
-    version = "0.1"
+    version = scmVersion.version
     group = "de.floydkretschmar"
 
     repositories {
@@ -23,4 +24,14 @@ configure(javaProjects) {
     test {
         useJUnitPlatform()
     }
+}
+
+scmVersion {
+    repository {
+        type = 'git'
+    }
+    tag {
+        prefix = ''
+    }
+    versionIncrementer 'incrementPatch'
 }
