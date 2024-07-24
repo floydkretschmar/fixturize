@@ -1,23 +1,10 @@
 plugins {
     id "java"
-    id 'pl.allegro.tech.build.axion-release' version '1.18.2'
-}
-
-scmVersion {
-    repository {
-        type = 'git'
-    }
-    tag {
-        prefix = ''
-    }
-    versionIncrementer 'incrementPatch'
 }
 
 allprojects {
     apply plugin: 'java'
-
     group = "de.floydkretschmar"
-    project.version = scmVersion.version
 
     repositories {
         mavenCentral()
