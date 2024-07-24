@@ -1,12 +1,8 @@
-# Autofixture
+# Fixturize
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://github.com/floydkretschmar/autofixture/blob/master/LICENSE.txt)
+[![Latest Version](https://img.shields.io/maven-metadata/v.svg?label=Latest%20Release&maxAge=3600&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fde%2Ffloydkretschmar%2Ffixturize-core%2Fmaven-metadata.xml)](https://central.sonatype.com/artifact/de.floydkretschmar/fixturize-core)
 
-* [What are test fixtures?](#what-are-test-fixtures)
-* [What is fixturize?](#what-is-fixturize)
-* [Default value providers](#default-value-providers)
-* [Requirements](#requirements)
-* [Licensing](#licensing)
 
 ## What are test fixtures?
 
@@ -37,7 +33,7 @@ static class Order {
     String orderNo;
     Instant date;
     String customerName;
-    ...
+    //...
 }
 ```
 
@@ -51,7 +47,7 @@ static class Parcel {
     String orderNo;
     String parcelNo;
     Instant shipmentDate;
-    ...
+    //...
 }
 ```
 
@@ -63,10 +59,17 @@ static class OrderProcessorTests {
     void process_whenCalled_returnCorrectParcel() {
         final String orderNo = "1234";
         final Instant orderDate = Instant.now();
-        ...
-        final Order orderFixture = Order.build().orderNo(orderNo).date(orderDate).customerName(...).build();
-        final Order expectedParcelFixture = Parcel.build().orderNo(orderNo).parcelNo(...).shipmentDate(...).build();
-        ....
+        //...
+        final Order orderFixture = Order.build()
+                .orderNo(orderNo)
+                .date(orderDate)
+                //...
+                .build();
+        final Order expectedParcelFixture = Parcel.build()
+                .orderNo(orderNo)
+                //...
+                .build();
+        //...
         assertThat(orderProcessor.process(order)).isEqualTo(expectedParcelFixture);
     }
 }
@@ -77,19 +80,19 @@ than one test? What if you have more than three attributes per class? What if yo
 different
 test classes? Fixturize answers all of these questions.
 
-## What is fixturize?
+## What is Fixturize?
 
 Fixturize is a lean java library that primarily uses
 the [java annotation processing api](https://docs.oracle.com/javase/8/docs/api/javax/annotation/processing/package-summary.html)
 to automatically generate static fixture classes for all your domain objects which you can then directly use in your
 tests.
 
-Lets go back to the example from above. How would you use fixturize to automatically generate fixtures for `Order`
+Lets go back to the example from above. How would you use Fixturize to automatically generate fixtures for `Order`
 and `Parcel`?
 
 ### `@Fixture`
 
-By annotating each class with `@Fixture` fixturize will go ahead and scann all fields of the class in question, and
+By annotating each class with `@Fixture` Fixturize will go ahead and scann all fields of the class in question, and
 generate
 a new fixture class containing a constant for each field defined on the annotated class. For example
 
@@ -203,7 +206,7 @@ valid fallback values based to the declared type of the field. Fixturize uses th
 strategies
 to create an instance of any declared type for constant generation
 
-1. If the type of a constant without registered provider is itself annotated with `@FixtureConstructor`
+1. If the type of constant without registered provider is itself annotated with `@FixtureConstructor`
    or `@FixtureBuilder`
    it will try to use the creation method that uses the most `usedSetters` or `constructorParameters` respectively.
 2. If the type of the constant is annotated with any lombok annotations, it will try to use (in order)
@@ -238,6 +241,49 @@ will create the following fixture
 ```java
 static class OrderFixture {
     public static java.util.List<java.lang.String> COMMENTS = java.util.List.of("Test", "STRING_VALUE");
+}
+```
+
+## Using Fixturize
+
+Just add the dependency with your build tool of choice and configure the annotation processor.
+
+maven:
+
+```maven
+<dependency>
+    <groupId>de.floydkretschmar</groupId>
+    <artifactId>fixturize-core</artifactId>
+    <version>1.0.0</version>
+</dependency>
+
+<pluginManagement>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.13.0</version>
+            <configuration>
+                <annotationProcessorPaths>
+                    <annotationProcessorPath>
+                        <groupId>de.floydkretschmar</groupId>
+                        <artifactId>fixturize-core</artifactId>
+                        <version>1.0.0</version>
+                    </annotationProcessorPath>
+                </annotationProcessorPaths>
+            </configuration>
+        </plugin>
+    </plugins>
+</pluginManagement>
+
+```
+
+gradle:
+
+```gradle
+dependencies {
+    implementation 'de.floydkretschmar:fixturize-core:1.0.0'
+    annotationProcessor 'de.floydkretschmar:fixturize-core:1.0.0'
 }
 ```
 
