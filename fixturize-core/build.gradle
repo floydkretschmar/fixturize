@@ -53,6 +53,33 @@ publishing {
             groupId = project.group
             artifactId = 'fixturize-core'
             version = project.version
+
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name.set("Fixturize")
+                description.set("Library that uses java annotation processing to automatically generate fixtures for domain classes.")
+                url.set("https://github.com/floydkretschmar/fixturize")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("https://github.com/floydkretschmar/fixturize/blob/main/LICENSE.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("floydkretschmar")
+                        name.set("Floyd Kretschmar")
+                        email.set("floyd.kretschmar@gmail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/floydkretschmar/fixturize.git")
+                    developerConnection.set("scm:git:ssh://github.com/floydkretschmar/fixturize.git")
+                    url.set("https://github.com/floydkretschmar/fixturize")
+                }
+            }
         }
     }
     repositories {
