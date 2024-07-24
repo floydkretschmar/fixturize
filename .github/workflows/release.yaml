@@ -68,6 +68,8 @@ jobs:
       - name: Create GitHub Release
         if: steps.extract_version.outputs.VERSION != ''
         uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.extract_version.outputs.VERSION }}
           release_name: ${{ steps.extract_version.outputs.VERSION }}
