@@ -27,7 +27,7 @@ function _bump_version() {
 
   NEW_VERSION="$MAJOR.$MINOR.$PATCH"
   echo "New version: $NEW_VERSION"
-  echo "{NEW_VERSION}={$NEW_VERSION}" >> "$GITHUB_OUTPUT"
+  echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 }
 
 function _create_new_tag() {
@@ -54,7 +54,7 @@ Commits since previous release: [link](https://github.com/${GITHUB_REPOSITORY}/c
 All commits associated with this release: [link](https://github.com/${GITHUB_REPOSITORY}/commits/v${NEW_VERSION})"
   fi
 
-  echo "{RELEASE_BODY}={$RELEASE_BODY}" >> "$GITHUB_OUTPUT"
+  echo "RELEASE_BODY=$RELEASE_BODY" >> "$GITHUB_OUTPUT"
   echo "$RELEASE_BODY"
 }
 
@@ -65,11 +65,10 @@ function _extract_bump() {
     BUMP_TYPE=$(echo $COMMIT_MESSAGE | grep -oP '\[bump-(major|minor|patch)\]' | tr -d '[]')
     MESSAGE_BODY=$(echo $COMMIT_MESSAGE | sed -e "s/\[bump-(major|minor|patch)\] //")
 
-    echo "{BUMP_TYPE}={$BUMP_TYPE}" >> "$GITHUB_OUTPUT"
-    echo "{MESSAGE_BODY}={$MESSAGE_BODY}" >> "$GITHUB_OUTPUT"
+    echo "BUMP_TYPE=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
+    echo "MESSAGE_BODY=$MESSAGE_BODY" >> "$GITHUB_OUTPUT"
   else
-    echo "{BUMP_TYPE}={}" >> "$GITHUB_OUTPUT"
-    echo "{MESSAGE_BODY}={$COMMIT_MESSAGE}" >> "$GITHUB_OUTPUT"
+    echo "MESSAGE_BODY=$COMMIT_MESSAGE" >> "$GITHUB_OUTPUT"
   fi
 
   echo "Extracted bump: $BUMP_TYPE"
@@ -78,7 +77,7 @@ function _extract_bump() {
 
 function _get_previous_tag() {
   PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "v0.0.0")
-  echo "{PREVIOUS_TAG}={$PREVIOUS_TAG}" >> "$GITHUB_OUTPUT"
+  echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
   echo "Previous tag: $PREVIOUS_TAG"
 }
 
