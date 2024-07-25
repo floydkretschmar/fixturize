@@ -65,7 +65,7 @@ jobs:
 
       - name: Publish to Maven Central
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
-        run: ./gradlew publish -Pversion=${{ steps.extract_version.outputs.VERSION }}
+        run: ./gradlew publish -Pversion=${{ steps.calculate_version.outputs.NEW_VERSION }}
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
