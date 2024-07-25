@@ -77,6 +77,7 @@ function _get_previous_tag() {
   echo "Previous tag: $PREVIOUS_TAG"
 }
 
+
 CMD=${1:-}
 shift || true
 case ${CMD} in
