@@ -24,34 +24,34 @@ import static de.floydkretschmar.fixturize.TestFixtures.RANDOM_UUID;
 class FixtureProcessorTest {
     public static Stream<Arguments> process_getParameters() {
         return Stream.of(
-//                Arguments.of(
-//                        "classes/SingleConstructorClass.java",
-//                        "de.floydkretschmar.fixturize.mocks.SingleConstructorClassFixture",
-//                        "fixtures/SingleConstructorClassFixture.java"),
-//                Arguments.of(
-//                        "classes/MultiConstructorClass.java",
-//                        "de.floydkretschmar.fixturize.mocks.MultiConstructorClassFixture",
-//                        "fixtures/MultiConstructorClassFixture.java"),
-//                Arguments.of(
-//                        "classes/CustomConstantDefinitionsClass.java",
-//                        "de.floydkretschmar.fixturize.mocks.CustomConstantDefinitionsClassFixture",
-//                        "fixtures/CustomConstantDefinitionsClassFixture.java"),
-//                Arguments.of(
-//                        "classes/LombokClass.java",
-//                        "de.floydkretschmar.fixturize.mocks.LombokClassFixture",
-//                        "fixtures/LombokClassFixture.java"),
+                Arguments.of(
+                        "classes/SingleConstructorClass.java",
+                        "de.floydkretschmar.fixturize.mocks.SingleConstructorClassFixture",
+                        "fixtures/SingleConstructorClassFixture.java"),
+                Arguments.of(
+                        "classes/MultiConstructorClass.java",
+                        "de.floydkretschmar.fixturize.mocks.MultiConstructorClassFixture",
+                        "fixtures/MultiConstructorClassFixture.java"),
+                Arguments.of(
+                        "classes/CustomConstantDefinitionsClass.java",
+                        "de.floydkretschmar.fixturize.mocks.CustomConstantDefinitionsClassFixture",
+                        "fixtures/CustomConstantDefinitionsClassFixture.java"),
+                Arguments.of(
+                        "classes/LombokClass.java",
+                        "de.floydkretschmar.fixturize.mocks.LombokClassFixture",
+                        "fixtures/LombokClassFixture.java"),
                 Arguments.of(
                         "classes/SupportedTypesClass.java",
                         "de.floydkretschmar.fixturize.mocks.SupportedTypesClassFixture",
-                        "fixtures/SupportedTypesClassFixture.java")
-//                Arguments.of(
-//                        "classes/CustomValueProviderClass.java",
-//                        "de.floydkretschmar.fixturize.mocks.CustomValueProviderClassFixture",
-//                        "fixtures/CustomValueProviderClassFixture.java"),
-//                Arguments.of(
-//                        "classes/GenericClass.java",
-//                        "de.floydkretschmar.fixturize.mocks.GenericClassFixture",
-//                        "fixtures/GenericClassFixture.java")
+                        "fixtures/SupportedTypesClassFixture.java"),
+                Arguments.of(
+                        "classes/CustomValueProviderClass.java",
+                        "de.floydkretschmar.fixturize.mocks.CustomValueProviderClassFixture",
+                        "fixtures/CustomValueProviderClassFixture.java"),
+                Arguments.of(
+                        "classes/GenericClass.java",
+                        "de.floydkretschmar.fixturize.mocks.GenericClassFixture",
+                        "fixtures/GenericClassFixture.java")
         );
     }
 
