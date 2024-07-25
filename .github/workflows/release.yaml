@@ -24,17 +24,7 @@ jobs:
 
       - name: Extract bump type and commit message
         id: extract_bump
-        run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          if [[ $COMMIT_MESSAGE =~ ^\[bump-(major|minor|patch)\] ]]; then
-            BUMP_TYPE=$(echo $COMMIT_MESSAGE | grep -oP '\[bump-(major|minor|patch)\]' | tr -d '[]')
-            MESSAGE_BODY=$(echo $COMMIT_MESSAGE | sed -e "s/\[bump-(major|minor|patch)\] //")
-            echo "::set-output name=BUMP_TYPE::$BUMP_TYPE"
-            echo "::set-output name=MESSAGE_BODY::$MESSAGE_BODY"
-          else
-            echo "::set-output name=BUMP_TYPE::"
-            echo "::set-output name=MESSAGE_BODY::$COMMIT_MESSAGE"
-          fi
+        run: ./run.sh extract-bump
 
       - name: Build and Test
         run: ./gradlew clean build
@@ -42,61 +32,21 @@ jobs:
       - name: Get previous tag
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
         id: get_previous_tag
-        run: |
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "v0.0.0")
-          echo "::set-output name=PREVIOUS_TAG::$PREVIOUS_TAG"
+        run: ./run.sh get-previous-tag
 
       - name: Calculate new version
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
         id: calculate_version
-        run: |
-          PREVIOUS_TAG=${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}
-          VERSION=${PREVIOUS_TAG#v}
-          IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
-          MAJOR=${VERSION_PARTS[0]}
-          MINOR=${VERSION_PARTS[1]}
-          PATCH=${VERSION_PARTS[2]}
-          
-          case "${{ steps.extract_bump.outputs.BUMP_TYPE }}" in
-            "bump-major")
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              ;;
-            "bump-minor")
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              ;;
-            "bump-patch")
-              PATCH=$((PATCH + 1))
-              ;;
-          esac
-          
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-          echo "::set-output name=NEW_VERSION::$NEW_VERSION"
+        run: ./run.sh bump-version ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }} ${{ steps.extract_bump.outputs.BUMP_TYPE }}
 
       - name: Create Git Tag
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
-        run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git tag v${{ steps.calculate_version.outputs.NEW_VERSION }}
-          git push origin v${{ steps.calculate_version.outputs.NEW_VERSION }}
+        run: ./run.sh create-new-tag ${{ steps.calculate_version.outputs.NEW_VERSION }}
 
       - name: Set release body
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
         id: set_release_body
-        run: |
-          if [ "${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}" != "v0.0.0" ]; then
-            RELEASE_BODY="${{ steps.extract_bump.outputs.MESSAGE_BODY }}
-
-            Commits since previous release: [link](https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}...v${{ steps.calculate_version.outputs.NEW_VERSION }})"
-          else
-            RELEASE_BODY="${{ steps.extract_bump.outputs.MESSAGE_BODY }}
-
-            All commits associated with this release: [link](https://github.com/${{ github.repository }}/commits/v${{ steps.calculate_version.outputs.NEW_VERSION }})"
-          fi
-          echo "::set-output name=RELEASE_BODY::$RELEASE_BODY"
+        run: ./run.sh create-release-body ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }} ${{ steps.calculate_version.outputs.NEW_VERSION }} ${{ steps.extract_bump.outputs.MESSAGE_BODY }} ${{ github.repository }}
 
       - name: Create GitHub Release
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
@@ -112,7 +62,6 @@ jobs:
 
       - name: Publish to Maven Central
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
-
         run: ./gradlew publish -Pversion=${{ steps.extract_version.outputs.VERSION }}
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
