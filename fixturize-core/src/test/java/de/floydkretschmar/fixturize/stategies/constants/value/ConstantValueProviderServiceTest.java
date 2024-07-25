@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -175,6 +176,38 @@ class ConstantValueProviderServiceTest {
         verify(classValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
         verifyNoMoreInteractions(valueProviderMap, metadataFactory, classValueProvider);
         verifyNoInteractions(enumValueProvider, arrayValueProvider);
+    }
+
+
+    @Test
+    void getValueFor_whenCalledForValueProviderThatNeedResolvingOfDefaultValues_shouldResolveWildcards() {
+        when(metadataFactory.createMetadataFrom(any())).thenAnswer(params ->
+                TestFixtures.createMetadataFixture(params.getArgument(0).toString()));
+        final var type = mock(DeclaredType.class);
+        when(type.toString()).thenReturn("ClassType");
+        when(field.asType()).thenReturn(type);
+
+        when(valueProviderMap.containsKey(eq("some.test.ClassType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("some.test.ClassType"))).thenReturn((f,n) -> "${some.test.ResolvedClassType}");
+
+        final var resolvedType = createTypeMirrorFixture("ResolvedClassType");
+        final var resolvedElement = mock(TypeElement.class);
+        when(resolvedElement.asType()).thenReturn(resolvedType);
+        when(elementUtils.getTypeElement(any())).thenReturn(resolvedElement);
+
+        when(valueProviderMap.containsKey(eq("some.test.ResolvedClassType"))).thenReturn(true);
+        when(valueProviderMap.get(eq("some.test.ResolvedClassType"))).thenReturn((f, n) -> "%sValue".formatted(n.getSimpleClassName()));
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo("ResolvedClassTypeValue");
+        verify(metadataFactory, times(1)).createMetadataFrom(type);
+        verify(valueProviderMap, times(1)).containsKey("some.test.ClassType");
+        verify(valueProviderMap, times(1)).get("some.test.ClassType");
+        verify(valueProviderMap, times(1)).containsKey("some.test.ResolvedClassType");
+        verify(valueProviderMap, times(1)).get("some.test.ResolvedClassType");
+        verifyNoMoreInteractions(valueProviderMap, metadataFactory);
+        verifyNoInteractions(classValueProvider, enumValueProvider, arrayValueProvider);
     }
 
 

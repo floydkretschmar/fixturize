@@ -86,27 +86,28 @@ public class ConstantValueProviderService implements ValueProviderService {
     public String getValueFor(Element element) {
         final var type = element.asType();
         final var metadata = metadataFactory.createMetadataFrom(type);
+        var value = DEFAULT_VALUE;
 
-        if (valueProviders.containsKey(metadata.getQualifiedClassName()))
-            return valueProviders.get(metadata.getQualifiedClassName()).provideValueAsString(element, metadata);
-
-        if (valueProviders.containsKey(metadata.getQualifiedClassNameWithoutGeneric()))
-            return valueProviders.get(metadata.getQualifiedClassNameWithoutGeneric()).provideValueAsString(element, metadata);
-
-        if (type.getKind() == ARRAY)
-            return this.arrayValueProvider.provideValueAsString(element, metadata);
-
-        if (type.getKind() == TypeKind.DECLARED) {
+        if (valueProviders.containsKey(metadata.getQualifiedClassName())) {
+            value = valueProviders.get(metadata.getQualifiedClassName()).provideValueAsString(element, metadata);
+        }
+        else if (valueProviders.containsKey(metadata.getQualifiedClassNameWithoutGeneric())) {
+            value = valueProviders.get(metadata.getQualifiedClassNameWithoutGeneric()).provideValueAsString(element, metadata);
+        }
+        else if (type.getKind() == ARRAY) {
+            value = this.arrayValueProvider.provideValueAsString(element, metadata);
+        }
+        else if (type.getKind() == TypeKind.DECLARED) {
             final var declaredElement = ((DeclaredType)type).asElement();
             final var elementKind = declaredElement.getKind();
             if (elementKind == ENUM) {
-                return this.enumValueProvider.provideValueAsString(element, metadata);
+                value = this.enumValueProvider.provideValueAsString(element, metadata);
             } else if (elementKind == CLASS) {
-                return this.classValueProvider.provideValueAsString(element, metadata);
+                value = this.classValueProvider.provideValueAsString(element, metadata);
             }
         }
 
-        return DEFAULT_VALUE;
+        return this.resolveValuesForDefaultPlaceholders(value);
     }
 
     /**
