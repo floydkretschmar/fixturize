@@ -64,8 +64,6 @@ public class ConstantGenerationStrategy {
      */
     private final ValueProviderService valueProviderService;
 
-    private final Elements elementUtils;
-
     /**
      * Returns a {@link ConstantDefinitionMap} containing all {@link Constant}s that have been generated
      * for the provided element according to all specified strategies.
@@ -111,23 +109,7 @@ public class ConstantGenerationStrategy {
 
     private String getValue(FixtureConstant constantAnnotation, VariableElementMetadata field) {
         if (!constantAnnotation.value().isEmpty()) {
-            final var valueFromAnnotation = constantAnnotation.value();
-            final var valuePattern = Pattern.compile("(?<defaultValueType>\\$\\{[^\\{\\}\\$]*\\})");
-            final var regex = valuePattern.matcher(valueFromAnnotation);
-            final var values = new ArrayList<String>();
-
-            var value = valueFromAnnotation;
-            while (regex.find()) {
-                final var defaultValueTypeNameWildcard = regex.group("defaultValueType");
-                final var defaultValueTypeName = defaultValueTypeNameWildcard.substring(2, defaultValueTypeNameWildcard.length() - 1);
-                final var element = elementUtils.getTypeElement(defaultValueTypeName);
-                if (Objects.isNull(element))
-                    throw new FixtureCreationException("%s is not a valid type that can be used for default value generation".formatted(defaultValueTypeName));
-                values.add(this.valueProviderService.getValueFor(element));
-                value = value.replace(defaultValueTypeNameWildcard, "%s");
-            }
-
-            return value.formatted(values.toArray());
+            return this.valueProviderService.resolveValuesForDefaultPlaceholders(constantAnnotation.value());
         }
 
         return this.valueProviderService.getValueFor(field.getTypedElement());

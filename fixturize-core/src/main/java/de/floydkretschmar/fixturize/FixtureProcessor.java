@@ -87,7 +87,7 @@ public class FixtureProcessor extends AbstractProcessor {
         final var metadataFactory = new TypeMetadataFactory(elementUtils);
         final var valueProviderService = initializeValueProviderService(element.getAnnotationsByType(FixtureValueProvider.class), metadataFactory);
         final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
-        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService, elementUtils);
+        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService);
 
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
         creationMethodStrategies.add(new ConstructorCreationMethodStrategy());

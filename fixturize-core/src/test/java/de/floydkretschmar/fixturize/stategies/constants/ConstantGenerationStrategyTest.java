@@ -48,14 +48,14 @@ class ConstantGenerationStrategyTest {
     @Mock
     private ValueProviderService valueProviderService;
 
-    @Mock
-    private Elements elementUtils;
-
     private ConstantGenerationStrategy strategy;
 
     @BeforeEach
     void setup() {
-        strategy = new ConstantGenerationStrategy(namingStrategy, valueProviderService, elementUtils);
+        strategy = new ConstantGenerationStrategy(namingStrategy, valueProviderService);
+    }
+
+    private void mockServiceGetValueFor() {
         when(valueProviderService.getValueFor(any())).thenAnswer(param -> {
             final var element = (Element) param.getArguments()[0];
 
@@ -68,6 +68,7 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithValidClass_shouldGenerateConstants() {
+        mockServiceGetValueFor();
         when(namingStrategy.createConstantName(anyString())).thenAnswer(param -> "%sName".formatted(param.getArguments()[0]));
         final var field1 = TestFixtures.<FixtureConstant>createVariableElementFixture(BOOLEAN_FIELD_NAME, createTypeMirrorFixture(BOOLEAN_FIELD_DEFINITION.getType()), ElementKind.FIELD);
         final var field2 = TestFixtures.<FixtureConstant>createVariableElementFixture(INT_FIELD_NAME, createTypeMirrorFixture(INT_FIELD_DEFINITION.getType()), ElementKind.FIELD);
@@ -93,6 +94,7 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithGeneric_shouldGenerateConstants() {
+        mockServiceGetValueFor();
         when(namingStrategy.createConstantName(anyString())).thenAnswer(param -> "%sName".formatted(param.getArguments()[0]));
         final var field1 = TestFixtures.<FixtureConstant>createVariableElementFixture(BOOLEAN_FIELD_NAME, createTypeMirrorFixture(BOOLEAN_FIELD_DEFINITION.getType()), ElementKind.FIELD);
 
@@ -121,6 +123,8 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithFixtureConstantAnnotation_shouldUseNameFromAnnotationAsKeyAndName() {
+        mockServiceGetValueFor();
+        when(valueProviderService.resolveValuesForDefaultPlaceholders(any())).thenAnswer(params -> params.getArgument(0));
         final var annotation = createFixtureConstantFixture("CUSTOM_NAME", "true");
         final var annotation2 = createFixtureConstantFixture("CUSTOM_NAME_2", "");
 
@@ -145,6 +149,8 @@ class ConstantGenerationStrategyTest {
 
     @Test
     void generateConstants_whenCalledWithMultipleFixtureConstantsAnnotations_shouldGenerateConstantPerAnnotation() {
+        mockServiceGetValueFor();
+        when(valueProviderService.resolveValuesForDefaultPlaceholders(any())).thenAnswer(params -> params.getArgument(0));
         final var annotation = createFixtureConstantFixture("CUSTOM_NAME", "true");
         final var annotation2 = createFixtureConstantFixture("CUSTOM_NAME_2", "");
 
@@ -171,18 +177,16 @@ class ConstantGenerationStrategyTest {
         final var field1 = createVariableElementFixture(BOOLEAN_FIELD_NAME, createTypeMirrorFixture(BOOLEAN_FIELD_DEFINITION.getType()), ElementKind.FIELD, annotation);
         final var element = mock(TypeElement.class);
 
-        final var resolvedElement = mock(TypeElement.class);
-
-        when(element.getEnclosedElements()).thenReturn((List) List.of(field1));
-        when(elementUtils.getTypeElement(any())).thenReturn(resolvedElement);
+        when(element.getEnclosedElements()).thenReturn((List)List.of(field1));
+        when(valueProviderService.resolveValuesForDefaultPlaceholders(any())).thenReturn("ValueProviderServiceResolvedValue");
 
         final var result = strategy.generateConstants(element, TestFixtures.createMetadataFixture());
 
         assertThat(result).containsAllEntriesOf(Map.of(
-                "CUSTOM_NAME", createConstantFixture(BOOLEAN_FIELD_NAME, "CUSTOM_NAME", "value")
+                "CUSTOM_NAME", createConstantFixture(BOOLEAN_FIELD_NAME, "CUSTOM_NAME", "ValueProviderServiceResolvedValue")
         ));
         verify(field1, times(1)).getAnnotationsByType(FixtureConstant.class);
-        verify(valueProviderService, times(1)).getValueFor(resolvedElement);
+        verify(valueProviderService, times(1)).resolveValuesForDefaultPlaceholders("${java.lang.Boolean}");
         verifyNoMoreInteractions(valueProviderService);
         verifyNoInteractions(namingStrategy);
     }

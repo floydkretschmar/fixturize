@@ -16,4 +16,12 @@ public interface ValueProviderService {
      * @return the correct value representation
      */
     String getValueFor(Element field);
+
+    /**
+     * Returns the resolved value representation with the correct values for all default value wildcards that were present in the
+     * provided value string.
+     * @param valueStringWithPlaceholders - that contains 0 to N default value wildcards
+     * @return the fully resolved value
+     */
+    String resolveValuesForDefaultPlaceholders(String valueStringWithPlaceholders);
 }

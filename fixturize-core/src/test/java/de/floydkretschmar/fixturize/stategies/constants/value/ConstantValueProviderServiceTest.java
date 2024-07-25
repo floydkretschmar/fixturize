@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import de.floydkretschmar.fixturize.TestFixtures;
+import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
@@ -11,13 +12,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.List;
 import java.util.Map;
 
+import static de.floydkretschmar.fixturize.TestFixtures.BOOLEAN_FIELD_DEFINITION;
+import static de.floydkretschmar.fixturize.TestFixtures.BOOLEAN_FIELD_NAME;
+import static de.floydkretschmar.fixturize.TestFixtures.createConstantFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstantFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createTypeMirrorFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixture;
 import static de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider.DEFAULT_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,7 +75,7 @@ class ConstantValueProviderServiceTest {
         when(valueProviderFactory.createContainerValueProvider(any(), any(), any())).thenReturn(containerValueProvider);
         service = new ConstantValueProviderService(Map.of(), valueProviderFactory, elementUtils, typeUtils, metadataFactory);
 
-        when(metadataFactory.createMetadataFrom(any())).thenAnswer(params -> TestFixtures.createMetadataFixture(field.asType().toString()));
+        when(metadataFactory.createMetadataFrom(any())).thenAnswer(params -> TestFixtures.createMetadataFixture(params.getArgument(0).toString()));
     }
 
     @Test
@@ -124,5 +134,25 @@ class ConstantValueProviderServiceTest {
         verify(metadataFactory, times(1)).createMetadataFrom(type);
         verifyNoMoreInteractions(valueProviderMap, containerValueProvider, metadataFactory);
         verifyNoInteractions(declaredTypeValueProvider);
+    }
+
+
+    @Test
+    void resolveValuesForDefaultPlaceholders_whenCalled_shouldResolveWildcards() {
+        final var type = createTypeMirrorFixture("ClassTypeElement");
+        final var resolvedElement = mock(TypeElement.class);
+        when(resolvedElement.asType()).thenReturn(type);
+        when(elementUtils.getTypeElement(any())).thenReturn(resolvedElement);
+
+        when(valueProviderMap.containsKey(any(String.class))).thenReturn(true);
+        when(valueProviderMap.get(any(String.class))).thenReturn((f, n) -> "%sValue".formatted(n.getSimpleClassName()));
+
+        final var result = service.resolveValuesForDefaultPlaceholders("Non-dynamic part ${ClassTypeElement}");
+
+        assertThat(result).isEqualTo("Non-dynamic part ClassTypeElementValue");
+        verify(metadataFactory, times(1)).createMetadataFrom(type);
+        verify(valueProviderMap, times(1)).containsKey("some.test.ClassTypeElement");
+        verifyNoMoreInteractions(valueProviderMap, metadataFactory);
+        verifyNoInteractions(declaredTypeValueProvider, containerValueProvider);
     }
 }
