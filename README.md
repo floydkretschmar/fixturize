@@ -26,7 +26,6 @@ compare the result of that method call against your static expectation of what t
 To make this example more tangible, lets say the two classes look like this
 
 ```java
-
 @Builder
 @Value
 static class Order {
@@ -40,7 +39,6 @@ static class Order {
 and this
 
 ```java
-
 @Builder
 @Value
 static class Parcel {
@@ -97,7 +95,6 @@ generate
 a new fixture class containing a constant for each field defined on the annotated class. For example
 
 ```java
-
 @Builder
 @Value
 @Fixture
@@ -113,8 +110,8 @@ becomes
 ```java
 static class OrderFixture {
     public static java.lang.String ORDER_NO = "ORDER_NO_VALUE";
-    public static Instant DATE = Instant.now();
-    public static String CUSTOMER_NAME = "CUSTOMER_NAME_VALUE";
+    public static java.time.Instant DATE = java.time.Instant.now();
+    public static java.lang.String CUSTOMER_NAME = "CUSTOMER_NAME_VALUE";
 }
 ```
 
@@ -136,7 +133,6 @@ generate methods that allow you to generate instances of you fixtures, you can u
 and/or `@FixtureBuilder`. For example, the following annotations
 
 ```java
-
 @Builder
 @Value
 @Fixture
@@ -154,8 +150,8 @@ will generate the following fixture
 ```java
 static class OrderFixture {
     public static java.lang.String ORDER_NO = "ORDER_NO_VALUE";
-    public static Instant DATE = Instant.now();
-    public static String CUSTOMER_NAME = "CUSTOMER_NAME_VALUE";
+    public static java.time.Instant DATE = java.time.Instant.now();
+    public static java.lang.String CUSTOMER_NAME = "CUSTOMER_NAME_VALUE";
 
   public static Order.OrderBuilder createOrderFixture() {
         return Order.builder()
@@ -221,17 +217,18 @@ For the values needed to parameterize each of these methods, values are generate
 strategies
 lead to the generation of a valid value, then the default value returned is `null`.
 
+### Default value wildcarding
+
 If you want to use the default value generation logic when defining values using `@FixtureConstant`, you can do so by
 using
 the wildcard string `${<Qualified classname>}` in your `@FixtureConstant` annotation. For example:
 
 ```java
-
 @Builder
 @Value
 @Fixture
 static class Order {
-    @FixtureConstant(name = "COMMENTS", value = "java.util.List.of(\"Test\", \"${java.lang.String}\")")
+    @FixtureConstant(name = "COMMENTS", value = "java.util.List.of(\"Test\", #{java.lang.String})")
     List<String> comments;
 }
 ```
@@ -241,6 +238,54 @@ will create the following fixture
 ```java
 static class OrderFixture {
     public static java.util.List<java.lang.String> COMMENTS = java.util.List.of("Test", "STRING_VALUE");
+}
+```
+
+## Defining your own value providers
+
+Sometimes you might have a scenario, where you want to define a custom value provider for all constant generations of 
+a certain class. Lets say for example, you do not want to use the default value provider for `String` that takes the name
+of the field and transforms it into screaming case and attaches `_VALUE` at the end. Instead you want to register your
+own value provider, that just uses the field name as is as the value.
+
+Lets start again with the order class
+
+```java
+@Builder
+@Value
+@Fixture
+static class Order {
+    String orderNo;
+    Instant date;
+    String customerName;
+}
+```
+
+If we want to define a custom value provider for all `String` fields of this class, we can use the `@FixtureValueProvider`
+annotation.
+
+```java
+@Builder
+@Value
+@Fixture
+@FixtureValueProvider(targetType = "java.lang.String", valueProviderCallback = "(field, metadata) => `${field.getSimpleName().toString()}`")
+static class Order {
+    String orderNo;
+    Instant date;
+    String customerName;
+}
+```
+
+As you can see, you can provide custom value provider functions for each target type you want. A value provider receives
+the field of type `javax.lang.model.element.Element` and metadata of type `de.floydkretschmar.fixturize.domain.TypeMetadata`
+which can both be used to generate a string representation of the value that will be assigned to all constants of the 
+specified target type for fixture. So the generated fixture would look as follows:
+
+```java
+static class OrderFixture {
+    public static java.lang.String ORDER_NO = "orderNo";
+    public static java.time.Instant DATE = java.time.Instant.now();
+    public static java.lang.String CUSTOMER_NAME = "customerName";
 }
 ```
 
