@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
+package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 
 import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;

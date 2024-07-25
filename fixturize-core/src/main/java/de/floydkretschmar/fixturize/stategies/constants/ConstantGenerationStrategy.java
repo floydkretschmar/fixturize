@@ -7,19 +7,14 @@ import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
-import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**

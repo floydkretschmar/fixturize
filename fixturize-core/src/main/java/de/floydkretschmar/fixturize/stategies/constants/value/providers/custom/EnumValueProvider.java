@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
+package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;

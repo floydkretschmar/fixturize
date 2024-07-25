@@ -1,7 +1,5 @@
 package de.floydkretschmar.fixturize.stategies.constants.value;
 
-import de.floydkretschmar.fixturize.annotations.FixtureConstant;
-import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
@@ -15,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import static javax.lang.model.type.TypeKind.ARRAY;
 
 /**
  * Decides which value during constant creation should be used for a given {@link VariableElement}.
@@ -38,10 +38,9 @@ public class ConstantValueProviderService implements ValueProviderService {
     private final ValueProvider declaredTypeValueProvider;
 
     /**
-     * The value provider that provides the fallback value for container types (arrays, Maps and Collections) if no other value
-     * provider has been registered.
+     * The value provider that provides the fallback value for arrays if no other value provider has been registered.
      */
-    private final ValueProvider containerValueProvider;
+    private final ValueProvider arrayValueProvider;
 
     /**
      * The factory used to create metadata for a given element.
@@ -59,9 +58,9 @@ public class ConstantValueProviderService implements ValueProviderService {
             Elements elementUtils,
             Types typeUtils,
             MetadataFactory metadataFactory) {
-        this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders);
+        this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders, typeUtils, this);
         this.declaredTypeValueProvider = valueProviderFactory.createDeclaredTypeValueProvider(this);
-        this.containerValueProvider = valueProviderFactory.createContainerValueProvider(elementUtils, typeUtils, this);
+        this.arrayValueProvider = valueProviderFactory.createArrayValueProvider();
         this.metadataFactory = metadataFactory;
         this.elementUtils = elementUtils;
     }
@@ -74,14 +73,19 @@ public class ConstantValueProviderService implements ValueProviderService {
      */
     @Override
     public String getValueFor(Element element) {
-        final var metadata = metadataFactory.createMetadataFrom(element.asType());
+        final var type = element.asType();
+        final var metadata = metadataFactory.createMetadataFrom(type);
 
         if (valueProviders.containsKey(metadata.getQualifiedClassName()))
             return valueProviders.get(metadata.getQualifiedClassName()).provideValueAsString(element, metadata);
 
-        final var value = this.containerValueProvider.provideValueAsString(element, metadata);
+        if (valueProviders.containsKey(metadata.getQualifiedClassNameWithoutGeneric()))
+            return valueProviders.get(metadata.getQualifiedClassNameWithoutGeneric()).provideValueAsString(element, metadata);
 
-        return value.equals(DEFAULT_VALUE) ? this.declaredTypeValueProvider.provideValueAsString(element, metadata) : value;
+        if (type.getKind() == ARRAY)
+            return this.arrayValueProvider.provideValueAsString(element, metadata);
+
+        return this.declaredTypeValueProvider.provideValueAsString(element, metadata);
     }
 
     /**

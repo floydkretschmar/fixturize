@@ -4,6 +4,7 @@ import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValuePro
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.BooleanValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.ByteValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.CharacterValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.ContainerValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.DoubleValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.FloatValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.IntegerValueProvider;
@@ -12,6 +13,7 @@ import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.S
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.StringValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.custom.UUIDValueProvider;
 
+import javax.lang.model.util.Types;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -19,9 +21,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -38,7 +44,10 @@ public class ValueProviderMap extends HashMap<String, ValueProvider> {
      *
      * @param customClassValueProviders - the list of custom {@link ValueProvider}s
      */
-    public ValueProviderMap(Map<? extends String, ? extends ValueProvider> customClassValueProviders) {
+    public ValueProviderMap(
+            Map<? extends String, ? extends ValueProvider> customClassValueProviders,
+            Types typeUtils,
+            ValueProviderService valueProviderService) {
         super(customClassValueProviders);
         this.putIfAbsent(boolean.class.getName(), new BooleanValueProvider());
         this.putIfAbsent(byte.class.getName(), new ByteValueProvider());
@@ -66,5 +75,16 @@ public class ValueProviderMap extends HashMap<String, ValueProvider> {
         this.putIfAbsent(LocalDateTime.class.getName(), (field, names) -> "java.time.LocalDateTime.now()");
         this.putIfAbsent(LocalTime.class.getName(), (field, names) -> "java.time.LocalTime.now()");
         this.putIfAbsent(Date.class.getName(), (field, names) -> "new java.util.Date()");
+
+        this.putIfAbsent(Map.class.getName(), new ContainerValueProvider(
+                valueProviderService, typeUtils, "java.util.Map.of(%s)"));
+        this.putIfAbsent(List.class.getName(), new ContainerValueProvider(
+                valueProviderService, typeUtils, "java.util.List.of(%s)"));
+        this.putIfAbsent(Set.class.getName(), new ContainerValueProvider(
+                valueProviderService, typeUtils, "java.util.Set.of(%s)"));
+        this.putIfAbsent(Queue.class.getName(), new ContainerValueProvider(
+                valueProviderService, typeUtils, "new java.util.PriorityQueue<>(java.util.List.of(%s))"));
+        this.putIfAbsent(Collection.class.getName(), new ContainerValueProvider(
+                valueProviderService, typeUtils, "java.util.List.of(%s)"));
     }
 }
