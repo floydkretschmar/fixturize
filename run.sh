@@ -45,9 +45,9 @@ function _create_release_body() {
   MESSAGE_BODY=${3}
   GITHUB_REPOSITORY=${4}
   if [ "$PREVIOUS_TAG" != "v0.0.0" ]; then
-    RELEASE_BODY="$MESSAGE_BODY\n\nCommits since previous release: [link](https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...v${NEW_VERSION})"
+    RELEASE_BODY=$(printf "$MESSAGE_BODY\n\nCommits since previous release: [link](https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...v${NEW_VERSION})")
   else
-    RELEASE_BODY="$MESSAGE_BODY\n\nAll commits associated with this release: [link](https://github.com/${GITHUB_REPOSITORY}/commits/v${NEW_VERSION})"
+    RELEASE_BODY=$(printf "$MESSAGE_BODY\n\nAll commits associated with this release: [link](https://github.com/${GITHUB_REPOSITORY}/commits/v${NEW_VERSION})")
   fi
 
   echo "RELEASE_BODY=$RELEASE_BODY" >> "$GITHUB_OUTPUT"
@@ -58,8 +58,8 @@ function _extract_bump() {
   COMMIT_MESSAGE=$(git log -1 --pretty=%B)
 
   if [[ $COMMIT_MESSAGE =~ ^\[bump-(major|minor|patch)\] ]]; then
-    BUMP_TYPE=$(echo $COMMIT_MESSAGE | grep -oP '\[bump-(major|minor|patch)\]' | tr -d '[]')
-    MESSAGE_BODY=$(echo $COMMIT_MESSAGE | sed -e "s/\[bump-(major|minor|patch)\] //")
+    BUMP_TYPE=$(echo "$COMMIT_MESSAGE" | grep -oP '\[bump-(major|minor|patch)\]' | tr -d '[]')
+    MESSAGE_BODY=$(echo "$COMMIT_MESSAGE" | sed -E "s/\[bump-(major|minor|patch)\] //")
 
     echo "BUMP_TYPE=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
     echo "MESSAGE_BODY=$MESSAGE_BODY" >> "$GITHUB_OUTPUT"
@@ -68,7 +68,7 @@ function _extract_bump() {
   fi
 
   echo "Extracted bump: $BUMP_TYPE"
-  echo "Extracted message: $COMMIT_MESSAGE"
+  echo "Extracted message: $MESSAGE_BODY"
 }
 
 function _get_previous_tag() {
