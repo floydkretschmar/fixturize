@@ -332,6 +332,10 @@ dependencies {
 }
 ```
 
+## Requirements
+
+All Java versions between 11 and 21 are supported.
+
 ## Licensing
 
 Fixturize is licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in

@@ -24,7 +24,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -60,7 +59,6 @@ import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_8;
  * and {@link CreationMethodGenerationStrategy} respectively.
  */
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
-@SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
 public class FixtureProcessor extends AbstractProcessor {
 
@@ -69,6 +67,14 @@ public class FixtureProcessor extends AbstractProcessor {
     private Elements elementUtils;
 
     private CustomValueProviderParser valueProviderParser;
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        if (SourceVersion.RELEASE_11.compareTo(SourceVersion.latest()) > 0)
+            return SourceVersion.RELEASE_11;
+
+        return SourceVersion.RELEASE_21.compareTo(SourceVersion.latest()) <= 0 ? SourceVersion.RELEASE_21 : SourceVersion.latest();
+    }
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
