@@ -40,16 +40,16 @@ jobs:
       - name: Calculate new version
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
         id: calculate_version
-        run: ./run.sh bump-version ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }} ${{ steps.extract_bump.outputs.BUMP_TYPE }}
+        run: ./run.sh bump-version "${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}" "${{ steps.extract_bump.outputs.BUMP_TYPE }}"
 
       - name: Create Git Tag
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
-        run: ./run.sh create-new-tag ${{ steps.calculate_version.outputs.NEW_VERSION }}
+        run: ./run.sh create-new-tag "${{ steps.calculate_version.outputs.NEW_VERSION }}"
 
       - name: Set release body
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
         id: set_release_body
-        run: ./run.sh create-release-body ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }} ${{ steps.calculate_version.outputs.NEW_VERSION }} ${{ steps.extract_bump.outputs.MESSAGE_BODY }} ${{ github.repository }}
+        run: ./run.sh create-release-body "${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}" "${{ steps.calculate_version.outputs.NEW_VERSION }}" "${{ steps.extract_bump.outputs.MESSAGE_BODY }}" "${{ github.repository }}"
 
       - name: Create GitHub Release
         if: steps.extract_bump.outputs.BUMP_TYPE != ''
