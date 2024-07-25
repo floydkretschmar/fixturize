@@ -50,7 +50,7 @@ function _create_release_body() {
     RELEASE_BODY=$(printf "$MESSAGE_BODY\n\nAll commits associated with this release: [link](https://github.com/${GITHUB_REPOSITORY}/commits/v${NEW_VERSION})")
   fi
 
-  echo "RELEASE_BODY=$RELEASE_BODY" >> "$GITHUB_OUTPUT"
+  echo "RELEASE_BODY<<EOF"$'\n'"$RELEASE_BODY"$'\n'EOF >> "$GITHUB_OUTPUT"
   echo "$RELEASE_BODY"
 }
 
@@ -62,9 +62,9 @@ function _extract_bump() {
     MESSAGE_BODY=$(echo "$COMMIT_MESSAGE" | sed -E "s/\[bump-(major|minor|patch)\] //")
 
     echo "BUMP_TYPE=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
-    echo "MESSAGE_BODY=$MESSAGE_BODY" >> "$GITHUB_OUTPUT"
+    echo "MESSAGE_BODY<<EOF"$'\n'"$MESSAGE_BODY"$'\n'EOF >> "$GITHUB_OUTPUT"
   else
-    echo "MESSAGE_BODY=$COMMIT_MESSAGE" >> "$GITHUB_OUTPUT"
+    echo "MESSAGE_BODY<<EOF"$'\n'"$COMMIT_MESSAGE"$'\n'EOF >> "$GITHUB_OUTPUT"
   fi
 
   echo "Extracted bump: $BUMP_TYPE"
