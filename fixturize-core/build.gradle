@@ -6,7 +6,7 @@ plugins {
 }
 
 ext {
-    nashornVersion = "15.4"
+    graalVMjsVersion = "23.0.5"
     guavaVersion = "33.2.1-jre"
     autoServiceVersion = "1.1.1"
 
@@ -22,7 +22,9 @@ dependencies {
     annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
 
     implementation "com.google.guava:guava:$guavaVersion"
-    implementation "org.openjdk.nashorn:nashorn-core:$nashornVersion"
+    implementation "org.graalvm.js:js:$graalVMjsVersion"
+    implementation "org.graalvm.js:js-scriptengine:$graalVMjsVersion"
+
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"

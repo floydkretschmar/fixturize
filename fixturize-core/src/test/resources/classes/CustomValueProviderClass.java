@@ -8,8 +8,8 @@ import java.util.List;
 
 @Builder
 @Fixture
-@FixtureValueProvider(targetType = "java.lang.String", valueProviderCallback = "function(field, names) `\"${field.getSimpleName().toString()}Value\"`")
-@FixtureValueProvider(targetType = "int", valueProviderCallback = "function(field, names) 10")
+@FixtureValueProvider(targetType = "java.lang.String", valueProviderCallback = "(field, names) => `\"${field.getSimpleName().toString()}Value\"`")
+@FixtureValueProvider(targetType = "int", valueProviderCallback = "(field, names) => `10`")
 @FixtureValueProvider(targetType = "java.util.List<java.lang.String>", valueProviderCallback = """
 function(field, names) {
   return `java.util.List.of(\"Value 1\", #{java.lang.String}, \"Value 3\")`;

@@ -23,12 +23,7 @@ import java.lang.annotation.Target;
 public @interface FixtureValueProvider {
     /**
      * Returns the string representation of the type for which a strategy should be registered. Valid types for registration
-     * are:
-     * <ul>
-     *     <li>{@link javax.lang.model.element.ElementKind}</li>
-     *     <li>{@link javax.lang.model.type.TypeKind}</li>
-     *     <li>on a per class level</li>
-     * </ul>
+     * are all declared types.
      *
      * @return the target type representation
      */
@@ -36,8 +31,9 @@ public @interface FixtureValueProvider {
 
     /**
      * Returns the code that should be executed to provide the value for all constants
-     * of the same type as specified by {@link FixtureValueProvider#targetType()}. The line of code can execute information
-     * about the field for which the value should be provided via the variable <b>field</b> of type {@link javax.lang.model.element.VariableElement}.
+     * of the same type as specified by {@link FixtureValueProvider#targetType()}. Code can access information
+     * about the field for which the value should be provided via the variable <b>field</b> of type {@link javax.lang.model.element.Element}
+     * and <b>names</b> of type {@link de.floydkretschmar.fixturize.domain.TypeMetadata}
      *
      * @return the code to provide values for all constants of a type
      */

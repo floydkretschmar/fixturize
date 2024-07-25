@@ -1,8 +1,12 @@
 import de.floydkretschmar.fixturize.annotations.Fixture;
+import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
+import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import lombok.Builder;
 
 @Builder
 @Fixture(genericImplementations = {"java.lang.Boolean"})
+@FixtureValueProvider(targetType = "java.lang.Boolean", valueProviderCallback = "(field, metadata) => `true`")
+@FixtureBuilder(methodName = "createTestFixture")
 public class Test<T> {
     private int field;
 

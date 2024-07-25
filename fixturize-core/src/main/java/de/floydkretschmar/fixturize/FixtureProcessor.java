@@ -16,6 +16,8 @@ import de.floydkretschmar.fixturize.stategies.constants.value.providers.DefaultV
 import de.floydkretschmar.fixturize.stategies.creation.BuilderCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.ConstructorCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -66,11 +68,16 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private Elements elementUtils;
 
+    private CustomValueProviderParser valueProviderParser;
+
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         this.typeUtils = processingEnv.getTypeUtils();
         this.elementUtils = processingEnv.getElementUtils();
+        this.valueProviderParser = new CustomValueProviderParser(Context.newBuilder("js")
+                .allowHostAccess(HostAccess.ALL)
+                .build());
     }
 
     @Override
@@ -113,7 +120,7 @@ public class FixtureProcessor extends AbstractProcessor {
         final var customValueProviders = Arrays.stream(customFixtureProviders)
                 .collect(Collectors.toMap(
                         FixtureValueProvider::targetType,
-                        annotation -> CustomValueProviderParser.parseValueProvider(annotation.valueProviderCallback())
+                        annotation -> valueProviderParser.parseValueProvider(annotation.valueProviderCallback())
                 ));
         return new ConstantValueProviderService(customValueProviders, new DefaultValueProviderFactory(), elementUtils, typeUtils, metadataFactory);
     }

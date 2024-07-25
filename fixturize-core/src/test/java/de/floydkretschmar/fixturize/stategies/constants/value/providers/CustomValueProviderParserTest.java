@@ -2,6 +2,10 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import de.floydkretschmar.fixturize.CustomValueProviderParser;
 import de.floydkretschmar.fixturize.TestFixtures;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.lang.model.element.Name;
@@ -12,12 +16,30 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class CustomValueProviderParserTest {
+
+    private Context context;
+
+    private CustomValueProviderParser parser;
+
+    @BeforeEach
+    void setup() {
+        context = Context.newBuilder("js")
+                .allowHostAccess(HostAccess.ALL)
+                .build();
+        parser = new CustomValueProviderParser(context);
+    }
+
+    @AfterEach
+    void teardown() {
+        parser.close();
+    }
+
     @Test
     void parseValueProvider_whenCalledWithValidJS_createValueProvider() {
         final var element = mock(VariableElement.class);
         final var names = TestFixtures.createMetadataFixture();
 
-        final var valueProvider = CustomValueProviderParser.parseValueProvider("function(field, names) `test`");
+        final var valueProvider = parser.parseValueProvider("function(field, names) { return `test`; }");
         final var result = valueProvider.provideValueAsString(element, names);
 
         assertThat(result).isEqualTo("test");
@@ -31,7 +53,7 @@ class CustomValueProviderParserTest {
         when(name.toString()).thenReturn("simpleName");
         final var names = TestFixtures.createMetadataFixture();
 
-        final var valueProvider = CustomValueProviderParser.parseValueProvider("function(field, names) `${field.getSimpleName().toString()}`");
+        final var valueProvider = parser.parseValueProvider("(field, names) => `${field.getSimpleName().toString()}`");
         final var result = valueProvider.provideValueAsString(element, names);
 
         assertThat(result).isEqualTo("simpleName");
@@ -42,7 +64,7 @@ class CustomValueProviderParserTest {
         final var element = mock(VariableElement.class);
         final var names = TestFixtures.createMetadataFixture();
 
-        final var valueProvider = CustomValueProviderParser.parseValueProvider("function(field, names) `${names.getQualifiedClassName()}`");
+        final var valueProvider = parser.parseValueProvider("(field, names) => `${names.getQualifiedClassName()}`");
         final var result = valueProvider.provideValueAsString(element, names);
 
         assertThat(result).isEqualTo("some.test.Class");
@@ -56,7 +78,7 @@ class CustomValueProviderParserTest {
         when(name.toString()).thenReturn("simpleName");
         final var names = TestFixtures.createMetadataFixture();
 
-        final var valueProvider = CustomValueProviderParser.parseValueProvider("""
+        final var valueProvider = parser.parseValueProvider("""
                 function(field, names) {
                     var simpleName = field.getSimpleName();
                     return `${simpleName.toString()}`;
