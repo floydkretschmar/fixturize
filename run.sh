@@ -45,17 +45,9 @@ function _create_release_body() {
   MESSAGE_BODY=${3}
   GITHUB_REPOSITORY=${4}
   if [ "$PREVIOUS_TAG" != "v0.0.0" ]; then
-    RELEASE_BODY=$(cat <<-END
-$MESSAGE_BODY
-
-Commits since previous release: [link](https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...v${NEW_VERSION})"
-END
+    RELEASE_BODY="$MESSAGE_BODY\n\nCommits since previous release: [link](https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...v${NEW_VERSION})"
   else
-    RELEASE_BODY=$(cat <<-END
-$MESSAGE_BODY
-
-All commits associated with this release: [link](https://github.com/${GITHUB_REPOSITORY}/commits/v${NEW_VERSION})"
-END
+    RELEASE_BODY="$MESSAGE_BODY\n\nAll commits associated with this release: [link](https://github.com/${GITHUB_REPOSITORY}/commits/v${NEW_VERSION})"
   fi
 
   echo "RELEASE_BODY=$RELEASE_BODY" >> "$GITHUB_OUTPUT"
