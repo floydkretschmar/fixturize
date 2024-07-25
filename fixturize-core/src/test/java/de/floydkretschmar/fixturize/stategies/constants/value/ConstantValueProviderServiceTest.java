@@ -13,13 +13,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.Map;
 
+import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createTypeMirrorFixture;
+import static javax.lang.model.element.ElementKind.CLASS;
+import static javax.lang.model.element.ElementKind.ENUM;
 import static javax.lang.model.type.TypeKind.ARRAY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,7 +45,10 @@ class ConstantValueProviderServiceTest {
     private VariableElement field;
 
     @Mock
-    private ValueProvider declaredTypeValueProvider;
+    private ValueProvider classValueProvider;
+
+    @Mock
+    private ValueProvider enumValueProvider;
 
     @Mock
     private ValueProvider arrayValueProvider;
@@ -63,8 +68,9 @@ class ConstantValueProviderServiceTest {
     void setup() {
         final var valueProviderFactory = mock(ValueProviderFactory.class);
         when(valueProviderFactory.createValueProviders(anyMap(), any(), any())).thenReturn(valueProviderMap);
-        when(valueProviderFactory.createDeclaredTypeValueProvider(any())).thenReturn(declaredTypeValueProvider);
+        when(valueProviderFactory.createClassValueProvider(any())).thenReturn(classValueProvider);
         when(valueProviderFactory.createArrayValueProvider()).thenReturn(arrayValueProvider);
+        when(valueProviderFactory.createEnumValueProvider()).thenReturn(enumValueProvider);
         service = new ConstantValueProviderService(Map.of(), valueProviderFactory, elementUtils, typeUtils, metadataFactory);
     }
 
@@ -87,7 +93,7 @@ class ConstantValueProviderServiceTest {
         verify(valueProviderMap, times(1)).get("some.test.ClassName");
         verify(metadataFactory, times(1)).createMetadataFrom(type);
         verifyNoMoreInteractions(valueProviderMap, metadataFactory);
-        verifyNoInteractions(declaredTypeValueProvider, arrayValueProvider);
+        verifyNoInteractions(classValueProvider, enumValueProvider, arrayValueProvider);
     }
 
     @Test
@@ -110,28 +116,7 @@ class ConstantValueProviderServiceTest {
         verify(valueProviderMap, times(1)).get("some.test.ClassName");
         verify(metadataFactory, times(1)).createMetadataFrom(type);
         verifyNoMoreInteractions(valueProviderMap, metadataFactory);
-        verifyNoInteractions(declaredTypeValueProvider, arrayValueProvider);
-    }
-
-    @Test
-    void getValueFor_whenCalledForDeclaredType_returnDeclaredTypeValueString() {
-        when(metadataFactory.createMetadataFrom(any())).thenAnswer(params ->
-                TestFixtures.createMetadataFixture(params.getArgument(0).toString()));
-        final var type = mock(DeclaredType.class);
-        when(type.toString()).thenReturn("EnumType");
-
-        when(field.asType()).thenReturn(type);
-
-        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
-        when(declaredTypeValueProvider.provideValueAsString(any(), any())).thenReturn("declaredTypeProviderValue");
-
-        final var result = service.getValueFor(field);
-
-        assertThat(result).isEqualTo("declaredTypeProviderValue");
-        verify(valueProviderMap, times(2)).containsKey("some.test.EnumType");
-        verify(declaredTypeValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
-        verify(metadataFactory, times(1)).createMetadataFrom(type);
-        verifyNoMoreInteractions(valueProviderMap, declaredTypeValueProvider, metadataFactory, arrayValueProvider);
+        verifyNoInteractions(classValueProvider, enumValueProvider, arrayValueProvider);
     }
 
     @Test
@@ -151,7 +136,45 @@ class ConstantValueProviderServiceTest {
         verify(arrayValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
         verify(metadataFactory, times(1)).createMetadataFrom(type);
         verifyNoMoreInteractions(valueProviderMap, metadataFactory, arrayValueProvider);
-        verifyNoInteractions(declaredTypeValueProvider);
+        verifyNoInteractions(classValueProvider, enumValueProvider);
+    }
+
+    @Test
+    void getValueFor_whenCalledForEnum_returnEnumValueProviderValueString() {
+        when(metadataFactory.createMetadataFrom(any())).thenAnswer(params ->
+                TestFixtures.createMetadataFixture(params.getArgument(0).toString()));
+        final var type = createDeclaredTypeFixture("EnumType", ENUM);
+        when(field.asType()).thenReturn(type);
+
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+        when(enumValueProvider.provideValueAsString(any(), any())).thenReturn("enumValueProviderValue");
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo("enumValueProviderValue");
+        verify(valueProviderMap, times(2)).containsKey("some.test.EnumType");
+        verify(enumValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
+        verifyNoMoreInteractions(valueProviderMap, metadataFactory, enumValueProvider);
+        verifyNoInteractions(classValueProvider, arrayValueProvider);
+    }
+
+    @Test
+    void getValueFor_whenCalledForAnyOtherDeclaredClass_returnClassValueProviderValueString() {
+        when(metadataFactory.createMetadataFrom(any())).thenAnswer(params ->
+                TestFixtures.createMetadataFixture(params.getArgument(0).toString()));
+        final var type = createDeclaredTypeFixture("ClassType", CLASS);
+        when(field.asType()).thenReturn(type);
+
+        when(valueProviderMap.containsKey(anyString())).thenReturn(false);
+        when(classValueProvider.provideValueAsString(any(), any())).thenReturn("classValue");
+
+        final var result = service.getValueFor(field);
+
+        assertThat(result).isEqualTo("classValue");
+        verify(valueProviderMap, times(2)).containsKey("some.test.ClassType");
+        verify(classValueProvider, times(1)).provideValueAsString(eq(field), any(TypeMetadata.class));
+        verifyNoMoreInteractions(valueProviderMap, metadataFactory, classValueProvider);
+        verifyNoInteractions(enumValueProvider, arrayValueProvider);
     }
 
 
@@ -173,6 +196,6 @@ class ConstantValueProviderServiceTest {
         verify(metadataFactory, times(1)).createMetadataFrom(type);
         verify(valueProviderMap, times(1)).containsKey("some.test.ClassTypeElement");
         verifyNoMoreInteractions(valueProviderMap, metadataFactory);
-        verifyNoInteractions(declaredTypeValueProvider, arrayValueProvider);
+        verifyNoInteractions(classValueProvider, enumValueProvider, arrayValueProvider);
     }
 }

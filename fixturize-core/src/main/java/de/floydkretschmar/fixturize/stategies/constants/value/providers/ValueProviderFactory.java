@@ -22,11 +22,17 @@ public interface ValueProviderFactory {
     ValueProviderMap createValueProviders(Map<String, ValueProvider> customValueProviders, Types typeUtils, ValueProviderService valueProviderService);
 
     /**
-     * Creates the value provider used for {@link javax.lang.model.element.Element} instances with types of type {@link javax.lang.model.type.DeclaredType}.
+     * Creates the value provider used for {@link javax.lang.model.element.Element} instances with a class as a type.
      * @param valueProviderService - that is used to retrieve the corresponding value representation for a given {@link javax.lang.model.element.Element}.
      * @return the value provider
      */
-    ValueProvider createDeclaredTypeValueProvider(ValueProviderService valueProviderService);
+    ValueProvider createClassValueProvider(ValueProviderService valueProviderService);
+
+    /**
+     * Creates the value provider used for {@link javax.lang.model.element.Element} instances with an enum type.
+     * @return the value provider
+     */
+    ValueProvider createEnumValueProvider();
 
     /**
      * Creates the value provider used for {@link javax.lang.model.element.Element} instances with an array type.

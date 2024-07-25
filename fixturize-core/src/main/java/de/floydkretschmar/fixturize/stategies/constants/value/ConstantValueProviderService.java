@@ -7,6 +7,8 @@ import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValuePro
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import static javax.lang.model.element.ElementKind.CLASS;
+import static javax.lang.model.element.ElementKind.ENUM;
 import static javax.lang.model.type.TypeKind.ARRAY;
 
 /**
@@ -32,10 +36,16 @@ public class ConstantValueProviderService implements ValueProviderService {
     private final ValueProviderMap valueProviders;
 
     /**
-     * The value provider that provides the fallback value for declared types (classes and enums) if no other value
+     * The value provider that provides the fallback value for declared enums if no other value
      * provider has been registered.
      */
-    private final ValueProvider declaredTypeValueProvider;
+    private final ValueProvider enumValueProvider;
+
+    /**
+     * The value provider that provides the fallback value for declared classes if no other value
+     * provider has been registered.
+     */
+    private final ValueProvider classValueProvider;
 
     /**
      * The value provider that provides the fallback value for arrays if no other value provider has been registered.
@@ -59,8 +69,9 @@ public class ConstantValueProviderService implements ValueProviderService {
             Types typeUtils,
             MetadataFactory metadataFactory) {
         this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders, typeUtils, this);
-        this.declaredTypeValueProvider = valueProviderFactory.createDeclaredTypeValueProvider(this);
+        this.classValueProvider = valueProviderFactory.createClassValueProvider(this);
         this.arrayValueProvider = valueProviderFactory.createArrayValueProvider();
+        this.enumValueProvider = valueProviderFactory.createEnumValueProvider();
         this.metadataFactory = metadataFactory;
         this.elementUtils = elementUtils;
     }
@@ -85,7 +96,17 @@ public class ConstantValueProviderService implements ValueProviderService {
         if (type.getKind() == ARRAY)
             return this.arrayValueProvider.provideValueAsString(element, metadata);
 
-        return this.declaredTypeValueProvider.provideValueAsString(element, metadata);
+        if (type.getKind() == TypeKind.DECLARED) {
+            final var declaredElement = ((DeclaredType)type).asElement();
+            final var elementKind = declaredElement.getKind();
+            if (elementKind == ENUM) {
+                return this.enumValueProvider.provideValueAsString(element, metadata);
+            } else if (elementKind == CLASS) {
+                return this.classValueProvider.provideValueAsString(element, metadata);
+            }
+        }
+
+        return DEFAULT_VALUE;
     }
 
     /**
