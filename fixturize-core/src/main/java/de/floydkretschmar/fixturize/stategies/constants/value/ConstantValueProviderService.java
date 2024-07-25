@@ -118,7 +118,7 @@ public class ConstantValueProviderService implements ValueProviderService {
      */
     @Override
     public String resolveValuesForDefaultPlaceholders(String valueStringWithPlaceholders) {
-        final var valuePattern = Pattern.compile("(?<defaultValueType>\\$\\{[^\\{\\}\\$]*\\})");
+        final var valuePattern = Pattern.compile("(?<defaultValueType>\\#\\{[^\\{\\}\\$]*\\})");
         final var regex = valuePattern.matcher(valueStringWithPlaceholders);
         final var values = new ArrayList<String>();
 

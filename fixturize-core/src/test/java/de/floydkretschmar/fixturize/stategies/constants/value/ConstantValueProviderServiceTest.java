@@ -188,7 +188,7 @@ class ConstantValueProviderServiceTest {
         when(field.asType()).thenReturn(type);
 
         when(valueProviderMap.containsKey(eq("some.test.ClassType"))).thenReturn(true);
-        when(valueProviderMap.get(eq("some.test.ClassType"))).thenReturn((f,n) -> "${some.test.ResolvedClassType}");
+        when(valueProviderMap.get(eq("some.test.ClassType"))).thenReturn((f,n) -> "#{some.test.ResolvedClassType}");
 
         final var resolvedType = createTypeMirrorFixture("ResolvedClassType");
         final var resolvedElement = mock(TypeElement.class);
@@ -223,7 +223,7 @@ class ConstantValueProviderServiceTest {
         when(valueProviderMap.containsKey(any(String.class))).thenReturn(true);
         when(valueProviderMap.get(any(String.class))).thenReturn((f, n) -> "%sValue".formatted(n.getSimpleClassName()));
 
-        final var result = service.resolveValuesForDefaultPlaceholders("Non-dynamic part ${ClassTypeElement}");
+        final var result = service.resolveValuesForDefaultPlaceholders("Non-dynamic part #{ClassTypeElement}");
 
         assertThat(result).isEqualTo("Non-dynamic part ClassTypeElementValue");
         verify(metadataFactory, times(1)).createMetadataFrom(type);

@@ -21,11 +21,12 @@ public class CustomValueProviderParser {
      * @throws FixtureCreationException if the provided definition is not a valid line of code
      */
     public static ValueProvider parseValueProvider(String valueProviderDefinition) {
+        System.setProperty("nashorn.args", "--language=es6");
         final var engineManager = new ScriptEngineManager();
         final var engine = engineManager.getEngineByName("nashorn");
 
         try {
-            final var valueProviderAsJs = "function(field, names) %s".formatted(valueProviderDefinition);
+            final var valueProviderAsJs = "%s".formatted(valueProviderDefinition);
             final var evaluationResult = engine.eval("""
                     var ValueProvider = Java.type('de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider');
                     new ValueProvider(%s);""".formatted(valueProviderAsJs));

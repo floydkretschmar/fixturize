@@ -20,7 +20,7 @@ public class CustomConstantDefinitionsClass {
     private final boolean booleanField;
     private final UUID uuidField;
     private final ElementKind elementKindField;
-    @FixtureConstant(name = "OBJECT_LIST_FIELD", value = "java.util.List.of(${java.lang.String}, ${java.lang.Integer})")
+    @FixtureConstant(name = "OBJECT_LIST_FIELD", value = "java.util.List.of(#{java.lang.String}, #{java.lang.Integer})")
     private final List<Object> objectListField;
 
     public CustomConstantDefinitionsClass() {
