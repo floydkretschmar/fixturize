@@ -8,6 +8,4 @@ public class CrossReferencingClassFixture {
     public static de.floydkretschmar.fixturize.mocks.CrossReferencedBuilderClass BUILDER_CLASS_INSTANCE = de.floydkretschmar.fixturize.mocks.CrossReferencedBuilderClass.builder().setStringField("STRING_FIELD_VALUE").setIntField(0).setBooleanField(false).setUuidField(java.util.UUID.fromString("6b21f215-bf9e-445a-9dd2-5808a3a98d52")).build();
     public static de.floydkretschmar.fixturize.mocks.CrossReferencedLombokClass LOMBOK_CLASS_INSTANCE = de.floydkretschmar.fixturize.mocks.CrossReferencedLombokClass.builder().stringField("STRING_FIELD_VALUE").intField(0).booleanField(false).uuidField(java.util.UUID.fromString("6b21f215-bf9e-445a-9dd2-5808a3a98d52")).build();
     public static de.floydkretschmar.fixturize.mocks.CrossReferencedGenericClass<java.lang.Integer> GENERIC_CLASS_INSTANCE = de.floydkretschmar.fixturize.mocks.CrossReferencedGenericClass.<java.lang.Integer>builder().genericField(0).build();
-
-
 }

@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
+package de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback;
 
 import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
@@ -6,7 +6,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.FallbackValueProvider;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -26,8 +26,10 @@ import java.util.stream.Collectors;
 import static de.floydkretschmar.fixturize.ElementUtils.findMethodWithModifiersByReturnType;
 import static de.floydkretschmar.fixturize.ElementUtils.findSetterForFields;
 import static java.util.Comparator.comparing;
+import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static javax.lang.model.type.TypeKind.DECLARED;
 
 
 /**
@@ -48,8 +50,19 @@ import static javax.lang.model.element.Modifier.STATIC;
  * fields of the constant type. Matching in this case means that the setter method name must end on the name of the field.
  */
 @RequiredArgsConstructor
-public class ClassValueProvider implements ValueProvider {
+public class ClassValueProvider implements FallbackValueProvider {
     private final ValueProviderService valueProviderService;
+
+    @Override
+    public boolean canProvideFallback(Element element, TypeMetadata metadata) {
+        final var type = element.asType();
+        if (type.getKind() == DECLARED && type instanceof DeclaredType declaredType) {
+            final var declaredElement = declaredType.asElement();
+            return declaredElement.getKind() == CLASS;
+        }
+
+        return false;
+    }
 
     @Override
     public String provideValueAsString(Element field, TypeMetadata metadata) {

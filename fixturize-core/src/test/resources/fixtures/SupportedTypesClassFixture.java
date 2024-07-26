@@ -33,6 +33,4 @@ public class SupportedTypesClassFixture {
     public static java.util.Set<java.lang.String> SET_FIELD = java.util.Set.of("STRING_VALUE");
     public static java.util.Queue<java.lang.String> QUEUE_FIELD = new java.util.PriorityQueue<>(java.util.List.of("STRING_VALUE"));
     public static java.lang.String[] ARRAY_FIELD = new java.lang.String[] {};
-
-
 }

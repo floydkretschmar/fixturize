@@ -15,8 +15,11 @@ public class Test<T> {
 
     private T otherField;
 
-    public Test(int field, T otherField) {
+    private Test2 testField;
+
+    public Test(int field, T otherField, Test2 testField) {
         this.field = field;
         this.otherField = otherField;
+        this.testField = testField;
     }
 }

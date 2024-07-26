@@ -2,23 +2,19 @@ package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.FallbackValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import static javax.lang.model.element.ElementKind.CLASS;
-import static javax.lang.model.element.ElementKind.ENUM;
-import static javax.lang.model.type.TypeKind.ARRAY;
 
 /**
  * Decides which value during constant creation should be used for a given {@link VariableElement}.
@@ -36,21 +32,10 @@ public class ConstantValueProviderService implements ValueProviderService {
     private final ValueProviderMap valueProviders;
 
     /**
-     * The value provider that provides the fallback value for declared enums if no other value
-     * provider has been registered.
+     * The list of fallback value providers that will be tasked with providing values, if no specific value provider
+     * has been registered for the type of an element.
      */
-    private final ValueProvider enumValueProvider;
-
-    /**
-     * The value provider that provides the fallback value for declared classes if no other value
-     * provider has been registered.
-     */
-    private final ValueProvider classValueProvider;
-
-    /**
-     * The value provider that provides the fallback value for arrays if no other value provider has been registered.
-     */
-    private final ValueProvider arrayValueProvider;
+    private final Collection<FallbackValueProvider> fallbackValueProviders;
 
     /**
      * The factory used to create metadata for a given element.
@@ -69,9 +54,7 @@ public class ConstantValueProviderService implements ValueProviderService {
             Types typeUtils,
             MetadataFactory metadataFactory) {
         this.valueProviders = valueProviderFactory.createValueProviders(customValueProviders, typeUtils, this);
-        this.classValueProvider = valueProviderFactory.createClassValueProvider(this);
-        this.arrayValueProvider = valueProviderFactory.createArrayValueProvider();
-        this.enumValueProvider = valueProviderFactory.createEnumValueProvider();
+        this.fallbackValueProviders = valueProviderFactory.createFallbackValueProviders(this);
         this.metadataFactory = metadataFactory;
         this.elementUtils = elementUtils;
     }
@@ -94,17 +77,12 @@ public class ConstantValueProviderService implements ValueProviderService {
         else if (valueProviders.containsKey(metadata.getQualifiedClassNameWithoutGeneric())) {
             value = valueProviders.get(metadata.getQualifiedClassNameWithoutGeneric()).provideValueAsString(element, metadata);
         }
-        else if (type.getKind() == ARRAY) {
-            value = this.arrayValueProvider.provideValueAsString(element, metadata);
-        }
-        else if (type.getKind() == TypeKind.DECLARED) {
-            final var declaredElement = ((DeclaredType)type).asElement();
-            final var elementKind = declaredElement.getKind();
-            if (elementKind == ENUM) {
-                value = this.enumValueProvider.provideValueAsString(element, metadata);
-            } else if (elementKind == CLASS) {
-                value = this.classValueProvider.provideValueAsString(element, metadata);
-            }
+        else {
+            value = this.fallbackValueProviders.stream()
+                    .filter(provider -> provider.canProvideFallback(element, metadata))
+                    .findFirst()
+                    .map(provider -> provider.provideValueAsString(element, metadata))
+                    .orElse(DEFAULT_VALUE);
         }
 
         return this.resolveValuesForDefaultPlaceholders(value);

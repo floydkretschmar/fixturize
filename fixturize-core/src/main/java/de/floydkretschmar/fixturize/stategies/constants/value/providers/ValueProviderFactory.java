@@ -4,6 +4,7 @@ import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 
 import javax.lang.model.util.Types;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -22,21 +23,10 @@ public interface ValueProviderFactory {
     ValueProviderMap createValueProviders(Map<String, ValueProvider> customValueProviders, Types typeUtils, ValueProviderService valueProviderService);
 
     /**
-     * Creates the value provider used for {@link javax.lang.model.element.Element} instances with a class as a type.
+     * Creates the collection of {@link FallbackValueProvider}s that will be used for {@link javax.lang.model.element.Element}
+     * instances with no specific value provider registered for their {@link javax.lang.model.type.TypeMirror}.
      * @param valueProviderService - that is used to retrieve the corresponding value representation for a given {@link javax.lang.model.element.Element}.
-     * @return the value provider
+     * @return the collection of fallback value providers
      */
-    ValueProvider createClassValueProvider(ValueProviderService valueProviderService);
-
-    /**
-     * Creates the value provider used for {@link javax.lang.model.element.Element} instances with an enum type.
-     * @return the value provider
-     */
-    ValueProvider createEnumValueProvider();
-
-    /**
-     * Creates the value provider used for {@link javax.lang.model.element.Element} instances with an array type.
-     * @return the value provider
-     */
-    ValueProvider createArrayValueProvider();
+    Collection<FallbackValueProvider> createFallbackValueProviders(ValueProviderService valueProviderService);
 }

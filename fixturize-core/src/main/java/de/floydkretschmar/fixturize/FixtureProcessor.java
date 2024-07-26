@@ -12,7 +12,7 @@ import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrate
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.TypeMetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.DefaultValueProviderFactory;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ConstantValueProviderFactory;
 import de.floydkretschmar.fixturize.stategies.creation.BuilderCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.ConstructorCreationMethodStrategy;
 import de.floydkretschmar.fixturize.stategies.creation.CreationMethodGenerationStrategy;
@@ -128,7 +128,7 @@ public class FixtureProcessor extends AbstractProcessor {
                         FixtureValueProvider::targetType,
                         annotation -> valueProviderParser.parseValueProvider(annotation.valueProviderCallback())
                 ));
-        return new ConstantValueProviderService(customValueProviders, new DefaultValueProviderFactory(), elementUtils, typeUtils, metadataFactory);
+        return new ConstantValueProviderService(customValueProviders, new ConstantValueProviderFactory(), elementUtils, typeUtils, metadataFactory);
     }
 
     private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap, TypeMetadata metadata) {
@@ -147,9 +147,7 @@ public class FixtureProcessor extends AbstractProcessor {
     private static String getFixtureClassAsString(TypeElement element, TypeMetadata metadata, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
         final var fixtureClassTemplate = """
         %spublic class %sFixture {
-        %s
-        
-        %s
+        %s%s
         }
         """;
 
@@ -159,6 +157,11 @@ public class FixtureProcessor extends AbstractProcessor {
         final var constantsString = getConstantsString(constantMap.values().stream());
         final var creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap, metadata);
 
-        return String.format(fixtureClassTemplate, packageString, metadata.getSimpleClassNameWithoutGeneric(), constantsString, creationMethodsString);
+        return String.format(
+                fixtureClassTemplate,
+                packageString,
+                metadata.getSimpleClassNameWithoutGeneric(),
+                constantsString,
+                creationMethodsString.isEmpty() ? "" : "\n\n%s".formatted(creationMethodsString));
     }
 }

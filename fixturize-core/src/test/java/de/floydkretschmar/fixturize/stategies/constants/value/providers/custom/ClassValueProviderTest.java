@@ -5,11 +5,13 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.ClassValueProvider;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,6 +24,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +36,13 @@ import static de.floydkretschmar.fixturize.TestFixtures.createDeclaredTypeFixtur
 import static de.floydkretschmar.fixturize.TestFixtures.createExecutableElementFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureBuilderFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstructorFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createMetadataFixture;
+import static de.floydkretschmar.fixturize.TestFixtures.createTypeMirrorFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixture;
 import static de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService.DEFAULT_VALUE;
+import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.CONSTRUCTOR;
+import static javax.lang.model.element.ElementKind.ENUM;
 import static javax.lang.model.element.ElementKind.FIELD;
 import static javax.lang.model.element.ElementKind.METHOD;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -451,5 +458,32 @@ class ClassValueProviderTest {
 
         assertThat(result).isEqualTo(DEFAULT_VALUE);
         verifyNoInteractions(valueProviderService);
+    }
+
+    @Test
+    void canProvideFallback_whenCalledForDeclaredTypeClass_returnTrue() {
+        final var element = createVariableElementFixture(null, createDeclaredTypeFixture(CLASS));
+
+        final var result = valueProvider.canProvideFallback(element, createMetadataFixture());
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void canProvideFallback_whenCalledForDeclaredTypeNotClass_returnFalse() {
+        final var element = createVariableElementFixture(null, createDeclaredTypeFixture(ENUM));
+
+        final var result = valueProvider.canProvideFallback(element, createMetadataFixture());
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void canProvideFallback_whenCalledForOtherThanDeclaredType_returnFalse() {
+        final var element = createVariableElementFixture(null, createTypeMirrorFixture(TypeKind.INT));
+
+        final var result = valueProvider.canProvideFallback(element, createMetadataFixture());
+
+        assertThat(result).isFalse();
     }
 }
