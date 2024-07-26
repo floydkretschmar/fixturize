@@ -7,7 +7,10 @@ plugins {
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_17
 }
+
+assert JavaVersion.VERSION_17.isCompatibleWith(JavaVersion.current());
 
 ext {
     graalVMjsVersion = "23.0.5"
