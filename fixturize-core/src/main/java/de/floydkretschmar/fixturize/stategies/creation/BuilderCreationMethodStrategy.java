@@ -17,6 +17,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.floydkretschmar.fixturize.ElementUtils.findSetterForFields;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static javax.lang.model.element.Modifier.PUBLIC;
 
 /**
@@ -38,7 +40,12 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
                 .map(annotation -> {
                     Collection<Constant> correspondingConstants;
                     if (annotation.usedSetters().length == 0)
-                        correspondingConstants = constantMap.values().stream().toList();
+                        correspondingConstants = constantMap.values().stream()
+                                .collect(groupingBy(Constant::getOriginalFieldName, LinkedHashMap::new, toList()))
+                                .values()
+                                .stream()
+                                .flatMap(values -> values.stream().limit(1))
+                                .toList();
                     else
                         correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.usedSetters()));
 
