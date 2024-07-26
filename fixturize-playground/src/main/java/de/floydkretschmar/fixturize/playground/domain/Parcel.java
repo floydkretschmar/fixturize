@@ -3,6 +3,7 @@ package de.floydkretschmar.fixturize.playground.domain;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
+import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import lombok.Builder;
 import lombok.Value;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Builder
 @Fixture
 @FixtureBuilder(methodName = "createParcel")
+@FixtureValueProvider(targetType = "java.util.List<de.floydkretschmar.fixturize.playground.domain.Item>", valueProviderCallback = "(field, metadata) => `java.util.List.of(ItemFixture.createItem1().build(), ItemFixture.createItem2().build())`")
 public class Parcel {
     Instant shipmentDate;
     String trackingNumber;
