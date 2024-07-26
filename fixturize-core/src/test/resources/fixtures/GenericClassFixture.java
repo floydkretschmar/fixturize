@@ -9,8 +9,6 @@ public class GenericClassFixture {
     }
 
     public static GenericClass.GenericClassBuilder<java.lang.String> createGenericFixtureBuilder() {
-        return GenericClass.<java.lang.String>builder()
-                .genericField(GENERIC_FIELD)
-                .field(FIELD);
+        return GenericClass.<java.lang.String>builder().genericField(GENERIC_FIELD).field(FIELD);
     }
 }

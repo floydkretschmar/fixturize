@@ -13,14 +13,14 @@ import java.util.Map;
  *
  * @author Floyd Kretschmar
  */
-public class FixtureConstantDefinitionMap extends LinkedHashMap<String, Constant> implements ConstantDefinitionMap {
+public class FixtureConstantMap extends LinkedHashMap<String, Constant> implements ConstantMap {
 
     /**
-     * Constructs a {@link FixtureConstantDefinitionMap } using a specified map as a base.
+     * Constructs a {@link FixtureConstantMap } using a specified map as a base.
      *
      * @param fixtureConstantMap - the map of custom {@link Constant}s
      */
-    public FixtureConstantDefinitionMap(Map<? extends String, ? extends Constant> fixtureConstantMap) {
+    public FixtureConstantMap(Map<? extends String, ? extends Constant> fixtureConstantMap) {
         super(fixtureConstantMap);
     }
 

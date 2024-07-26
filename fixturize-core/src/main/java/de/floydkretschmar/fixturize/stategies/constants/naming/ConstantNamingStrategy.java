@@ -1,4 +1,4 @@
-package de.floydkretschmar.fixturize.stategies.constants;
+package de.floydkretschmar.fixturize.stategies.constants.naming;
 
 import com.google.common.base.CaseFormat;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Creates a constant name by transforming the camel case field name into screaming snake case.
  */
-public class CamelCaseToScreamingSnakeCaseNamingStrategy implements ConstantsNamingStrategy {
+public class ConstantNamingStrategy implements NamingStrategy {
     /**
      * Returns a screaming snake case representation of the provided field name.
      *
@@ -17,7 +17,7 @@ public class CamelCaseToScreamingSnakeCaseNamingStrategy implements ConstantsNam
      * @throws FixtureCreationException if the provided field name is not camel case
      */
     @Override
-    public String createConstantName(String fieldName) {
+    public String createName(String fieldName) {
         final var pattern = Pattern.compile("^[a-z]+([A-Z][a-z0-9]+)*");
         final var matcher = pattern.matcher(fieldName);
         if (!matcher.matches())

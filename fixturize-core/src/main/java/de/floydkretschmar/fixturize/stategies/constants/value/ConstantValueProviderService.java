@@ -16,16 +16,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import static de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider.DEFAULT_VALUE;
+
 /**
  * Decides which value during constant creation should be used for a given {@link VariableElement}.
  *
  * @author Floyd Kretschmar
  */
 public class ConstantValueProviderService implements ValueProviderService {
-    /**
-     * The default constant value if all other strategies for generation fail.
-     */
-    public static final String DEFAULT_VALUE = "null";
     /**
      * All default and custom value providers for classes.
      */

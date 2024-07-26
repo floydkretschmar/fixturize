@@ -4,7 +4,7 @@ import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class ConstructorCreationMethodStrategyTest {
-    private ConstantDefinitionMap constantMap;
+    private ConstantMap constantMap;
     private ConstructorCreationMethodStrategy strategy;
 
     @BeforeEach
@@ -121,7 +121,7 @@ class ConstructorCreationMethodStrategyTest {
         final var element = createTypeElementFixture(
                 "TestObject",
                 createFixtureConstructorFixture("methodName", "stringField"));
-        final var constantMap = mock(ConstantDefinitionMap.class);
+        final var constantMap = mock(ConstantMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenThrow(new FixtureCreationException("error"));
 
         assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject")));

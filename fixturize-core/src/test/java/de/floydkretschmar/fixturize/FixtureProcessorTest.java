@@ -92,7 +92,7 @@ class FixtureProcessorTest {
     @SneakyThrows
     private static String loadExpectedFixture(String expectedFixtureClassPath) {
         final var url = Resources.getResource(expectedFixtureClassPath);
-        return Resources.toString(url, StandardCharsets.UTF_8);
+        return Resources.toString(url, StandardCharsets.UTF_8).replaceAll("\\r\\n?", System.lineSeparator());
     }
 
     @SneakyThrows
@@ -108,10 +108,8 @@ class FixtureProcessorTest {
                 .compile(classPaths.stream().map(JavaFileObjects::forResource).collect(Collectors.toSet()));
         assertThat(compilation).succeeded();
 
-        expectedFixture.forEach((expectedFixtureName, expectedFixtureValue) -> {
-            assertThat(compilation)
-                    .generatedSourceFile(expectedFixtureName)
-                    .contentsAsString(StandardCharsets.UTF_8).isEqualTo(expectedFixtureValue);
-        });
+        expectedFixture.forEach((expectedFixtureName, expectedFixtureValue) -> assertThat(compilation)
+                .generatedSourceFile(expectedFixtureName)
+                .contentsAsString(StandardCharsets.UTF_8).isEqualTo(expectedFixtureValue));
     }
 }

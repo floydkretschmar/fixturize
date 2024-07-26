@@ -3,6 +3,7 @@ package de.floydkretschmar.fixturize.stategies.constants;
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.domain.Constant;
+import de.floydkretschmar.fixturize.stategies.constants.naming.NamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ConstantGenerationStrategyTest {
     @Mock
-    private ConstantsNamingStrategy namingStrategy;
+    private NamingStrategy namingStrategy;
 
     @Mock
     private ValueProviderService valueProviderService;
@@ -68,7 +69,7 @@ class ConstantGenerationStrategyTest {
     @Test
     void generateConstants_whenCalledWithValidClass_shouldGenerateConstants() {
         mockServiceGetValueFor();
-        when(namingStrategy.createConstantName(anyString())).thenAnswer(param -> "%sName".formatted(param.getArguments()[0]));
+        when(namingStrategy.createName(anyString())).thenAnswer(param -> "%sName".formatted(param.getArguments()[0]));
         final var field1 = TestFixtures.<FixtureConstant>createVariableElementFixture(BOOLEAN_FIELD_NAME, createTypeMirrorFixture(BOOLEAN_FIELD_DEFINITION.getType()), ElementKind.FIELD);
         final var field2 = TestFixtures.<FixtureConstant>createVariableElementFixture(INT_FIELD_NAME, createTypeMirrorFixture(INT_FIELD_DEFINITION.getType()), ElementKind.FIELD);
 
@@ -83,8 +84,8 @@ class ConstantGenerationStrategyTest {
 
         verify(field1, times(1)).getAnnotationsByType(FixtureConstant.class);
         verify(field2, times(1)).getAnnotationsByType(FixtureConstant.class);
-        verify(namingStrategy, times(1)).createConstantName(BOOLEAN_FIELD_NAME);
-        verify(namingStrategy, times(1)).createConstantName(INT_FIELD_NAME);
+        verify(namingStrategy, times(1)).createName(BOOLEAN_FIELD_NAME);
+        verify(namingStrategy, times(1)).createName(INT_FIELD_NAME);
         verify(valueProviderService, times(1)).getValueFor(argThat(arg -> arg.getSimpleName().toString().equals(BOOLEAN_FIELD_NAME)));
         verify(valueProviderService, times(1)).getValueFor(argThat(arg -> arg.getSimpleName().toString().equals(INT_FIELD_NAME)));
         verifyNoMoreInteractions(namingStrategy, valueProviderService);
@@ -94,7 +95,7 @@ class ConstantGenerationStrategyTest {
     @Test
     void generateConstants_whenCalledWithGeneric_shouldGenerateConstants() {
         mockServiceGetValueFor();
-        when(namingStrategy.createConstantName(anyString())).thenAnswer(param -> "%sName".formatted(param.getArguments()[0]));
+        when(namingStrategy.createName(anyString())).thenAnswer(param -> "%sName".formatted(param.getArguments()[0]));
         final var field1 = TestFixtures.<FixtureConstant>createVariableElementFixture(BOOLEAN_FIELD_NAME, createTypeMirrorFixture(BOOLEAN_FIELD_DEFINITION.getType()), ElementKind.FIELD);
 
         final var field2 = TestFixtures.<FixtureConstant>createVariableElementFixture("genericField", mock(TypeMirror.class), FIELD);
@@ -113,8 +114,8 @@ class ConstantGenerationStrategyTest {
 
         verify(field1, times(1)).getAnnotationsByType(FixtureConstant.class);
         verify(field2, times(1)).getAnnotationsByType(FixtureConstant.class);
-        verify(namingStrategy, times(1)).createConstantName(BOOLEAN_FIELD_NAME);
-        verify(namingStrategy, times(1)).createConstantName("genericField");
+        verify(namingStrategy, times(1)).createName(BOOLEAN_FIELD_NAME);
+        verify(namingStrategy, times(1)).createName("genericField");
         verify(valueProviderService, times(1)).getValueFor(field1);
         verify(valueProviderService, times(1)).getValueFor(genericFieldType.asElement());
         verifyNoMoreInteractions(namingStrategy, valueProviderService);

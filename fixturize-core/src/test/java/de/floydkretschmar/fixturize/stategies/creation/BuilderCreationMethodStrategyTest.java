@@ -4,7 +4,7 @@ import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +12,6 @@ import javax.lang.model.element.VariableElement;
 import java.util.Collection;
 import java.util.List;
 
-import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_16;
 import static de.floydkretschmar.fixturize.TestFixtures.INT_FIELD_DEFINITION;
 import static de.floydkretschmar.fixturize.TestFixtures.STRING_FIELD_DEFINITION;
 import static de.floydkretschmar.fixturize.TestFixtures.createConstantDefinitionMapMock;
@@ -34,7 +33,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class BuilderCreationMethodStrategyTest {
-    private ConstantDefinitionMap constantMap;
+    private ConstantMap constantMap;
     private BuilderCreationMethodStrategy strategy;
 
     @BeforeEach
@@ -56,14 +55,12 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .returnValue("TestObject.builder().stringField(stringFieldName).intField(intFieldName)")
                         .name("methodName")
                         .build(),
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder2()\n%s.uuidField(uuidFieldName)"
-                                .formatted(WHITESPACE_16))
+                        .returnValue("TestObject.builder2().uuidField(uuidFieldName)")
                         .name("methodName2")
                         .build());
 
@@ -95,8 +92,7 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.setStringField(stringFieldName)\n%s.setIntField(intFieldName)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .returnValue("TestObject.builder().setStringField(stringFieldName).setIntField(intFieldName)")
                         .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
@@ -118,8 +114,7 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .returnValue("TestObject.builder().stringField(stringFieldName).intField(intFieldName)")
                         .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
@@ -140,8 +135,7 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder<String>")
-                        .returnValue("TestObject.<String>builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .returnValue("TestObject.<String>builder().stringField(stringFieldName).intField(intFieldName)")
                         .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
@@ -169,7 +163,7 @@ class BuilderCreationMethodStrategyTest {
                 "TestObject",
                 createFixtureBuilderFixture("methodName", "builder"));
 
-        constantMap = mock(ConstantDefinitionMap.class);
+        constantMap = mock(ConstantMap.class);
         when(constantMap.values()).thenReturn(List.of(STRING_FIELD_DEFINITION, INT_FIELD_DEFINITION));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
@@ -178,8 +172,7 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
                         .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder()\n%s.stringField(stringFieldName)\n%s.intField(intFieldName)"
-                                .formatted(WHITESPACE_16, WHITESPACE_16))
+                        .returnValue("TestObject.builder().stringField(stringFieldName).intField(intFieldName)")
                         .name("methodName")
                         .build());
 
@@ -195,7 +188,7 @@ class BuilderCreationMethodStrategyTest {
                 "TestObject",
                 createFixtureBuilderFixture("methodName", "builder", "stringField"));
 
-        constantMap = mock(ConstantDefinitionMap.class);
+        constantMap = mock(ConstantMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenThrow(new FixtureCreationException("error"));
 
         assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject")));

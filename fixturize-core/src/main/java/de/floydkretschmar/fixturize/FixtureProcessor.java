@@ -3,11 +3,9 @@ package de.floydkretschmar.fixturize;
 import com.google.auto.service.AutoService;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
-import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
-import de.floydkretschmar.fixturize.stategies.constants.CamelCaseToScreamingSnakeCaseNamingStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
+import de.floydkretschmar.fixturize.stategies.constants.naming.ConstantNamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantGenerationStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.TypeMetadataFactory;
@@ -31,15 +29,9 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_4;
-import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_8;
 
 /**
  * Processes all classes annotated with {@link de.floydkretschmar.fixturize.annotations.Fixture} and tries to generate
@@ -61,6 +53,8 @@ import static de.floydkretschmar.fixturize.FormattingConstants.WHITESPACE_8;
 @SupportedAnnotationTypes("de.floydkretschmar.fixturize.annotations.Fixture")
 @AutoService(Processor.class)
 public class FixtureProcessor extends AbstractProcessor {
+    private static final String WHITESPACE_4 = " ".repeat(4);
+    private static final String WHITESPACE_8 = " ".repeat(8);
 
     private Types typeUtils;
 
@@ -99,7 +93,7 @@ public class FixtureProcessor extends AbstractProcessor {
     private void processAnnotatedElement(TypeElement element) {
         final var metadataFactory = new TypeMetadataFactory(elementUtils);
         final var valueProviderService = initializeValueProviderService(element.getAnnotationsByType(FixtureValueProvider.class), metadataFactory);
-        final var constantsNamingStrategy = new CamelCaseToScreamingSnakeCaseNamingStrategy();
+        final var constantsNamingStrategy = new ConstantNamingStrategy();
         final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService);
 
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
@@ -114,8 +108,7 @@ public class FixtureProcessor extends AbstractProcessor {
                     .createSourceFile(metadata.getQualifiedFixtureClassName());
 
             try (final var out = new PrintWriter(fixtureFile.openWriter())) {
-                final var fixtureClassString = getFixtureClassAsString(element, metadata, constantsGenerationStrategy, creationMethodStrategies);
-                out.print(fixtureClassString);
+                writeFixture(out, element, metadata, constantsGenerationStrategy, creationMethodStrategies);
             }
         } catch (IOException e) {
             throw new FixtureCreationException("Failed to create source file %s for fixture.".formatted(metadata.getQualifiedClassName()));
@@ -131,37 +124,29 @@ public class FixtureProcessor extends AbstractProcessor {
         return new ConstantValueProviderService(customValueProviders, new ConstantValueProviderFactory(), elementUtils, typeUtils, metadataFactory);
     }
 
-    private static String getCreationMethodsString(TypeElement element, List<CreationMethodGenerationStrategy> creationMethodStrategies, ConstantDefinitionMap constantMap, TypeMetadata metadata) {
-        return creationMethodStrategies.stream()
-                .flatMap(stategy -> stategy.generateCreationMethods(element, constantMap, metadata).stream())
-                .map(method -> "%spublic static %s %s() {\n%sreturn %s;\n%s}".formatted(WHITESPACE_4, method.getReturnType(), method.getName(), WHITESPACE_8, method.getReturnValue(), WHITESPACE_4))
-                .collect(Collectors.joining("\n\n"));
-    }
-
-    private static String getConstantsString(Stream<Constant> constants) {
-        return constants
-                .map(constant -> "%spublic static %s %s = %s;".formatted(WHITESPACE_4, constant.getType(), constant.getName(), constant.getValue()))
-                .collect(Collectors.joining("\n"));
-    }
-
-    private static String getFixtureClassAsString(TypeElement element, TypeMetadata metadata, ConstantGenerationStrategy constantsGenerationStrategy, ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
-        final var fixtureClassTemplate = """
-        %spublic class %sFixture {
-        %s%s
+    private static void writeFixture(
+            PrintWriter writer,
+            TypeElement element,
+            TypeMetadata metadata,
+            ConstantGenerationStrategy constantsGenerationStrategy,
+            ArrayList<CreationMethodGenerationStrategy> creationMethodStrategies) {
+        if (metadata.hasPackageName()) {
+            writer.println("package %s;".formatted(metadata.getPackageName()));
+            writer.println();
         }
-        """;
-
-        final var packageString = metadata.hasPackageName() ? "package %s;\n\n".formatted(metadata.getPackageName()) : "";
 
         final var constantMap = constantsGenerationStrategy.generateConstants(element, metadata);
-        final var constantsString = getConstantsString(constantMap.values().stream());
-        final var creationMethodsString = getCreationMethodsString(element, creationMethodStrategies, constantMap, metadata);
+        final var creationMethods = creationMethodStrategies.stream()
+                .flatMap(strategy -> strategy.generateCreationMethods(element, constantMap, metadata).stream());
 
-        return String.format(
-                fixtureClassTemplate,
-                packageString,
-                metadata.getSimpleClassNameWithoutGeneric(),
-                constantsString,
-                creationMethodsString.isEmpty() ? "" : "\n\n%s".formatted(creationMethodsString));
+        writer.println("public class %sFixture {".formatted(metadata.getSimpleClassNameWithoutGeneric()));
+        constantMap.values().forEach(constant -> writer.println("%spublic static %s %s = %s;".formatted(WHITESPACE_4, constant.getType(), constant.getName(), constant.getValue())));
+        creationMethods.forEach(method -> {
+            writer.println();
+            writer.println("%spublic static %s %s() {".formatted(WHITESPACE_4, method.getReturnType(), method.getName()));
+            writer.println("%sreturn %s;".formatted(WHITESPACE_8, method.getReturnValue()));
+            writer.println("%s}".formatted(WHITESPACE_4));
+        });
+        writer.println("}");
     }
 }

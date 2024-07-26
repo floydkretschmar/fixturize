@@ -5,7 +5,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -253,8 +253,8 @@ public class TestFixtures {
         return executableElement;
     }
 
-    public static ConstantDefinitionMap createConstantDefinitionMapMock() {
-        final var constantMap = mock(ConstantDefinitionMap.class);
+    public static ConstantMap createConstantDefinitionMapMock() {
+        final var constantMap = mock(ConstantMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenAnswer(call -> {
             final var argument = call.<Collection<String>>getArgument(0);
             return argument.stream().map(TestFixtures::createConstantFixture).toList();

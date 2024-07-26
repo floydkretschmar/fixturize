@@ -8,11 +8,6 @@ public class LombokClassFixture {
     public static javax.lang.model.element.ElementKind[] ELEMENT_KINDS_FIELD = new javax.lang.model.element.ElementKind[] {};
 
     public static LombokClass.LombokClassBuilder createLombokFixture() {
-        return LombokClass.builder()
-                .stringField(STRING_FIELD)
-                .intField(INT_FIELD)
-                .booleanField(BOOLEAN_FIELD)
-                .uuidField(UUID_FIELD)
-                .elementKindsField(ELEMENT_KINDS_FIELD);
+        return LombokClass.builder().stringField(STRING_FIELD).intField(INT_FIELD).booleanField(BOOLEAN_FIELD).uuidField(UUID_FIELD).elementKindsField(ELEMENT_KINDS_FIELD);
     }
 }

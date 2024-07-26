@@ -7,6 +7,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
+import de.floydkretschmar.fixturize.stategies.constants.naming.NamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
  *     <li><b>type</b>: The same type as <b>field</b></li>
  *     <li><b>constantName</b>:
  *         <ul>
- *             <li>the name of <b>field</b> according to the specified {@link ConstantsNamingStrategy}</li>
+ *             <li>the name of <b>field</b> according to the specified {@link NamingStrategy}</li>
  *             <li>or the name specified by {@link FixtureConstant}</li>
  *         </ul>
  *     </li>
@@ -52,7 +53,7 @@ public class ConstantGenerationStrategy {
     /**
      * The strategy used to name generated constants
      */
-    private final ConstantsNamingStrategy constantsNamingStrategy;
+    private final NamingStrategy namingStrategy;
 
     /**
      * The service used to determine the value used for a generated constant
@@ -60,19 +61,19 @@ public class ConstantGenerationStrategy {
     private final ValueProviderService valueProviderService;
 
     /**
-     * Returns a {@link ConstantDefinitionMap} containing all {@link Constant}s that have been generated
+     * Returns a {@link ConstantMap} containing all {@link Constant}s that have been generated
      * for the provided element according to all specified strategies.
      *
      * @param element - for which the constants will be generated
-     * @return the {@link ConstantDefinitionMap} containing all constant definitions
+     * @return the {@link ConstantMap} containing all constant definitions
      */
-    public ConstantDefinitionMap generateConstants(TypeElement element, TypeMetadata metadata) {
+    public ConstantMap generateConstants(TypeElement element, TypeMetadata metadata) {
         final var fields = metadata.createVariableElementMetadata(ElementFilter.fieldsIn(element.getEnclosedElements()));
         final var linkedHashMap = createConstantsForFields(fields.stream())
                 .collect(ElementUtils.toLinkedMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue));
-        return new FixtureConstantDefinitionMap(linkedHashMap);
+        return new FixtureConstantMap(linkedHashMap);
     }
 
     private Stream<Map.Entry<String, Constant>> createConstantsForFields(Stream<VariableElementMetadata> fields) {
@@ -114,7 +115,7 @@ public class ConstantGenerationStrategy {
         final var originalFieldName = field.getName();
         return Constant.builder()
                 .type(field.getTypedElement().asType().toString())
-                .name(constantsNamingStrategy.createConstantName(originalFieldName))
+                .name(namingStrategy.createName(originalFieldName))
                 .value(this.valueProviderService.getValueFor(field.getTypedElement()))
                 .originalFieldName(originalFieldName)
                 .build();

@@ -39,7 +39,7 @@ import static de.floydkretschmar.fixturize.TestFixtures.createFixtureConstructor
 import static de.floydkretschmar.fixturize.TestFixtures.createMetadataFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createTypeMirrorFixture;
 import static de.floydkretschmar.fixturize.TestFixtures.createVariableElementFixture;
-import static de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService.DEFAULT_VALUE;
+import static de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider.DEFAULT_VALUE;
 import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.CONSTRUCTOR;
 import static javax.lang.model.element.ElementKind.ENUM;

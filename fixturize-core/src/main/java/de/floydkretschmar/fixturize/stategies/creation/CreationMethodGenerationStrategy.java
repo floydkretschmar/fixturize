@@ -5,7 +5,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
-import de.floydkretschmar.fixturize.stategies.constants.ConstantDefinitionMap;
+import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 
 import javax.lang.model.element.TypeElement;
 import java.util.Collection;
@@ -51,5 +51,5 @@ public interface CreationMethodGenerationStrategy {
      * @param constantMap - which contains the already generated constants for reference
      * @return a {@link Collection} of generated {@link CreationMethod}s
      */
-    Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantDefinitionMap constantMap, TypeMetadata metadata);
+    Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantMap constantMap, TypeMetadata metadata);
 }

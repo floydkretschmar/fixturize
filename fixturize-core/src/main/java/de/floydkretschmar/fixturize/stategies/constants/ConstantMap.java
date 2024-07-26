@@ -10,7 +10,7 @@ import java.util.Map;
  *
  * @author Floyd Kretschmar
  */
-public interface ConstantDefinitionMap extends Map<String, Constant> {
+public interface ConstantMap extends Map<String, Constant> {
 
     /**
      * Returns all {@link Constant}s for the provided set of keys.

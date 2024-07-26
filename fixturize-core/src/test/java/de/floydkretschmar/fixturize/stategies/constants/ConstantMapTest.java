@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ConstantMapTest {
 
-    private static final FixtureConstantDefinitionMap CONSTANTS_MAP = new FixtureConstantDefinitionMap(Map.of(
+    private static final FixtureConstantMap CONSTANTS_MAP = new FixtureConstantMap(Map.of(
             "stringField", STRING_FIELD_DEFINITION,
             "intField", INT_FIELD_DEFINITION,
             "booleanField", BOOLEAN_FIELD_DEFINITION,
