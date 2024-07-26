@@ -5,7 +5,10 @@ import lombok.Builder;
 
 @Builder
 @Fixture(genericImplementations = {"java.lang.Boolean"})
-@FixtureValueProvider(targetType = "java.lang.Boolean", valueProviderCallback = "(field, metadata) => `true`")
+@FixtureValueProvider(targetType = "java.lang.Boolean", valueProviderCallback = """
+function(field, metadata) {
+    return `true`;
+}""")
 @FixtureBuilder(methodName = "createTestFixture")
 public class Test<T> {
     private int field;

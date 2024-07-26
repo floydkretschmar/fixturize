@@ -5,6 +5,10 @@ plugins {
     id 'signing'
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
 ext {
     graalVMjsVersion = "23.0.5"
     guavaVersion = "33.2.1-jre"

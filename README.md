@@ -334,7 +334,7 @@ dependencies {
 
 ## Requirements
 
-All Java versions between 11 and 21 are supported.
+Java version 17 and later are supported.
 
 ## Licensing
 

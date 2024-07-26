@@ -70,10 +70,10 @@ public class FixtureProcessor extends AbstractProcessor {
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
-        if (SourceVersion.RELEASE_11.compareTo(SourceVersion.latest()) > 0)
-            return SourceVersion.RELEASE_11;
+        if (SourceVersion.RELEASE_17.compareTo(SourceVersion.latest()) > 0)
+            return SourceVersion.RELEASE_17;
 
-        return SourceVersion.RELEASE_21.compareTo(SourceVersion.latest()) <= 0 ? SourceVersion.RELEASE_21 : SourceVersion.latest();
+        return SourceVersion.latest();
     }
 
     @Override
