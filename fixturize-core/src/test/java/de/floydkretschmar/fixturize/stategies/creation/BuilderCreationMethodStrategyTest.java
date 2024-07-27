@@ -3,9 +3,10 @@ package de.floydkretschmar.fixturize.stategies.creation;
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
+import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.BuilderValueProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +19,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.floydkretschmar.fixturize.TestFixtures.*;
+import static de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider.DEFAULT_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -32,11 +35,11 @@ class BuilderCreationMethodStrategyTest {
     private ValueProviderService valueProviderService;
 
     @Mock
-    private ValueProvider builderValueProvider;
+    private BuilderValueProvider noUsedSettersValueProvider;
 
     @BeforeEach
     void setup() {
-        strategy = new BuilderCreationMethodStrategy(valueProviderService, builderValueProvider);
+        strategy = new BuilderCreationMethodStrategy(valueProviderService, noUsedSettersValueProvider);
     }
 
     @Test
@@ -65,6 +68,7 @@ class BuilderCreationMethodStrategyTest {
         verify(constantMap, times(1)).getMatchingConstants(List.of("uuidField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verifyNoMoreInteractions(constantMap, element);
+        verifyNoInteractions(noUsedSettersValueProvider);
     }
 
     @Test
@@ -85,6 +89,48 @@ class BuilderCreationMethodStrategyTest {
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verifyNoMoreInteractions(constantMap, element);
+        verifyNoInteractions(noUsedSettersValueProvider);
+    }
+
+    @Test
+    void createCreationMethods_whenBuilderWithNoUsedSetterDefined_shouldCreateCreationMethodForBuilderWithAllSetters() {
+        final var element = createTypeElementFixture(
+                createFixtureBuilderFixture(
+                        "methodName",
+                        "builder",
+                        "build"));
+        final var metadata = TestFixtures.createMetadataFixture("TestObject");
+        when(noUsedSettersValueProvider.provideValueAsString(any(), any(), anyString(), anyString())).thenReturn("noUsedSettersValue");
+
+        final var result = strategy.generateCreationMethods(element, constantMap, metadata);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.stream()).contains(
+                CreationMethod.builder()
+                        .returnType("some.test.TestObject")
+                        .returnValue("noUsedSettersValue")
+                        .name("methodName")
+                        .build());
+        verify(noUsedSettersValueProvider).provideValueAsString(element, metadata, "builder", "build");
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verifyNoMoreInteractions(element, noUsedSettersValueProvider);
+    }
+
+    @Test
+    void createCreationMethods_whenBuilderWithNoUsedSetterDefinedReturnsDefaultValue_shouldThrowFixtureCreationException() {
+        final var element = createTypeElementFixture(
+                createFixtureBuilderFixture(
+                        null,
+                        "builder",
+                        "build"));
+        final var metadata = TestFixtures.createMetadataFixture("TestObject");
+        when(noUsedSettersValueProvider.provideValueAsString(any(), any(), anyString(), anyString())).thenReturn(DEFAULT_VALUE);
+
+        assertThrows(FixtureCreationException.class, () -> strategy.generateCreationMethods(element, constantMap, metadata));
+
+        verify(noUsedSettersValueProvider).provideValueAsString(element, metadata, "builder", "build");
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verifyNoMoreInteractions(element, noUsedSettersValueProvider);
     }
 
     @Test
@@ -105,6 +151,7 @@ class BuilderCreationMethodStrategyTest {
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verifyNoMoreInteractions(constantMap, element);
+        verifyNoInteractions(noUsedSettersValueProvider);
     }
 
     @Test
@@ -117,6 +164,7 @@ class BuilderCreationMethodStrategyTest {
 
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verifyNoMoreInteractions(element);
+        verifyNoInteractions(noUsedSettersValueProvider);
     }
 
     @Test
@@ -142,6 +190,7 @@ class BuilderCreationMethodStrategyTest {
         verify(valueProviderService, times(1)).resolveValuesForDefaultPlaceholders("valueThatDoesNotMatchConstant");
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verifyNoMoreInteractions(constantMap, element);
+        verifyNoInteractions(noUsedSettersValueProvider);
     }
 
     @Test
@@ -165,5 +214,6 @@ class BuilderCreationMethodStrategyTest {
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField"));
         verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
         verifyNoMoreInteractions(constantMap, element);
+        verifyNoInteractions(noUsedSettersValueProvider);
     }
 }

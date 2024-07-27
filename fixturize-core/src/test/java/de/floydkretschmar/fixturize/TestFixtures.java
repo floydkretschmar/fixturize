@@ -112,8 +112,7 @@ public class TestFixtures {
         final var annotation = mock(FixtureConstructor.class);
         if (Objects.nonNull(methodName))
             when(annotation.methodName()).thenReturn(methodName);
-        if (parameterNames.length > 0)
-            when(annotation.constructorParameters()).thenReturn(parameterNames);
+        when(annotation.constructorParameters()).thenReturn(parameterNames);
         return annotation;
     }
 

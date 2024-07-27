@@ -5,11 +5,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -29,10 +25,11 @@ public class ElementUtils {
      * @param modifiers      - of the method
      * @return the matching method
      */
-    public static ExecutableElement findMethodWithModifiersByReturnType(Element element, String returnTypeName, Modifier... modifiers) {
+    public static ExecutableElement findMethodWithModifiersByReturnType(Element element, String returnTypeName, String methodName, Modifier... modifiers) {
         return ElementFilter.methodsIn(element.getEnclosedElements()).stream()
                 .filter(method -> Arrays.stream(modifiers).allMatch(modifier -> method.getModifiers().contains(modifier))
-                        && method.getReturnType().toString().equals(returnTypeName))
+                        && method.getReturnType().toString().equals(returnTypeName)
+                        && method.getSimpleName().toString().equals(methodName))
                 .findFirst()
                 .orElse(null);
     }

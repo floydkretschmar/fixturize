@@ -9,7 +9,6 @@ import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.TypeMetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.naming.ConstantNamingStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.naming.NamingStrategy;
 import de.floydkretschmar.fixturize.stategies.constants.value.ConstantValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.CreationMethodValueProviderService;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
@@ -66,7 +65,6 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private ConstantValueProviderFactory valueProviderFactory;
     private MetadataFactory metadataFactory;
-    private NamingStrategy constantNamingStrategy;
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -86,7 +84,6 @@ public class FixtureProcessor extends AbstractProcessor {
            .build());
         valueProviderFactory = new ConstantValueProviderFactory();
         metadataFactory = new TypeMetadataFactory(elementUtils);
-        constantNamingStrategy = new ConstantNamingStrategy();
     }
 
     @Override
@@ -101,7 +98,7 @@ public class FixtureProcessor extends AbstractProcessor {
 
     private void processAnnotatedElement(TypeElement element) {
         final var constantValueProviderService = initializeValueProviderService(element.getAnnotationsByType(FixtureValueProvider.class), metadataFactory);
-        final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantNamingStrategy, constantValueProviderService);
+        final var constantsGenerationStrategy = new ConstantGenerationStrategy(new ConstantNamingStrategy(), constantValueProviderService);
 
         final var fixtureAnnotation = element.getAnnotation(Fixture.class);
         final var metadata = metadataFactory.createMetadataFrom(element.asType(), Arrays.stream(fixtureAnnotation.genericImplementations()).toList());
@@ -148,8 +145,14 @@ public class FixtureProcessor extends AbstractProcessor {
     private List<CreationMethodGenerationStrategy> getCreationMethodGenerationStrategies(ValueProviderService constantValueProviderService, ConstantMap constantMap) {
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
         final var creationMethodValueProviderService = new CreationMethodValueProviderService(constantValueProviderService, constantMap);
-        creationMethodStrategies.add(new ConstructorCreationMethodStrategy(constantValueProviderService));
-        creationMethodStrategies.add(new BuilderCreationMethodStrategy(constantValueProviderService, valueProviderFactory.createBuilderValueProvider(creationMethodValueProviderService)));
+        creationMethodStrategies.add(
+                new ConstructorCreationMethodStrategy(
+                        creationMethodValueProviderService,
+                        valueProviderFactory.createConstructorValueProvider(creationMethodValueProviderService)));
+        creationMethodStrategies.add(
+                new BuilderCreationMethodStrategy(
+                        creationMethodValueProviderService,
+                        valueProviderFactory.createBuilderValueProvider(creationMethodValueProviderService)));
         return creationMethodStrategies;
     }
 }

@@ -7,9 +7,10 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilderSetter;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
+import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.BuilderValueProvider;
 import lombok.RequiredArgsConstructor;
 
 import javax.lang.model.element.TypeElement;
@@ -17,6 +18,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider.DEFAULT_VALUE;
 
 /**
  * The strategy that generates on creation method for each {@link FixtureBuilder} annotation on a class also annotated
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
 public class BuilderCreationMethodStrategy implements CreationMethodGenerationStrategy {
     private final ValueProviderService valueProviderService;
 
-    private final ValueProvider noUsedSettersValueProvider;
+    private final BuilderValueProvider noUsedSettersValueProvider;
     /**
      * Returns a {@link Collection} of all {@link CreationMethod}s that have been generated
      * for the provided element and constants according to the specified {@link FixtureBuilder} strategy.
@@ -50,8 +53,13 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
     }
 
     private String getValue(TypeElement element, ConstantMap constantMap, TypeMetadata metadata, FixtureBuilder annotation, String builderMethod, String buildMethod) {
-        if (annotation.usedSetters().length == 0)
-            return noUsedSettersValueProvider.provideValueAsString(element, metadata);
+        if (annotation.usedSetters().length == 0) {
+            final var value = noUsedSettersValueProvider.provideValueAsString(element, metadata, annotation.builderMethod(), annotation.buildMethod());
+            if (value.equals(DEFAULT_VALUE))
+                throw new FixtureCreationException("Builder creation method could not be created because either builder-method '%s' or build-method '%s' do not exist on class %s."
+                        .formatted(builderMethod, buildMethod, metadata.getQualifiedClassName()));
+            return value;
+        }
 
         final var valueToSetterMethod = Arrays.stream(annotation.usedSetters())
                 .collect(ElementUtils.toLinkedMap(

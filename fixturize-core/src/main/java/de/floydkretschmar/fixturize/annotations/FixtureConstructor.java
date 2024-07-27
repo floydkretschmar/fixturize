@@ -1,10 +1,6 @@
 package de.floydkretschmar.fixturize.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Indicates that a generated fixture should contain a method to create said fixture using the specified constructor. This
@@ -30,5 +26,5 @@ public @interface FixtureConstructor {
      * itself has to be either the name of the corresponding field or {@link FixtureConstant#name()} if specified.
      * @return the constructor parameter representations
      */
-    String[] constructorParameters();
+    String[] constructorParameters() default {};
 }

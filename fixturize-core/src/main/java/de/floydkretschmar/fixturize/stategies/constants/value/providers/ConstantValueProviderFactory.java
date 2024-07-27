@@ -31,7 +31,7 @@ public class ConstantValueProviderFactory implements ValueProviderFactory {
     }
 
     @Override
-    public ValueProvider createBuilderValueProvider(ValueProviderService valueProviderService) {
+    public BuilderValueProvider createBuilderValueProvider(ValueProviderService valueProviderService) {
         return new BuilderValueProvider(valueProviderService);
     }
 }

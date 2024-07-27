@@ -24,8 +24,13 @@ import static javax.lang.model.element.Modifier.STATIC;
 public class BuilderValueProvider implements ValueProvider {
 
     private final ValueProviderService valueProviderService;
+
     @Override
     public String provideValueAsString(Element field, TypeMetadata metadata) {
+        return provideValueAsString(field, metadata, "builder", "build");
+    }
+
+    public String provideValueAsString(Element field, TypeMetadata metadata, String builderMethodName, String buildMethodName) {
         final var fieldType = ((DeclaredType) field.asType());
         final var fieldTypeElement = fieldType.asElement();
         if (Objects.nonNull(fieldType.asElement().getAnnotation(Builder.class))) {
@@ -33,22 +38,22 @@ public class BuilderValueProvider implements ValueProvider {
             return createBuilderValue(
                     fields.stream().collect(ElementUtils.toLinkedMap(VariableElementMetadata::getName, data -> valueProviderService.getValueFor(data.getTypedElement()))),
                     metadata.getQualifiedClassNameWithoutGeneric(),
-                    getBuilderMethodName("builder", metadata),
-                    "build");
+                    getBuilderMethodName(builderMethodName, metadata),
+                    buildMethodName);
         }
 
-        return provideBuildMethodAsValue(fieldTypeElement, metadata, valueProviderService);
+        return provideBuildMethodAsValue(fieldTypeElement, metadata, valueProviderService, builderMethodName, buildMethodName);
     }
 
-    private static String provideBuildMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
+    private static String provideBuildMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService, String builderMethodName, String buildMethodName) {
         final var builderName = "%s.%sBuilder".formatted(metadata.getQualifiedClassNameWithoutGeneric(), metadata.getSimpleClassNameWithoutGeneric());
-        final var builderMethod = findMethodWithModifiersByReturnType(declaredElement, builderName, PUBLIC, STATIC);
+        final var builderMethod = findMethodWithModifiersByReturnType(declaredElement, builderName, builderMethodName, PUBLIC, STATIC);
 
         if (Objects.isNull(builderMethod)) return DEFAULT_VALUE;
 
         final var builderType = (DeclaredType) builderMethod.getReturnType();
         final var builderTypeElement = builderType.asElement();
-        final var buildMethod = findMethodWithModifiersByReturnType(builderTypeElement, metadata.getQualifiedClassName(), PUBLIC);
+        final var buildMethod = findMethodWithModifiersByReturnType(builderTypeElement, metadata.getQualifiedClassName(), buildMethodName, PUBLIC);
 
         if (Objects.isNull(buildMethod)) return DEFAULT_VALUE;
 

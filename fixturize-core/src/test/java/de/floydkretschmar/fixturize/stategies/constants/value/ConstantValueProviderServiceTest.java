@@ -2,6 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value;
 
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
+import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.metadata.MetadataFactory;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.FallbackValueProvider;
 import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProviderFactory;
@@ -22,16 +23,9 @@ import java.util.Map;
 
 import static de.floydkretschmar.fixturize.TestFixtures.createTypeMirrorFixture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ConstantValueProviderServiceTest {
@@ -209,7 +203,8 @@ class ConstantValueProviderServiceTest {
         verify(valueProviderMap, times(1)).get("some.test.ClassType");
         verify(valueProviderMap, times(1)).containsKey("some.test.ResolvedClassType");
         verify(valueProviderMap, times(1)).get("some.test.ResolvedClassType");
-        verifyNoMoreInteractions(valueProviderMap, metadataFactory);
+        verify(elementUtils).getTypeElement("some.test.ResolvedClassType");
+        verifyNoMoreInteractions(valueProviderMap, metadataFactory, elementUtils);
         verifyNoInteractions(classValueProvider, enumValueProvider, arrayValueProvider);
     }
 
@@ -231,7 +226,17 @@ class ConstantValueProviderServiceTest {
         assertThat(result).isEqualTo("Non-dynamic part ClassTypeElementValue");
         verify(metadataFactory, times(1)).createMetadataFrom(type);
         verify(valueProviderMap, times(1)).containsKey("some.test.ClassTypeElement");
+        verify(elementUtils).getTypeElement("ClassTypeElement");
         verifyNoMoreInteractions(valueProviderMap, metadataFactory);
         verifyNoInteractions(classValueProvider, enumValueProvider, arrayValueProvider);
+    }
+    @Test
+    void resolveValuesForDefaultPlaceholders_whenWildcardIsInvalid_shouldThrowFixtureCreationException() {
+        assertThrows(FixtureCreationException.class, () -> service.resolveValuesForDefaultPlaceholders(
+                "Non-dynamic part #{ClassTypeElement}"));
+
+        verify(elementUtils).getTypeElement("ClassTypeElement");
+        verifyNoMoreInteractions(elementUtils);
+        verifyNoInteractions(valueProviderMap, metadataFactory, classValueProvider, enumValueProvider, arrayValueProvider);
     }
 }

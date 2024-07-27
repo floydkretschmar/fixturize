@@ -51,9 +51,10 @@ class ElementUtilsTest {
         final var matchingMethod = createExecutableElementFixture("matchingMethod", METHOD, returnType, PUBLIC);
         final var wrongModifierMethod = createExecutableElementFixture("wrongModifierMethod", METHOD, returnType, PRIVATE);
         final var wrongReturnTypeMethod = createExecutableElementFixture("wrongModifierMethod", METHOD, wrongReturnType, PUBLIC);
-        final var declaredType = createDeclaredTypeFixture("Type", CLASS, matchingMethod, wrongModifierMethod, wrongReturnTypeMethod);
+        final var wrongNameMethod = createExecutableElementFixture("wrongNameMethod", METHOD, returnType, PUBLIC);
+        final var declaredType = createDeclaredTypeFixture("Type", CLASS, matchingMethod, wrongModifierMethod, wrongReturnTypeMethod, wrongNameMethod);
 
-        final var result = ElementUtils.findMethodWithModifiersByReturnType(declaredType.asElement(), "ReturnType", PUBLIC);
+        final var result = ElementUtils.findMethodWithModifiersByReturnType(declaredType.asElement(), "ReturnType", "matchingMethod", PUBLIC);
 
         assertThat(result).isEqualTo(matchingMethod);
     }
@@ -66,7 +67,7 @@ class ElementUtilsTest {
         final var wrongReturnTypeMethod = createExecutableElementFixture("wrongModifierMethod", METHOD, wrongReturnType, PUBLIC);
         final var declaredType = createDeclaredTypeFixture("Type", CLASS, wrongModifierMethod, wrongReturnTypeMethod);
 
-        final var result = ElementUtils.findMethodWithModifiersByReturnType(declaredType.asElement(), "ReturnType", PUBLIC);
+        final var result = ElementUtils.findMethodWithModifiersByReturnType(declaredType.asElement(), "ReturnType", "doesNotExist", PUBLIC);
 
         assertThat(result).isEqualTo(null);
     }

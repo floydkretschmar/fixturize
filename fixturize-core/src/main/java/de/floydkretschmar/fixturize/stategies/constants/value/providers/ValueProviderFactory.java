@@ -2,6 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.BuilderValueProvider;
 
 import javax.lang.model.util.Types;
 import java.util.Collection;
@@ -32,5 +33,5 @@ public interface ValueProviderFactory {
 
     ValueProvider createConstructorValueProvider(ValueProviderService valueProviderService);
 
-    ValueProvider createBuilderValueProvider(ValueProviderService valueProviderService);
+    BuilderValueProvider createBuilderValueProvider(ValueProviderService valueProviderService);
 }

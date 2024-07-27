@@ -49,6 +49,10 @@ class FixtureProcessorTest {
                         "de.floydkretschmar.fixturize.mocks.CustomValueProviderClassFixture",
                         "fixtures/CustomValueProviderClassFixture.java"),
                 Arguments.of(
+                        "classes/BuilderClass.java",
+                        "de.floydkretschmar.fixturize.mocks.BuilderClassFixture",
+                        "fixtures/BuilderClassFixture.java"),
+                Arguments.of(
                         "classes/GenericClass.java",
                         "de.floydkretschmar.fixturize.mocks.GenericClassFixture",
                         "fixtures/GenericClassFixture.java")
