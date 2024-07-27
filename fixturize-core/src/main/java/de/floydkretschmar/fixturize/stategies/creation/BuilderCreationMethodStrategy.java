@@ -4,10 +4,10 @@ import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilderSetter;
-import de.floydkretschmar.fixturize.stategies.constants.Constant;
-import de.floydkretschmar.fixturize.stategies.metadata.TypeMetadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
+import de.floydkretschmar.fixturize.stategies.constants.Constant;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
+import de.floydkretschmar.fixturize.stategies.metadata.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.value.ValueProviderService;
 import de.floydkretschmar.fixturize.stategies.value.providers.fallback.BuilderValueProvider;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +43,15 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
                 .map(annotation -> {
                     final var builderMethod = "%s%s".formatted(metadata.getGenericPart(), annotation.builderMethod());
 
+                    final var returnType = annotation.asBuilder() ? "%s.%sBuilder%s".formatted(
+                            metadata.getQualifiedClassNameWithoutGeneric(),
+                            metadata.getSimpleClassNameWithoutGeneric(),
+                            metadata.getGenericPart()) : metadata.getQualifiedClassName();
+
+                    final var value = getValue(element, constantMap, metadata, annotation, builderMethod, annotation.buildMethod());
                     return CreationMethod.builder()
-                            .returnType(metadata.getQualifiedClassName())
-                            .returnValue(getValue(element, constantMap, metadata, annotation, builderMethod, annotation.buildMethod()))
+                            .returnType(returnType)
+                            .returnValue(annotation.asBuilder() ? value.replace(".%s()".formatted(annotation.buildMethod()), "") : value)
                             .name(annotation.methodName())
                             .build();
                 }).toList();

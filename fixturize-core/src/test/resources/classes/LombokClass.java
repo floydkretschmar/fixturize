@@ -12,6 +12,7 @@ import java.util.UUID;
 @Builder
 @Value
 @FixtureBuilder(methodName = "createLombokFixture")
+@FixtureBuilder(methodName = "createLombokFixtureAsBuilder", asBuilder = true)
 @FixtureBuilder(methodName = "createLombokFixture2", usedSetters = {
         @FixtureBuilderSetter(setterName = "stringField"),
         @FixtureBuilderSetter(setterName = "intField", value="10 + #{java.lang.Integer}"),

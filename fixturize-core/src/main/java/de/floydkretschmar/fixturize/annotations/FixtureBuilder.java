@@ -41,4 +41,11 @@ public @interface FixtureBuilder {
      * @return The build method representation
      */
     String buildMethod() default "build";
+
+    /**
+     * Returns a boolean indicating whether the creation method should return a builder instance of the fixutirzed class, instead
+     * of an actual instance of the class.
+     * @return the boolean indicating the return value strategy
+     */
+    boolean asBuilder() default false;
 }

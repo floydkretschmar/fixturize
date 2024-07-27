@@ -16,6 +16,10 @@ public class LombokClassFixture {
         return de.floydkretschmar.fixturize.mocks.LombokClass.builder().stringField(STRING_FIELD).intField(INT_FIELD).booleanField(BOOLEAN_FIELD_1).uuidField(UUID_FIELD).elementKindsField(ELEMENT_KINDS_FIELD).build();
     }
 
+    public static de.floydkretschmar.fixturize.mocks.LombokClass.LombokClassBuilder createLombokFixtureAsBuilder() {
+        return de.floydkretschmar.fixturize.mocks.LombokClass.builder().stringField(STRING_FIELD).intField(INT_FIELD).booleanField(BOOLEAN_FIELD_1).uuidField(UUID_FIELD).elementKindsField(ELEMENT_KINDS_FIELD);
+    }
+
     public static de.floydkretschmar.fixturize.mocks.LombokClass createLombokFixture2() {
         return de.floydkretschmar.fixturize.mocks.LombokClass.builder().stringField(STRING_FIELD).intField(10 + 0).booleanField(BOOLEAN_FIELD_1).build();
     }

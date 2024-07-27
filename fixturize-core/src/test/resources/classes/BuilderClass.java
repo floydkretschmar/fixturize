@@ -8,7 +8,12 @@ import java.util.UUID;
 
 @Fixture
 @FixtureBuilder(methodName = "createBuilderClass", builderMethod = "createBuilder", buildMethod = "buildCustom")
+@FixtureBuilder(methodName = "createBuilderClassAsBuilder", builderMethod = "createBuilder", buildMethod = "buildCustom", asBuilder = true)
 @FixtureBuilder(methodName = "createBuilderClassWithParamters", builderMethod = "createBuilder", usedSetters = {
+        @FixtureBuilderSetter(setterName = "setStringField", value = "stringField"),
+        @FixtureBuilderSetter(setterName = "setBooleanField", value = "true")
+})
+@FixtureBuilder(methodName = "createBuilderClassWithParamtersAsBuilder", asBuilder = true, usedSetters = {
         @FixtureBuilderSetter(setterName = "setStringField", value = "stringField"),
         @FixtureBuilderSetter(setterName = "setBooleanField", value = "true")
 })

@@ -92,6 +92,28 @@ class BuilderCreationMethodStrategyTest {
     }
 
     @Test
+    void createCreationMethods_whenAsBuilder_shouldCreateCreationMethodAsBuilder() {
+        constantMap = createConstantDefinitionMapMock();
+        final var annotation = createFixtureBuilderFixture("methodName", "builder", "build", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField"));
+        when(annotation.asBuilder()).thenReturn(true);
+        final var element = createTypeElementFixture(annotation);
+
+        final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.stream()).contains(
+                CreationMethod.builder()
+                        .returnType("some.test.TestObject.TestObjectBuilder")
+                        .returnValue("some.test.TestObject.builder().stringField(stringFieldName).intField(intFieldName)")
+                        .name("methodName")
+                        .build());
+        verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
+        verify(element, times(1)).getAnnotationsByType(FixtureBuilder.class);
+        verifyNoMoreInteractions(constantMap, element);
+        verifyNoInteractions(noUsedSettersValueProvider);
+    }
+
+    @Test
     void createCreationMethods_whenBuilderWithNoUsedSetterDefined_shouldCreateCreationMethodForBuilderWithAllSetters() {
         final var element = createTypeElementFixture(
                 createFixtureBuilderFixture(

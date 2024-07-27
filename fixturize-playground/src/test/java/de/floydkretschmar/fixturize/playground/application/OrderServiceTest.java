@@ -20,6 +20,6 @@ class OrderServiceTest {
 
         var parcel = orderService.ship(order, List.of(ItemFixture.ITEM_ID_1, ItemFixture.ITEM_ID_2), ParcelFixture.TRACKING_NUMBER, shipmentDate);
 
-        assertThat(parcel).isEqualTo(ParcelFixture.createParcel().toBuilder().shipmentDate(shipmentDate).build());
+        assertThat(parcel).isEqualTo(ParcelFixture.createParcelBuilder().shipmentDate(shipmentDate).build());
     }
 }

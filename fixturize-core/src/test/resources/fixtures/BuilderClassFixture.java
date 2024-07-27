@@ -10,7 +10,15 @@ public class BuilderClassFixture {
         return de.floydkretschmar.fixturize.mocks.BuilderClass.createBuilder().setStringField(STRING_FIELD).setIntField(INT_FIELD).setBooleanField(BOOLEAN_FIELD).buildCustom();
     }
 
+    public static de.floydkretschmar.fixturize.mocks.BuilderClass.BuilderClassBuilder createBuilderClassAsBuilder() {
+        return de.floydkretschmar.fixturize.mocks.BuilderClass.createBuilder().setStringField(STRING_FIELD).setIntField(INT_FIELD).setBooleanField(BOOLEAN_FIELD);
+    }
+
     public static de.floydkretschmar.fixturize.mocks.BuilderClass createBuilderClassWithParamters() {
         return de.floydkretschmar.fixturize.mocks.BuilderClass.createBuilder().setStringField(STRING_FIELD).setBooleanField(true).build();
+    }
+
+    public static de.floydkretschmar.fixturize.mocks.BuilderClass.BuilderClassBuilder createBuilderClassWithParamtersAsBuilder() {
+        return de.floydkretschmar.fixturize.mocks.BuilderClass.builder().setStringField(STRING_FIELD).setBooleanField(true);
     }
 }

@@ -80,6 +80,25 @@ class ClassValueProviderTest {
 
     @ParameterizedTest
     @MethodSource("getMetadataParameters")
+    void provideValueAsString_whenFallbackForFixtureBuilderAsBuilder_returnValueStringForFixtureBuilderWithMostSettersAsBuilder(TypeMetadata metadata) {
+        final var fixtureBuilder = createFixtureBuilderFixture("methodName1", null, "build", mock(FixtureBuilderSetter.class), mock(FixtureBuilderSetter.class));
+        when(fixtureBuilder.asBuilder()).thenReturn(true);
+        final var fixtureBuilder2 = createFixtureBuilderFixture(null, null, null, mock(FixtureBuilderSetter.class));
+        final var type = TestFixtures.createDeclaredTypeFixture();
+        final var typeAsElement = type.asElement();
+
+        when(typeAsElement.getAnnotationsByType(ArgumentMatchers.argThat(param -> Objects.nonNull(param) && param.equals(FixtureBuilder.class))))
+                .thenReturn(new FixtureBuilder[]{fixtureBuilder, fixtureBuilder2});
+        when(field.asType()).thenReturn(type);
+
+        final var result = valueProvider.provideValueAsString(field, metadata);
+
+        assertThat(result).isEqualTo("some.test.ClassFixture.methodName1().build()");
+        verifyNoInteractions(constructorValueProvider, builderValueProvider);
+    }
+
+    @ParameterizedTest
+    @MethodSource("getMetadataParameters")
     void provideValueAsString_whenFallbackForFixtureConstructor_returnValueStringForFixtureConstructorWithMostParameters(TypeMetadata metadata) {
         final var fixtureConstructor = createFixtureConstructorFixture("methodName1", "param1", "param2");
         final var fixtureConstructor2 = createFixtureConstructorFixture(null, "param1", "param2");
