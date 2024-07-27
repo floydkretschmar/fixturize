@@ -1,9 +1,6 @@
 package de.floydkretschmar.fixturize.playground.domain;
 
-import de.floydkretschmar.fixturize.annotations.Fixture;
-import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
-import de.floydkretschmar.fixturize.annotations.FixtureConstant;
-import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
+import de.floydkretschmar.fixturize.annotations.*;
 import lombok.Builder;
 import lombok.Value;
 
@@ -14,7 +11,12 @@ import java.util.UUID;
 @Value
 @Builder
 @Fixture
-@FixtureBuilder(methodName = "createParcel")
+@FixtureBuilder(methodName = "createParcel", usedSetters = {
+        @FixtureBuilderSetter(setterName = "shipmentDate"),
+        @FixtureBuilderSetter(setterName = "trackingNumber"),
+        @FixtureBuilderSetter(setterName = "orderNumber", value = "ORDER_NUMBER"),
+        @FixtureBuilderSetter(setterName = "itemsInParcel"),
+})
 @FixtureValueProvider(targetType = "java.util.List<de.floydkretschmar.fixturize.playground.domain.Item>", valueProviderCallback = "(field, metadata) => `java.util.List.of(ItemFixture.createItem1().build(), ItemFixture.createItem2().build())`")
 public class Parcel {
     Instant shipmentDate;

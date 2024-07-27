@@ -11,4 +11,8 @@ public class LombokClassFixture {
     public static LombokClass.LombokClassBuilder createLombokFixture() {
         return LombokClass.builder().stringField(STRING_FIELD).intField(INT_FIELD).booleanField(BOOLEAN_FIELD_1).uuidField(UUID_FIELD).elementKindsField(ELEMENT_KINDS_FIELD);
     }
+
+    public static LombokClass.LombokClassBuilder createLombokFixture2() {
+        return LombokClass.builder().stringField(STRING_FIELD).intField(10 + 0).booleanField(BOOLEAN_FIELD_1);
+    }
 }

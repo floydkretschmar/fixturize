@@ -8,6 +8,7 @@ import java.util.UUID;
 @Fixture
 @FixtureConstructor(methodName = "createMultiConstructorFixture", constructorParameters = {"stringField", "intField", "booleanField", "uuidField"})
 @FixtureConstructor(methodName = "createMultiConstructorFixture2", constructorParameters = {"stringField", "booleanField", "uuidField"})
+@FixtureConstructor(methodName = "createMultiConstructorFixtureWithDefaultValue", constructorParameters = {"stringField", "#{java.lang.Boolean}", "uuidField"})
 public class MultiConstructorClass {
     private final String stringField;
     private final int intField;

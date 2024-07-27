@@ -97,8 +97,8 @@ public class FixtureProcessor extends AbstractProcessor {
         final var constantsGenerationStrategy = new ConstantGenerationStrategy(constantsNamingStrategy, valueProviderService);
 
         final var creationMethodStrategies = new ArrayList<CreationMethodGenerationStrategy>();
-        creationMethodStrategies.add(new ConstructorCreationMethodStrategy());
-        creationMethodStrategies.add(new BuilderCreationMethodStrategy());
+        creationMethodStrategies.add(new ConstructorCreationMethodStrategy(valueProviderService));
+        creationMethodStrategies.add(new BuilderCreationMethodStrategy(valueProviderService));
 
         final var fixtureAnnotation = element.getAnnotation(Fixture.class);
         final var metadata = metadataFactory.createMetadataFrom(element.asType(), Arrays.stream(fixtureAnnotation.genericImplementations()).toList());

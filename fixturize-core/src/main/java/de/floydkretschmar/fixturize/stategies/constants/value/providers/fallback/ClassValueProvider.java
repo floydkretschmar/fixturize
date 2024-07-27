@@ -89,7 +89,7 @@ public class ClassValueProvider implements FallbackValueProvider {
         return returnValue;
     }
 
-    private String provideLombokCreationMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
+    private static String provideLombokCreationMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
         final var fields = metadata.createVariableElementMetadata(ElementFilter.fieldsIn(declaredElement.getEnclosedElements()));
         final var constructorName = getConstructorName(metadata);
 
@@ -123,7 +123,7 @@ public class ClassValueProvider implements FallbackValueProvider {
         return DEFAULT_VALUE;
     }
 
-    private String provideBuildMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
+    private static String provideBuildMethodAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
         final var builderName = "%s.%sBuilder".formatted(metadata.getQualifiedClassNameWithoutGeneric(), metadata.getSimpleClassNameWithoutGeneric());
         final var builderMethod = findMethodWithModifiersByReturnType(declaredElement, builderName, PUBLIC, STATIC);
 
@@ -149,7 +149,7 @@ public class ClassValueProvider implements FallbackValueProvider {
                 buildMethod.getSimpleName().toString());
     }
 
-    private String providePublicConstructorAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
+    private static String providePublicConstructorAsValue(Element declaredElement, TypeMetadata metadata, ValueProviderService valueProviderService) {
         final var mostParametersConstructor = ElementFilter.constructorsIn(declaredElement.getEnclosedElements()).stream()
                 .filter(constructor -> constructor.getModifiers().contains(PUBLIC))
                 .max(comparing(constructor -> constructor.getParameters().size()))
@@ -163,28 +163,28 @@ public class ClassValueProvider implements FallbackValueProvider {
         return createConstructorValue(getConstructorName(metadata), parameters, valueProviderService);
     }
 
-    private String provideBuilderCreationMethodAsValue(Element declaredElement, TypeMetadata metadata) {
+    private static String provideBuilderCreationMethodAsValue(Element declaredElement, TypeMetadata metadata) {
         return Arrays.stream(declaredElement.getAnnotationsByType(FixtureBuilder.class))
                 .max(comparing(annotation -> annotation.usedSetters().length))
                 .map(firstBuilder -> "%sFixture.%s().build()".formatted(metadata.getQualifiedClassNameWithoutGeneric(), firstBuilder.methodName()))
                 .orElse(DEFAULT_VALUE);
     }
 
-    private String provideConstructorCreationMethodAsValue(Element declaredElement, TypeMetadata metadata) {
+    private static String provideConstructorCreationMethodAsValue(Element declaredElement, TypeMetadata metadata) {
         return Arrays.stream(declaredElement.getAnnotationsByType(FixtureConstructor.class))
                 .max(comparing(annotation -> annotation.constructorParameters().length))
                 .map(firstBuilder -> "%sFixture.%s()".formatted(metadata.getQualifiedClassNameWithoutGeneric(), firstBuilder.methodName()))
                 .orElse(DEFAULT_VALUE);
     }
 
-    private String createBuilderValue(Map<String, String> setterAndValueMap, String className, String builderMethodName, String buildMethodName) {
+    private static String createBuilderValue(Map<String, String> setterAndValueMap, String className, String builderMethodName, String buildMethodName) {
         final var setterString = setterAndValueMap.entrySet().stream()
                 .map(setterAndValue -> ".%s(%s)".formatted(setterAndValue.getKey(), setterAndValue.getValue()))
                 .collect(Collectors.joining());
         return "%s.%s()%s.%s()".formatted(className, builderMethodName, setterString, buildMethodName);
     }
 
-    private String createConstructorValue(String className, List<? extends Element> parameterValues, ValueProviderService valueProviderService) {
+    private static String createConstructorValue(String className, List<? extends Element> parameterValues, ValueProviderService valueProviderService) {
         final var recursiveParameterString = parameterValues.stream()
                 .map(valueProviderService::getValueFor)
                 .collect(Collectors.joining(", "));

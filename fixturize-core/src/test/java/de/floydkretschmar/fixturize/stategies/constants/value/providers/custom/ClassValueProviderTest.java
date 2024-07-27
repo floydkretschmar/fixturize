@@ -2,6 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers.custom;
 
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
+import de.floydkretschmar.fixturize.annotations.FixtureBuilderSetter;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
@@ -117,8 +118,8 @@ class ClassValueProviderTest {
     @ParameterizedTest
     @MethodSource("getMetadataParameters")
     void provideValueAsString_whenFallbackForFixtureBuilder_returnValueStringForFixtureBuilderWithMostSetters(TypeMetadata metadata) {
-        final var fixtureBuilder = createFixtureBuilderFixture("methodName1", null, "param1", "param2");
-        final var fixtureBuilder2 = createFixtureBuilderFixture(null, null, "param1");
+        final var fixtureBuilder = createFixtureBuilderFixture("methodName1", null, mock(FixtureBuilderSetter.class), mock(FixtureBuilderSetter.class));
+        final var fixtureBuilder2 = createFixtureBuilderFixture(null, null, mock(FixtureBuilderSetter.class));
         final var type = TestFixtures.createDeclaredTypeFixture();
         final var typeAsElement = type.asElement();
 

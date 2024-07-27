@@ -1,12 +1,8 @@
 package de.floydkretschmar.fixturize.playground.domain;
 
-import de.floydkretschmar.fixturize.annotations.Fixture;
-import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
-import de.floydkretschmar.fixturize.annotations.FixtureConstant;
-import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
+import de.floydkretschmar.fixturize.annotations.*;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Value;
 
 import javax.money.MonetaryAmount;
 import java.time.Instant;
@@ -18,7 +14,15 @@ import java.util.UUID;
 @Fixture
 @FixtureValueProvider(targetType = "javax.money.MonetaryAmount", valueProviderCallback = "(field, metadata) => `org.javamoney.moneta.Money.of(java.math.BigDecimal.ZERO, \"EUR\")`")
 @FixtureValueProvider(targetType = "java.util.List<de.floydkretschmar.fixturize.playground.domain.Item>", valueProviderCallback = "(field, metadata) => `java.util.List.of(ItemFixture.createItem1().build(), ItemFixture.createItem2().build())`")
-@FixtureBuilder(methodName = "createOrder")
+@FixtureBuilder(methodName = "createOrder", usedSetters = {
+        @FixtureBuilderSetter(setterName = "orderNumber"),
+        @FixtureBuilderSetter(setterName = "creationDate"),
+        @FixtureBuilderSetter(setterName = "shipmentDate", value = "SHIPMENT_DATE"),
+        @FixtureBuilderSetter(setterName = "items"),
+        @FixtureBuilderSetter(setterName = "customer"),
+        @FixtureBuilderSetter(setterName = "total"),
+        @FixtureBuilderSetter(setterName = "parcels")
+})
 public class Order {
     UUID orderNumber;
     Instant creationDate;

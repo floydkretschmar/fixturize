@@ -1,6 +1,7 @@
 package de.floydkretschmar.fixturize;
 
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
+import de.floydkretschmar.fixturize.annotations.FixtureBuilderSetter;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
 import de.floydkretschmar.fixturize.domain.Constant;
@@ -20,11 +21,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static javax.lang.model.element.ElementKind.FIELD;
 import static javax.lang.model.type.TypeKind.DECLARED;
@@ -99,12 +97,20 @@ public class TestFixtures {
         return annotation;
     }
 
-    public static FixtureBuilder createFixtureBuilderFixture(String methodName, String builderMethod, String... usedSetters) {
+    public static FixtureBuilderSetter createFixtureBuilderSetterFixture(String setterName, String value) {
+        final var setter = mock(FixtureBuilderSetter.class);
+        when(setter.setterName()).thenReturn(setterName);
+        when(setter.value()).thenReturn(value);
+        return setter;
+    }
+
+    public static FixtureBuilder createFixtureBuilderFixture(String methodName, String builderMethod, FixtureBuilderSetter... usedSetters) {
         final var builder = mock(FixtureBuilder.class);
         if (Objects.nonNull(methodName))
             when(builder.methodName()).thenReturn(methodName);
         if (Objects.nonNull(builderMethod))
             when(builder.builderMethod()).thenReturn(builderMethod);
+
         when(builder.usedSetters()).thenReturn(usedSetters);
         return builder;
     }
@@ -167,13 +173,13 @@ public class TestFixtures {
 
     public static <T extends Annotation> TypeElement createTypeElementFixture(String name, T... annotations) {
         final var typeElement = mock(TypeElement.class);
-        final var typeName = mock(Name.class);
+//        final var typeName = mock(Name.class);
 
-        when(typeName.toString()).thenReturn(name);
+//        when(typeName.toString()).thenReturn(name);
 
         when(typeElement.getAnnotationsByType(any())).thenReturn(annotations);
-        when(typeElement.getSimpleName()).thenReturn(typeName);
-        when(typeElement.getEnclosedElements()).thenReturn(List.of());
+//        when(typeElement.getSimpleName()).thenReturn(typeName);
+//        when(typeElement.getEnclosedElements()).thenReturn(List.of());
 
         return typeElement;
     }
@@ -257,7 +263,7 @@ public class TestFixtures {
         final var constantMap = mock(ConstantMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenAnswer(call -> {
             final var argument = call.<Collection<String>>getArgument(0);
-            return argument.stream().map(TestFixtures::createConstantFixture).toList();
+            return argument.stream().map(name -> Map.entry(name, Optional.of(TestFixtures.createConstantFixture(name)))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         });
         return constantMap;
     }

@@ -13,4 +13,8 @@ public class MultiConstructorClassFixture {
     public static MultiConstructorClass createMultiConstructorFixture2() {
         return new MultiConstructorClass(STRING_FIELD, BOOLEAN_FIELD, UUID_FIELD);
     }
+
+    public static MultiConstructorClass createMultiConstructorFixtureWithDefaultValue() {
+        return new MultiConstructorClass(STRING_FIELD, false, UUID_FIELD);
+    }
 }

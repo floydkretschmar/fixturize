@@ -29,7 +29,7 @@ public @interface FixtureBuilder {
      *
      * @return The setter method representations
      */
-    String[] usedSetters() default {};
+    FixtureBuilderSetter[] usedSetters();
 
     /**
      * Returns the string representation of the static method used to create a builder object for the annotated class.

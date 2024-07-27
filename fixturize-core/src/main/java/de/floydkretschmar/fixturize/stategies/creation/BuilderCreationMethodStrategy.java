@@ -3,29 +3,28 @@ package de.floydkretschmar.fixturize.stategies.creation;
 import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
+import de.floydkretschmar.fixturize.annotations.FixtureBuilderSetter;
 import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
-import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
+import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import lombok.RequiredArgsConstructor;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.util.ElementFilter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static de.floydkretschmar.fixturize.ElementUtils.findSetterForFields;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-import static javax.lang.model.element.Modifier.PUBLIC;
 
 /**
  * The strategy that generates on creation method for each {@link FixtureBuilder} annotation on a class also annotated
  * with {@link Fixture}. If {@link FixtureBuilder#usedSetters()} is empty, all fields will be used.
  */
+@RequiredArgsConstructor
 public class BuilderCreationMethodStrategy implements CreationMethodGenerationStrategy {
+
+    private final ValueProviderService valueProviderService;
     /**
      * Returns a {@link Collection} of all {@link CreationMethod}s that have been generated
      * for the provided element and constants according to the specified {@link FixtureBuilder} strategy.
@@ -38,16 +37,17 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
     public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantMap constantMap, TypeMetadata metadata) {
         return Arrays.stream(element.getAnnotationsByType(FixtureBuilder.class))
                 .map(annotation -> {
-                    Collection<Constant> correspondingConstants;
-                    if (annotation.usedSetters().length == 0)
-                        correspondingConstants = constantMap.values().stream()
-                                .collect(groupingBy(Constant::getOriginalFieldName, LinkedHashMap::new, toList()))
-                                .values()
-                                .stream()
-                                .flatMap(values -> values.stream().limit(1))
-                                .toList();
-                    else
-                        correspondingConstants = constantMap.getMatchingConstants(Arrays.asList(annotation.usedSetters()));
+                    final var valueToSetterMethod = Arrays.stream(annotation.usedSetters())
+                            .collect(ElementUtils.toLinkedMap(
+                                    usedSetter -> !usedSetter.value().isEmpty() ? usedSetter.value() : usedSetter.setterName(),
+                                    FixtureBuilderSetter::setterName));
+                    final var valueToConstant = constantMap.getMatchingConstants(valueToSetterMethod.keySet().stream().toList());
+                    final var setterAndValue = valueToConstant.entrySet().stream().map(valueAndOptionalConstant -> {
+                        final var value = valueAndOptionalConstant.getValue()
+                                .map(Constant::getName)
+                                .orElse(valueProviderService.resolveValuesForDefaultPlaceholders(valueAndOptionalConstant.getKey()));
+                        return Map.entry(valueToSetterMethod.get(valueAndOptionalConstant.getKey()), value);
+                    }).collect(ElementUtils.toLinkedMap(Map.Entry::getKey, Map.Entry::getValue));
 
                     final var returnType = "%s.%sBuilder%s".formatted(
                             metadata.getSimpleClassNameWithoutGeneric(),
@@ -57,39 +57,17 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
 
                     return CreationMethod.builder()
                             .returnType(returnType)
-                            .returnValue(createReturnValueString(element, metadata.getSimpleClassNameWithoutGeneric(), buildMethod, correspondingConstants))
+                            .returnValue(createReturnValueString(metadata.getSimpleClassNameWithoutGeneric(), buildMethod, setterAndValue))
                             .name(annotation.methodName())
                             .build();
                 }).toList();
     }
 
-    private static Map<String, String> getConstantToSetterMap(Element element, String buildMethodName, Collection<Constant> correspondingConstants) {
-        var fieldNames = correspondingConstants.stream().map(Constant::getOriginalFieldName).toList();
-        final var buildMethod = ElementFilter.methodsIn(element.getEnclosedElements()).stream()
-                .filter(method -> method.getSimpleName().toString().equals(buildMethodName))
-                .findFirst()
-                .orElse(null);
-
-        if (Objects.isNull(buildMethod)) return Map.of();
-
-        final var buildMethodType = (DeclaredType) buildMethod.getReturnType();
-        final var builderType = buildMethodType.asElement();
-        return findSetterForFields(builderType, fieldNames, buildMethodType, PUBLIC)
-                .collect(ElementUtils.toLinkedMap(
-                        Map.Entry::getKey,
-                        entry -> entry
-                                .getValue()
-                                .orElseThrow(() -> new FixtureCreationException("No valid setter could be found on %s to set %s".formatted(builderType, entry.getKey())))
-                                .getSimpleName()
-                                .toString()));
-    }
-
-    private static String createReturnValueString(Element element, String className, String buildMethod, Collection<Constant> correspondingConstants) {
-        final var fieldToSetterMap = getConstantToSetterMap(element, buildMethod, correspondingConstants);
-        final var setterString = correspondingConstants.stream()
-                .map(constant -> ".%s(%s)".formatted(
-                        fieldToSetterMap.containsKey(constant.getOriginalFieldName()) ? fieldToSetterMap.get(constant.getOriginalFieldName()) : constant.getOriginalFieldName(),
-                        constant.getName()))
+    private static String createReturnValueString(String className, String buildMethod, Map<String, String> setterAndValue) {
+        final var setterString = setterAndValue.entrySet().stream()
+                .map(setterNameAndValue -> ".%s(%s)".formatted(
+                        setterNameAndValue.getKey(),
+                        setterNameAndValue.getValue()))
                 .collect(Collectors.joining());
         return "%s.%s()%s".formatted(className, buildMethod, setterString);
     }
