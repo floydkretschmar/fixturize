@@ -39,7 +39,6 @@ class ConstructorCreationMethodStrategyTest {
     void createCreationMethods_whenMultipleConstructorsDefined_shouldCreateCreationMethodsForDefinedConstructors() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureConstructorFixture("methodName", "stringField", "intField"),
                 createFixtureConstructorFixture("methodName2", "uuidField"));
 
@@ -69,7 +68,6 @@ class ConstructorCreationMethodStrategyTest {
     void createCreationMethods_whenSingleConstructorDefined_shouldCreateCreationMethodForDefinedConstructor() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureConstructorFixture("methodName", "stringField", "intField"));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
@@ -91,7 +89,6 @@ class ConstructorCreationMethodStrategyTest {
     void createCreationMethods_whenGenericDefined_shouldCreateCreationMethodForDefinedConstructor() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureConstructorFixture("methodName", "stringField", "intField"));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixtureBuilder("TestObject", "<String>").build());
@@ -110,7 +107,7 @@ class ConstructorCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenNoConstructorDefined_shouldReturnEmptyList() {
-        final var element = TestFixtures.<FixtureConstructor>createTypeElementFixture("TestObject");
+        final var element = TestFixtures.<FixtureConstructor>createTypeElementFixture();
 
         final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
@@ -122,7 +119,6 @@ class ConstructorCreationMethodStrategyTest {
     @Test
     void createCreationMethods_whenCalledWithParameterThatDoesNotMatchConstant_shouldResolveDefaultValueString() {
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureConstructorFixture("methodName", "nonFieldValue"));
 
         final var constantMap = mock(ConstantMap.class);

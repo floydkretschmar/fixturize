@@ -38,12 +38,11 @@ public class ConstructorCreationMethodStrategy implements CreationMethodGenerati
                 .map(annotation -> {
                     final var parameterToConstant = constantMap.getMatchingConstants(Arrays.asList(annotation.constructorParameters()));
                     final var className = "%s%s".formatted(metadata.getSimpleClassNameWithoutGeneric(), metadata.isGeneric() ? "<>" : "");
-                    final var parameterValues = parameterToConstant.entrySet().stream().map(parameterAndOptionalConstant -> {
-                        final var value = parameterAndOptionalConstant.getValue()
-                                .map(Constant::getName)
-                                .orElse(valueProviderService.resolveValuesForDefaultPlaceholders(parameterAndOptionalConstant.getKey()));
-                        return value;
-                    }).toList();
+                    final var parameterValues = parameterToConstant.entrySet().stream().map(parameterAndOptionalConstant ->
+                            parameterAndOptionalConstant.getValue()
+                                    .map(Constant::getName)
+                                    .orElse(valueProviderService.resolveValuesForDefaultPlaceholders(parameterAndOptionalConstant.getKey())))
+                            .toList();
 
                     return CreationMethod.builder()
                             .returnType(metadata.getSimpleClassName())

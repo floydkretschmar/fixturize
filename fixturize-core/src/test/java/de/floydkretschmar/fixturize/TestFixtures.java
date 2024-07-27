@@ -189,16 +189,9 @@ public class TestFixtures {
         return variableElement;
     }
 
-    public static <T extends Annotation> TypeElement createTypeElementFixture(String name, T... annotations) {
+    public static <T extends Annotation> TypeElement createTypeElementFixture(T... annotations) {
         final var typeElement = mock(TypeElement.class);
-//        final var typeName = mock(Name.class);
-
-//        when(typeName.toString()).thenReturn(name);
-
         when(typeElement.getAnnotationsByType(any())).thenReturn(annotations);
-//        when(typeElement.getSimpleName()).thenReturn(typeName);
-//        when(typeElement.getEnclosedElements()).thenReturn(List.of());
-
         return typeElement;
     }
 

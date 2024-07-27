@@ -39,7 +39,6 @@ class BuilderCreationMethodStrategyTest {
     void createCreationMethods_whenMultipleBuildersDefined_shouldCreateCreationMethodsForDefinedBuilders() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")),
                 createFixtureBuilderFixture("methodName2", "builder2", createFixtureBuilderSetterFixture("uuidField", "uuidField")));
 
@@ -68,7 +67,6 @@ class BuilderCreationMethodStrategyTest {
     void createCreationMethods_whenSingleBuilderDefined_shouldCreateCreationMethodForDefinedBuilder() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
@@ -89,7 +87,6 @@ class BuilderCreationMethodStrategyTest {
     void createCreationMethods_whenGenericDefined_shouldCreateCreationMethodForDefinedBuilder() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixtureBuilder("TestObject", "<String>").build());
@@ -108,7 +105,7 @@ class BuilderCreationMethodStrategyTest {
 
     @Test
     void createCreationMethods_whenNoBuilderDefined_shouldReturnEmptyList() {
-        final var element = TestFixtures.<FixtureBuilder>createTypeElementFixture("TestObject");
+        final var element = TestFixtures.<FixtureBuilder>createTypeElementFixture();
 
         final Collection<CreationMethod> result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
@@ -121,7 +118,6 @@ class BuilderCreationMethodStrategyTest {
     @Test
     void createCreationMethods_whenCalledWithValueThatDoesNotMatchConstant_shouldTryAndResolveValue() {
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "valueThatDoesNotMatchConstant")));
 
         constantMap = mock(ConstantMap.class);
@@ -147,7 +143,6 @@ class BuilderCreationMethodStrategyTest {
     @Test
     void createCreationMethods_whenCalledWithSetterWithoutValue_shouldUseSetterNameAsValue() {
         final var element = createTypeElementFixture(
-                "TestObject",
                 createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "")));
 
         constantMap = mock(ConstantMap.class);
