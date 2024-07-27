@@ -3,8 +3,7 @@ package de.floydkretschmar.fixturize.stategies.creation;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.CreationMethod;
-import de.floydkretschmar.fixturize.domain.TypeMetadata;
+import de.floydkretschmar.fixturize.stategies.metadata.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 
 import javax.lang.model.element.TypeElement;

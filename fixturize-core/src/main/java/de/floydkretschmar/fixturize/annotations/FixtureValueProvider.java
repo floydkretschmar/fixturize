@@ -1,5 +1,7 @@
 package de.floydkretschmar.fixturize.annotations;
 
+import de.floydkretschmar.fixturize.stategies.metadata.TypeMetadata;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -33,7 +35,7 @@ public @interface FixtureValueProvider {
      * Returns the code that should be executed to provide the value for all constants
      * of the same type as specified by {@link FixtureValueProvider#targetType()}. Code can access information
      * about the field for which the value should be provided via the variable <b>field</b> of type {@link javax.lang.model.element.Element}
-     * and <b>names</b> of type {@link de.floydkretschmar.fixturize.domain.TypeMetadata}
+     * and <b>names</b> of type {@link TypeMetadata}
      *
      * @return the code to provide values for all constants of a type
      */

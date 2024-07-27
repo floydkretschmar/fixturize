@@ -3,20 +3,19 @@ package de.floydkretschmar.fixturize.stategies.creation;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureConstructor;
-import de.floydkretschmar.fixturize.domain.Constant;
-import de.floydkretschmar.fixturize.domain.CreationMethod;
-import de.floydkretschmar.fixturize.domain.TypeMetadata;
+import de.floydkretschmar.fixturize.stategies.constants.Constant;
+import de.floydkretschmar.fixturize.stategies.metadata.TypeMetadata;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
-import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
 import javax.lang.model.element.TypeElement;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider.DEFAULT_VALUE;
+import static de.floydkretschmar.fixturize.stategies.value.providers.ValueProvider.DEFAULT_VALUE;
 
 /**
  * The strategy that generates on creation method for each {@link FixtureConstructor} annotation on a class also annotated

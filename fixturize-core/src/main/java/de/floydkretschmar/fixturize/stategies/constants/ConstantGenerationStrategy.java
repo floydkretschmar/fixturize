@@ -4,12 +4,11 @@ import de.floydkretschmar.fixturize.ElementUtils;
 import de.floydkretschmar.fixturize.annotations.Fixture;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
 import de.floydkretschmar.fixturize.annotations.FixtureValueProvider;
-import de.floydkretschmar.fixturize.domain.Constant;
-import de.floydkretschmar.fixturize.domain.TypeMetadata;
-import de.floydkretschmar.fixturize.domain.VariableElementMetadata;
+import de.floydkretschmar.fixturize.stategies.metadata.TypeMetadata;
+import de.floydkretschmar.fixturize.stategies.metadata.VariableElementMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.naming.NamingStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
+import de.floydkretschmar.fixturize.stategies.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
 import javax.lang.model.element.TypeElement;

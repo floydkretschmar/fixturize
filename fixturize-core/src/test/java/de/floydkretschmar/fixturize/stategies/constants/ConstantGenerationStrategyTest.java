@@ -2,9 +2,8 @@ package de.floydkretschmar.fixturize.stategies.constants;
 
 import de.floydkretschmar.fixturize.TestFixtures;
 import de.floydkretschmar.fixturize.annotations.FixtureConstant;
-import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.stategies.constants.naming.NamingStrategy;
-import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.value.ValueProviderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

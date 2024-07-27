@@ -1,0 +1,18 @@
+package de.floydkretschmar.fixturize.stategies.value.providers.custom;
+
+import de.floydkretschmar.fixturize.stategies.metadata.TypeMetadata;
+import de.floydkretschmar.fixturize.stategies.value.providers.ValueProvider;
+
+import javax.lang.model.element.Element;
+
+/**
+ * Default value provider for {@link Character} and {@link char}.
+ *
+ * @author Floyd Kretschmar
+ */
+public class CharacterValueProvider implements ValueProvider {
+    @Override
+    public String provideValueAsString(Element field, TypeMetadata metadata) {
+        return "' '";
+    }
+}

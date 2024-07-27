@@ -1,7 +1,5 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
-import de.floydkretschmar.fixturize.domain.Constant;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;

@@ -1,7 +1,6 @@
 package de.floydkretschmar.fixturize.stategies.constants;
 
 import de.floydkretschmar.fixturize.ElementUtils;
-import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.exceptions.FixtureCreationException;
 
 import java.util.Collection;

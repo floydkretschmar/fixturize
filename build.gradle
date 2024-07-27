@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 allprojects {
@@ -12,5 +13,22 @@ allprojects {
 
     test {
         useJUnitPlatform()
+    }
+}
+
+spotless {
+    java {
+        importOrder()
+
+        removeUnusedImports()
+        cleanthat()
+        endWithNewline()
+
+        googleJavaFormat() // has its own section below
+        eclipse()          // has its own section below
+        prettier()
+        clangFormat()      // has its own section below
+
+        licenseHeader '/* (C) $YEAR */' // or licenseHeaderFile
     }
 }
