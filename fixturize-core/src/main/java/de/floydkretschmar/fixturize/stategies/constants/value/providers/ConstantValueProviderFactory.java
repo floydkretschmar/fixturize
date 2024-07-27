@@ -2,9 +2,7 @@ package de.floydkretschmar.fixturize.stategies.constants.value.providers;
 
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.ArrayValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.ClassValueProvider;
-import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.EnumValueProvider;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.fallback.*;
 
 import javax.lang.model.util.Types;
 import java.util.Collection;
@@ -21,7 +19,7 @@ public class ConstantValueProviderFactory implements ValueProviderFactory {
     @Override
     public Collection<FallbackValueProvider> createFallbackValueProviders(ValueProviderService valueProviderService) {
         return List.of(
-                new ClassValueProvider(valueProviderService),
+                new ClassValueProvider(new BuilderValueProvider(valueProviderService), new ConstructorValueProvider(valueProviderService)),
                 new EnumValueProvider(),
                 new ArrayValueProvider()
         );

@@ -8,21 +8,17 @@ import de.floydkretschmar.fixturize.domain.Constant;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.provider.Arguments;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static javax.lang.model.element.ElementKind.FIELD;
 import static javax.lang.model.type.TypeKind.DECLARED;
@@ -51,6 +47,28 @@ public class TestFixtures {
 
     public static TypeMetadata createMetadataFixture(String className) {
         return createMetadataFixtureBuilder(className, "").build();
+    }
+
+    public static Stream<Arguments> getMetadataParameters(String expectedOutcome, String expectedGenericOutcome) {
+        final var genericField = createVariableElementFixture("secondField", true, true, FIELD);
+        final var genericFieldType = createDeclaredTypeFixture();
+        final var genericMetadata = TestFixtures.createMetadataFixtureBuilder("Class", "<String>")
+                .genericTypeMap(Map.of(genericField.asType(), genericFieldType)).build();
+
+        final var nonGenericField = createVariableElementFixture("secondField", true, true, FIELD);
+
+        return Stream.of(
+                Arguments.of(
+                        TestFixtures.createMetadataFixture(),
+                        nonGenericField,
+                        nonGenericField,
+                        expectedOutcome),
+                Arguments.of(
+                        genericMetadata,
+                        genericField,
+                        genericFieldType.asElement(),
+                        expectedGenericOutcome)
+        );
     }
 
     public static TypeMetadata.TypeMetadataBuilder createMetadataFixtureBuilder(String className, String genericPart) {
