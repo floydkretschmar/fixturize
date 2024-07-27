@@ -13,7 +13,7 @@ import java.util.UUID;
 @Data
 @Fixture
 @FixtureValueProvider(targetType = "javax.money.MonetaryAmount", valueProviderCallback = "(field, metadata) => `org.javamoney.moneta.Money.of(java.math.BigDecimal.ZERO, \"EUR\")`")
-@FixtureValueProvider(targetType = "java.util.List<de.floydkretschmar.fixturize.playground.domain.Item>", valueProviderCallback = "(field, metadata) => `java.util.List.of(ItemFixture.createItem1().build(), ItemFixture.createItem2().build())`")
+@FixtureValueProvider(targetType = "java.util.List<de.floydkretschmar.fixturize.playground.domain.Item>", valueProviderCallback = "(field, metadata) => `java.util.List.of(ItemFixture.createItem1(), ItemFixture.createItem2())`")
 @FixtureBuilder(methodName = "createOrder", usedSetters = {
         @FixtureBuilderSetter(setterName = "orderNumber"),
         @FixtureBuilderSetter(setterName = "creationDate"),

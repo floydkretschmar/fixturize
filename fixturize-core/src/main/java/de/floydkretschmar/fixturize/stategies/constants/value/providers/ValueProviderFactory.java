@@ -29,4 +29,8 @@ public interface ValueProviderFactory {
      * @return the collection of fallback value providers
      */
     Collection<FallbackValueProvider> createFallbackValueProviders(ValueProviderService valueProviderService);
+
+    ValueProvider createConstructorValueProvider(ValueProviderService valueProviderService);
+
+    ValueProvider createBuilderValueProvider(ValueProviderService valueProviderService);
 }

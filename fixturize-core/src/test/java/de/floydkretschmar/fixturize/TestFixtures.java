@@ -102,7 +102,9 @@ public class TestFixtures {
     public static FixtureConstant createFixtureConstantFixture(String name, String value) {
         final var annotation = mock(FixtureConstant.class);
         when(annotation.name()).thenReturn(name);
-        when(annotation.value()).thenReturn(value);
+
+        if (Objects.nonNull(value))
+            when(annotation.value()).thenReturn(value);
         return annotation;
     }
 
@@ -122,12 +124,14 @@ public class TestFixtures {
         return setter;
     }
 
-    public static FixtureBuilder createFixtureBuilderFixture(String methodName, String builderMethod, FixtureBuilderSetter... usedSetters) {
+    public static FixtureBuilder createFixtureBuilderFixture(String methodName, String builderMethod, String buildMethod, FixtureBuilderSetter... usedSetters) {
         final var builder = mock(FixtureBuilder.class);
         if (Objects.nonNull(methodName))
             when(builder.methodName()).thenReturn(methodName);
         if (Objects.nonNull(builderMethod))
             when(builder.builderMethod()).thenReturn(builderMethod);
+        if (Objects.nonNull(buildMethod))
+            when(builder.buildMethod()).thenReturn(buildMethod);
 
         when(builder.usedSetters()).thenReturn(usedSetters);
         return builder;

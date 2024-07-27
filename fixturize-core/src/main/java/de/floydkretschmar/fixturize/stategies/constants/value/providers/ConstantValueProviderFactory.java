@@ -19,9 +19,19 @@ public class ConstantValueProviderFactory implements ValueProviderFactory {
     @Override
     public Collection<FallbackValueProvider> createFallbackValueProviders(ValueProviderService valueProviderService) {
         return List.of(
-                new ClassValueProvider(new BuilderValueProvider(valueProviderService), new ConstructorValueProvider(valueProviderService)),
+                new ClassValueProvider(this.createBuilderValueProvider(valueProviderService), this.createConstructorValueProvider(valueProviderService)),
                 new EnumValueProvider(),
                 new ArrayValueProvider()
         );
+    }
+
+    @Override
+    public ValueProvider createConstructorValueProvider(ValueProviderService valueProviderService) {
+        return new ConstructorValueProvider(valueProviderService);
+    }
+
+    @Override
+    public ValueProvider createBuilderValueProvider(ValueProviderService valueProviderService) {
+        return new BuilderValueProvider(valueProviderService);
     }
 }

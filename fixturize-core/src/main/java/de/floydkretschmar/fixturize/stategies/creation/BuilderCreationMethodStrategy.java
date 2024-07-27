@@ -9,6 +9,7 @@ import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.domain.TypeMetadata;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import lombok.RequiredArgsConstructor;
 
 import javax.lang.model.element.TypeElement;
@@ -23,8 +24,9 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 public class BuilderCreationMethodStrategy implements CreationMethodGenerationStrategy {
-
     private final ValueProviderService valueProviderService;
+
+    private final ValueProvider noUsedSettersValueProvider;
     /**
      * Returns a {@link Collection} of all {@link CreationMethod}s that have been generated
      * for the provided element and constants according to the specified {@link FixtureBuilder} strategy.
@@ -37,38 +39,41 @@ public class BuilderCreationMethodStrategy implements CreationMethodGenerationSt
     public Collection<CreationMethod> generateCreationMethods(TypeElement element, ConstantMap constantMap, TypeMetadata metadata) {
         return Arrays.stream(element.getAnnotationsByType(FixtureBuilder.class))
                 .map(annotation -> {
-                    final var valueToSetterMethod = Arrays.stream(annotation.usedSetters())
-                            .collect(ElementUtils.toLinkedMap(
-                                    usedSetter -> !usedSetter.value().isEmpty() ? usedSetter.value() : usedSetter.setterName(),
-                                    FixtureBuilderSetter::setterName));
-                    final var valueToConstant = constantMap.getMatchingConstants(valueToSetterMethod.keySet().stream().toList());
-                    final var setterAndValue = valueToConstant.entrySet().stream().map(valueAndOptionalConstant -> {
-                        final var value = valueAndOptionalConstant.getValue()
-                                .map(Constant::getName)
-                                .orElse(valueProviderService.resolveValuesForDefaultPlaceholders(valueAndOptionalConstant.getKey()));
-                        return Map.entry(valueToSetterMethod.get(valueAndOptionalConstant.getKey()), value);
-                    }).collect(ElementUtils.toLinkedMap(Map.Entry::getKey, Map.Entry::getValue));
-
-                    final var returnType = "%s.%sBuilder%s".formatted(
-                            metadata.getSimpleClassNameWithoutGeneric(),
-                            metadata.getSimpleClassNameWithoutGeneric(),
-                            metadata.getGenericPart());
-                    final var buildMethod = "%s%s".formatted(metadata.getGenericPart(), annotation.builderMethod());
+                    final var builderMethod = "%s%s".formatted(metadata.getGenericPart(), annotation.builderMethod());
 
                     return CreationMethod.builder()
-                            .returnType(returnType)
-                            .returnValue(createReturnValueString(metadata.getSimpleClassNameWithoutGeneric(), buildMethod, setterAndValue))
+                            .returnType(metadata.getQualifiedClassName())
+                            .returnValue(getValue(element, constantMap, metadata, annotation, builderMethod, annotation.buildMethod()))
                             .name(annotation.methodName())
                             .build();
                 }).toList();
     }
 
-    private static String createReturnValueString(String className, String buildMethod, Map<String, String> setterAndValue) {
+    private String getValue(TypeElement element, ConstantMap constantMap, TypeMetadata metadata, FixtureBuilder annotation, String builderMethod, String buildMethod) {
+        if (annotation.usedSetters().length == 0)
+            return noUsedSettersValueProvider.provideValueAsString(element, metadata);
+
+        final var valueToSetterMethod = Arrays.stream(annotation.usedSetters())
+                .collect(ElementUtils.toLinkedMap(
+                        usedSetter -> !usedSetter.value().isEmpty() ? usedSetter.value() : usedSetter.setterName(),
+                        FixtureBuilderSetter::setterName));
+        final var valueToConstant = constantMap.getMatchingConstants(valueToSetterMethod.keySet().stream().toList());
+        final var setterAndValue = valueToConstant.entrySet().stream().map(valueAndOptionalConstant -> {
+            final var value = valueAndOptionalConstant.getValue()
+                    .map(Constant::getName)
+                    .orElse(valueProviderService.resolveValuesForDefaultPlaceholders(valueAndOptionalConstant.getKey()));
+            return Map.entry(valueToSetterMethod.get(valueAndOptionalConstant.getKey()), value);
+        }).collect(ElementUtils.toLinkedMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        return createReturnValueString(metadata.getQualifiedClassNameWithoutGeneric(), builderMethod, buildMethod, setterAndValue);
+    }
+
+    private static String createReturnValueString(String className, String builderMethod, String buildMethod, Map<String, String> setterAndValue) {
         final var setterString = setterAndValue.entrySet().stream()
                 .map(setterNameAndValue -> ".%s(%s)".formatted(
                         setterNameAndValue.getKey(),
                         setterNameAndValue.getValue()))
                 .collect(Collectors.joining());
-        return "%s.%s()%s".formatted(className, buildMethod, setterString);
+        return "%s.%s()%s.%s()".formatted(className, builderMethod, setterString, buildMethod);
     }
 }

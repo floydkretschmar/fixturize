@@ -64,8 +64,8 @@ class ClassValueProviderTest {
     @ParameterizedTest
     @MethodSource("getMetadataParameters")
     void provideValueAsString_whenFallbackForFixtureBuilder_returnValueStringForFixtureBuilderWithMostSetters(TypeMetadata metadata) {
-        final var fixtureBuilder = createFixtureBuilderFixture("methodName1", null, mock(FixtureBuilderSetter.class), mock(FixtureBuilderSetter.class));
-        final var fixtureBuilder2 = createFixtureBuilderFixture(null, null, mock(FixtureBuilderSetter.class));
+        final var fixtureBuilder = createFixtureBuilderFixture("methodName1", null, null, mock(FixtureBuilderSetter.class), mock(FixtureBuilderSetter.class));
+        final var fixtureBuilder2 = createFixtureBuilderFixture(null, null, null, mock(FixtureBuilderSetter.class));
         final var type = TestFixtures.createDeclaredTypeFixture();
         final var typeAsElement = type.asElement();
 
@@ -75,7 +75,7 @@ class ClassValueProviderTest {
 
         final var result = valueProvider.provideValueAsString(field, metadata);
 
-        assertThat(result).isEqualTo("some.test.ClassFixture.methodName1().build()");
+        assertThat(result).isEqualTo("some.test.ClassFixture.methodName1()");
         verifyNoInteractions(constructorValueProvider, builderValueProvider);
     }
 

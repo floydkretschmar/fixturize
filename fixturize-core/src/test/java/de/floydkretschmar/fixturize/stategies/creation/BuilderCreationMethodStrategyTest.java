@@ -5,6 +5,7 @@ import de.floydkretschmar.fixturize.annotations.FixtureBuilder;
 import de.floydkretschmar.fixturize.domain.CreationMethod;
 import de.floydkretschmar.fixturize.stategies.constants.ConstantMap;
 import de.floydkretschmar.fixturize.stategies.constants.value.ValueProviderService;
+import de.floydkretschmar.fixturize.stategies.constants.value.providers.ValueProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,30 +31,33 @@ class BuilderCreationMethodStrategyTest {
     @Mock
     private ValueProviderService valueProviderService;
 
+    @Mock
+    private ValueProvider builderValueProvider;
+
     @BeforeEach
     void setup() {
-        strategy = new BuilderCreationMethodStrategy(valueProviderService);
+        strategy = new BuilderCreationMethodStrategy(valueProviderService, builderValueProvider);
     }
 
     @Test
     void createCreationMethods_whenMultipleBuildersDefined_shouldCreateCreationMethodsForDefinedBuilders() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")),
-                createFixtureBuilderFixture("methodName2", "builder2", createFixtureBuilderSetterFixture("uuidField", "uuidField")));
+                createFixtureBuilderFixture("methodName", "builder", "build", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")),
+                createFixtureBuilderFixture("methodName2", "builder2", "build", createFixtureBuilderSetterFixture("uuidField", "uuidField")));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
         assertThat(result).hasSize(2);
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
-                        .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder().stringField(stringFieldName).intField(intFieldName)")
+                        .returnType("some.test.TestObject")
+                        .returnValue("some.test.TestObject.builder().stringField(stringFieldName).intField(intFieldName).build()")
                         .name("methodName")
                         .build(),
                 CreationMethod.builder()
-                        .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder2().uuidField(uuidFieldName)")
+                        .returnType("some.test.TestObject")
+                        .returnValue("some.test.TestObject.builder2().uuidField(uuidFieldName).build()")
                         .name("methodName2")
                         .build());
 
@@ -67,15 +71,15 @@ class BuilderCreationMethodStrategyTest {
     void createCreationMethods_whenSingleBuilderDefined_shouldCreateCreationMethodForDefinedBuilder() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")));
+                createFixtureBuilderFixture("methodName", "builder", "build", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixture("TestObject"));
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
-                        .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder().stringField(stringFieldName).intField(intFieldName)")
+                        .returnType("some.test.TestObject")
+                        .returnValue("some.test.TestObject.builder().stringField(stringFieldName).intField(intFieldName).build()")
                         .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
@@ -87,15 +91,15 @@ class BuilderCreationMethodStrategyTest {
     void createCreationMethods_whenGenericDefined_shouldCreateCreationMethodForDefinedBuilder() {
         constantMap = createConstantDefinitionMapMock();
         final var element = createTypeElementFixture(
-                createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")));
+                createFixtureBuilderFixture("methodName", "builder", "build", createFixtureBuilderSetterFixture("stringField", "stringField"), createFixtureBuilderSetterFixture("intField", "intField")));
 
         final var result = strategy.generateCreationMethods(element, constantMap, TestFixtures.createMetadataFixtureBuilder("TestObject", "<String>").build());
 
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
-                        .returnType("TestObject.TestObjectBuilder<String>")
-                        .returnValue("TestObject.<String>builder().stringField(stringFieldName).intField(intFieldName)")
+                        .returnType("some.test.TestObject<String>")
+                        .returnValue("some.test.TestObject.<String>builder().stringField(stringFieldName).intField(intFieldName).build()")
                         .name("methodName")
                         .build());
         verify(constantMap, times(1)).getMatchingConstants(List.of("stringField", "intField"));
@@ -118,7 +122,7 @@ class BuilderCreationMethodStrategyTest {
     @Test
     void createCreationMethods_whenCalledWithValueThatDoesNotMatchConstant_shouldTryAndResolveValue() {
         final var element = createTypeElementFixture(
-                createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "valueThatDoesNotMatchConstant")));
+                createFixtureBuilderFixture("methodName", "builder", "build", createFixtureBuilderSetterFixture("stringField", "valueThatDoesNotMatchConstant")));
 
         constantMap = mock(ConstantMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenReturn(Map.of("valueThatDoesNotMatchConstant", Optional.empty()));
@@ -129,8 +133,8 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
-                        .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder().stringField(resolvedValue)")
+                        .returnType("some.test.TestObject")
+                        .returnValue("some.test.TestObject.builder().stringField(resolvedValue).build()")
                         .name("methodName")
                         .build());
 
@@ -143,7 +147,7 @@ class BuilderCreationMethodStrategyTest {
     @Test
     void createCreationMethods_whenCalledWithSetterWithoutValue_shouldUseSetterNameAsValue() {
         final var element = createTypeElementFixture(
-                createFixtureBuilderFixture("methodName", "builder", createFixtureBuilderSetterFixture("stringField", "")));
+                createFixtureBuilderFixture("methodName", "builder", "build", createFixtureBuilderSetterFixture("stringField", "")));
 
         constantMap = mock(ConstantMap.class);
         when(constantMap.getMatchingConstants(anyCollection())).thenReturn(Map.of("stringField", Optional.of(STRING_FIELD_DEFINITION)));
@@ -153,8 +157,8 @@ class BuilderCreationMethodStrategyTest {
         assertThat(result).hasSize(1);
         assertThat(result.stream()).contains(
                 CreationMethod.builder()
-                        .returnType("TestObject.TestObjectBuilder")
-                        .returnValue("TestObject.builder().stringField(stringFieldName)")
+                        .returnType("some.test.TestObject")
+                        .returnValue("some.test.TestObject.builder().stringField(stringFieldName).build()")
                         .name("methodName")
                         .build());
 

@@ -8,7 +8,7 @@ public class GenericClassFixture {
         return new GenericClass<>(GENERIC_FIELD, FIELD);
     }
 
-    public static GenericClass.GenericClassBuilder<java.lang.String> createGenericFixtureBuilder() {
-        return GenericClass.<java.lang.String>builder().genericField(GENERIC_FIELD).field(FIELD);
+    public static de.floydkretschmar.fixturize.mocks.GenericClass<java.lang.String> createGenericFixtureBuilder() {
+        return de.floydkretschmar.fixturize.mocks.GenericClass.<java.lang.String>builder().genericField(GENERIC_FIELD).field(FIELD).build();
     }
 }

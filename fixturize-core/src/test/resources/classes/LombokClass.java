@@ -13,13 +13,7 @@ import java.util.UUID;
 @Fixture
 @Builder
 @Value
-@FixtureBuilder(methodName = "createLombokFixture", usedSetters = {
-        @FixtureBuilderSetter(setterName = "stringField"),
-        @FixtureBuilderSetter(setterName = "intField"),
-        @FixtureBuilderSetter(setterName = "booleanField", value = "BOOLEAN_FIELD_1"),
-        @FixtureBuilderSetter(setterName = "uuidField"),
-        @FixtureBuilderSetter(setterName = "elementKindsField"),
-})
+@FixtureBuilder(methodName = "createLombokFixture")
 @FixtureBuilder(methodName = "createLombokFixture2", usedSetters = {
         @FixtureBuilderSetter(setterName = "stringField"),
         @FixtureBuilderSetter(setterName = "intField", value="10 + #{java.lang.Integer}"),

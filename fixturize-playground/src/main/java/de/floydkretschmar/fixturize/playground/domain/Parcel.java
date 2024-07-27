@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Fixture
 @FixtureBuilder(methodName = "createParcel", usedSetters = {
         @FixtureBuilderSetter(setterName = "shipmentDate"),
@@ -17,7 +17,7 @@ import java.util.UUID;
         @FixtureBuilderSetter(setterName = "orderNumber", value = "ORDER_NUMBER"),
         @FixtureBuilderSetter(setterName = "itemsInParcel"),
 })
-@FixtureValueProvider(targetType = "java.util.List<de.floydkretschmar.fixturize.playground.domain.Item>", valueProviderCallback = "(field, metadata) => `java.util.List.of(ItemFixture.createItem1().build(), ItemFixture.createItem2().build())`")
+@FixtureValueProvider(targetType = "java.util.List<de.floydkretschmar.fixturize.playground.domain.Item>", valueProviderCallback = "(field, metadata) => `java.util.List.of(ItemFixture.createItem1(), ItemFixture.createItem2())`")
 public class Parcel {
     Instant shipmentDate;
     String trackingNumber;

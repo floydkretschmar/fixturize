@@ -1,10 +1,6 @@
 package de.floydkretschmar.fixturize.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Indicates that a generated fixture should contain a method to create said fixture using the builder pattern. This
@@ -29,7 +25,7 @@ public @interface FixtureBuilder {
      *
      * @return The setter method representations
      */
-    FixtureBuilderSetter[] usedSetters();
+    FixtureBuilderSetter[] usedSetters() default {};
 
     /**
      * Returns the string representation of the static method used to create a builder object for the annotated class.
@@ -37,4 +33,12 @@ public @interface FixtureBuilder {
      * @return The builder method representation
      */
     String builderMethod() default "builder";
+
+    /**
+     * Returns the string representation of the static method used to create an instance for the annotated class from the
+     * corresponding builder instance.
+     *
+     * @return The build method representation
+     */
+    String buildMethod() default "build";
 }

@@ -68,7 +68,7 @@ public class ClassValueProvider implements FallbackValueProvider {
     private static String provideBuilderCreationMethodAsValue(Element declaredElement, TypeMetadata metadata) {
         return Arrays.stream(declaredElement.getAnnotationsByType(FixtureBuilder.class))
                 .max(comparing(annotation -> annotation.usedSetters().length))
-                .map(firstBuilder -> "%sFixture.%s().build()".formatted(metadata.getQualifiedClassNameWithoutGeneric(), firstBuilder.methodName()))
+                .map(firstBuilder -> "%sFixture.%s()".formatted(metadata.getQualifiedClassNameWithoutGeneric(), firstBuilder.methodName()))
                 .orElse(DEFAULT_VALUE);
     }
 
