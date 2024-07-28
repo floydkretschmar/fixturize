@@ -137,7 +137,9 @@ and/or `@FixtureBuilder`. For example, the following annotations
 @Value
 @Fixture
 @FixtureBuilder(methodName = "createOrderFixture")
-@FixtureBuilder(methodName = "createOrderFixtureWithOrderNo", usedSetter = {"orderNo"})
+@FixtureBuilder(methodName = "createOrderFixtureWithOrderNo", usedSetter = {
+        @FixtureBuilderSetter(setterName="orderNo", value="orderNo")
+})
 static class Order {
     String orderNo;
     Instant date;
@@ -203,8 +205,7 @@ strategies
 to create an instance of any declared type for constant generation
 
 1. If the type of constant without registered provider is itself annotated with `@FixtureConstructor`
-   or `@FixtureBuilder`
-   it will try to use the creation method that uses the most `usedSetters` or `constructorParameters` respectively.
+   or `@FixtureBuilder` it will try to use the creation method that uses the most `usedSetters` or `constructorParameters` respectively.
 2. If the type of the constant is annotated with any lombok annotations, it will try to use (in order)
     - `@Builder`
     - `@AllArgsConstructor`
@@ -214,14 +215,15 @@ to create an instance of any declared type for constant generation
 4. If the type has a public `builder` method define, it will try to use the corresponding buider class.
 
 For the values needed to parameterize each of these methods, values are generated recursively. If still none of these
-strategies
-lead to the generation of a valid value, then the default value returned is `null`.
+strategies lead to the generation of a valid value, then the default value returned is `null`. The fallback logic will 
+always prefer builder pattern creation over constructor creation, if both are available for a given type.
 
-### Default value wildcarding
+### Default value wildcards
 
-If you want to use the default value generation logic when defining values using `@FixtureConstant`, you can do so by
-using
-the wildcard string `${<Qualified classname>}` in your `@FixtureConstant` annotation. For example:
+If you want to use the default value generation logic when defining values using `@FixtureConstant` `@FixtureConstructor`
+or `@FixtureBuilder`, you can do so by using the wildcard string `${<Qualified classname>}` in your `@FixtureConstant` annotation. 
+
+For example:
 
 ```java
 @Builder
